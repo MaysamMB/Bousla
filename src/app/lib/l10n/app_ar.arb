@@ -1,0 +1,31 @@
+{
+  "@@locale": "ar",
+
+  "appTitle": "بوصلة",
+  "languageToggle": "English",
+
+  "homeTagline": "اعرف ما فهمته، وما الذي تتعلمه بعد ذلك.",
+  "homeInstructor": "أنا مدرّس",
+  "homeJoin": "الانضمام إلى جلسة",
+
+  "instructorCreateSessionTitle": "جلسة جديدة",
+  "instructorQuestionsAvailable": "سيتم استخدام {count} من الأسئلة المعتمدة",
+  "instructorCreateSession": "إنشاء الجلسة",
+  "instructorJoinCode": "رمز الانضمام: {code}",
+  "instructorJoinLink": "رابط الانضمام: {link}",
+  "instructorLiveCounts": "{participants} مشاركين · {responses} إجابات",
+  "instructorCloseSession": "إغلاق الجلسة",
+  "instructorSessionClosed": "تم إغلاق الجلسة",
+
+  "studentJoinTitle": "الانضمام إلى جلسة",
+  "studentEnterCode": "رمز الانضمام",
+  "studentJoin": "انضمام",
+  "studentCodeNotFound": "لا توجد جلسة بهذا الرمز.",
+  "studentSessionClosed": "هذه الجلسة مغلقة.",
+  "studentQuestionProgress": "السؤال {current} من {total}",
+  "studentSubmit": "إرسال",
+  "studentAllDone": "شكراً لك! تم إرسال إجاباتك.",
+  "studentNoQuestions": "لا توجد أسئلة في هذه الجلسة بعد.",
+
+  "errorGeneric": "حدث خطأ. حاول مرة أخرى."
+}

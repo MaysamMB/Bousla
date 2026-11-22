@@ -1,0 +1,34 @@
+name: bousla_app
+description: Bousla instructor application and student web portal.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  bousla_engine:
+    path: ../engine
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  # Arabic font: add a TTF (e.g. Noto Sans Arabic or Cairo, both under the
+  # SIL Open Font License) to assets/fonts/ and uncomment. Bundling it avoids
+  # downloading fonts at the venue.
+  # fonts:
+  #   - family: BouslaArabic
+  #     fonts:
+  #       - asset: assets/fonts/NotoSansArabic-Regular.ttf
+  #       - asset: assets/fonts/NotoSansArabic-Bold.ttf
+  #         weight: 700

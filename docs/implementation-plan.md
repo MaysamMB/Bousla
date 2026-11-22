@@ -38,6 +38,8 @@ Status (22 Nov): **implemented, tests to be confirmed on a developer machine.** 
 - `firebase/firestore.rules` with emulator tests (students see approved content only, cannot read answer keys or other students' data; no writes after close).
 Deliverable: a full join-and-answer loop in both languages.
 
+Status (22 Nov): **skeleton written, not yet compiled with Flutter.** `src/app` has routes, AR/EN localization with locale-driven direction, repository interfaces with in-memory implementations, and placeholder instructor/student screens (create session with join code and live counts; join by code; answer one question at a time). The data layer (`lib/data`) was analyzed and its 13 tests pass with plain Dart; screens and widget tests still need their first `flutter analyze` / `flutter test` (see `src/app/README.md`). Remaining: Firebase, auth, QR, Firestore rules, insights, feedback.
+
 ## Phase 4 — Instructor insights (Day 3)
 - Instructor app runs the engine on live responses (Option A, `architecture.md` §7) and shows aggregates: participation, concept difficulty, possible prerequisite gaps.
 - Empty, small-group, duplicate and late-response states handled.

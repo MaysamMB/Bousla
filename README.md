@@ -11,7 +11,7 @@ An AI-powered educational intelligence platform for Educathon 2026 (Hebron Unive
 - Draft bilingual Database Systems dataset (`data/courses/database-systems`), pending human review.
 - Data validator (`src/ai/validate_data.py`).
 - Deterministic educational engine (`src/engine`).
-- The Flutter app (instructor + student web) is not written yet.
+- Flutter app skeleton (`src/app`): routes, Arabic/English, in-memory data, placeholder screens. Not yet connected to Firebase; see `src/app/README.md` for first-time setup.
 
 ## Running the checks
 

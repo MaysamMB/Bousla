@@ -1,0 +1,6 @@
+# Kept dependency-free on purpose. To add the standard Flutter lints later:
+#   flutter pub add --dev flutter_lints
+#   include: package:flutter_lints/flutter.yaml
+analyzer:
+  language:
+    strict-casts: false
