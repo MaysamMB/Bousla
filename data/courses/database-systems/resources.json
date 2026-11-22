@@ -1,0 +1,212 @@
+[
+  {
+    "id": "res_relational_model_practice",
+    "concept_ids": [
+      "relational_model"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: النموذج العلائقي",
+      "en": "Practice: Relational Model"
+    },
+    "description": {
+      "ar": "راجع مثالاً لجدول طلاب وحدّد فيه العلاقة والصفوف والسمات.",
+      "en": "Review a sample Student table and label the relation, its rows and its attributes."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_primary_key_practice",
+    "concept_ids": [
+      "primary_key"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: المفتاح الأساسي",
+      "en": "Practice: Primary Key"
+    },
+    "description": {
+      "ar": "اختر لثلاثة جداول مختلفة المفتاح الأساسي المناسب وبرّر اختيارك.",
+      "en": "Pick a suitable primary key for three different tables and justify each choice."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_foreign_key_practice",
+    "concept_ids": [
+      "foreign_key"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: المفتاح الخارجي",
+      "en": "Practice: Foreign Key"
+    },
+    "description": {
+      "ar": "ارسم جدولي Student وEnrollment وحدّد المفتاح الخارجي، ثم جرّب إدخالاً يخالف القيد.",
+      "en": "Sketch Student and Enrollment, mark the foreign key, then try an insert that violates the constraint."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_er_modeling_practice",
+    "concept_ids": [
+      "er_modeling"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: نمذجة الكيانات والعلاقات",
+      "en": "Practice: Entity-Relationship Modeling"
+    },
+    "description": {
+      "ar": "حوّل مخطط ER صغيراً (طالب، مساق، تسجيل) إلى جداول.",
+      "en": "Convert a small ER diagram (Student, Course, Enrollment) into tables."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_functional_dependency_practice",
+    "concept_ids": [
+      "functional_dependency"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: الاعتمادية الوظيفية",
+      "en": "Practice: Functional Dependency"
+    },
+    "description": {
+      "ar": "استخرج الاعتماديات الوظيفية من جدول موظفين بسيط.",
+      "en": "List the functional dependencies in a simple Employee table."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_normalization_practice",
+    "concept_ids": [
+      "normalization"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: التطبيع",
+      "en": "Practice: Normalization"
+    },
+    "description": {
+      "ar": "طبّع جدولاً فيه تكرار حتى الصيغة الطبيعية الثالثة (3NF) خطوة بخطوة.",
+      "en": "Normalize a table with redundancy to Third Normal Form (3NF), step by step."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_sql_select_practice",
+    "concept_ids": [
+      "sql_select"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: استعلامات SELECT الأساسية",
+      "en": "Practice: Basic SELECT Queries"
+    },
+    "description": {
+      "ar": "اكتب خمسة استعلامات SELECT بشروط WHERE مختلفة على جدول الطلاب.",
+      "en": "Write five SELECT queries with different WHERE conditions on the Student table."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_sql_join_practice",
+    "concept_ids": [
+      "sql_join"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: ربط الجداول (JOIN)",
+      "en": "Practice: Joins"
+    },
+    "description": {
+      "ar": "قارن نتائج INNER JOIN وLEFT JOIN على البيانات نفسها.",
+      "en": "Compare INNER JOIN and LEFT JOIN results on the same data."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_sql_aggregation_practice",
+    "concept_ids": [
+      "sql_aggregation"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: التجميع (GROUP BY)",
+      "en": "Practice: Aggregation (GROUP BY)"
+    },
+    "description": {
+      "ar": "احسب عدد الطلاب ومتوسط المعدل لكل قسم، ثم صفِّ الأقسام باستخدام HAVING.",
+      "en": "Compute student counts and average GPA per department, then filter departments with HAVING."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "res_transactions_acid_practice",
+    "concept_ids": [
+      "transactions_acid"
+    ],
+    "type": "practice_activity",
+    "title": {
+      "ar": "تدريب: المعاملات وخصائص ACID",
+      "en": "Practice: Transactions and ACID"
+    },
+    "description": {
+      "ar": "تتبّع سيناريو تحويل مالي مع COMMIT وROLLBACK.",
+      "en": "Trace a money-transfer scenario using COMMIT and ROLLBACK."
+    },
+    "url": null,
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  }
+]

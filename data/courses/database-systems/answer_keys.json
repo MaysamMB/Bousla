@@ -1,0 +1,62 @@
+{
+  "db_rm_001": {
+    "correct_option_id": "d"
+  },
+  "db_rm_002": {
+    "correct_option_id": "a"
+  },
+  "db_pk_001": {
+    "correct_option_id": "a"
+  },
+  "db_pk_002": {
+    "correct_option_id": "c"
+  },
+  "db_fk_001": {
+    "correct_option_id": "d"
+  },
+  "db_fk_002": {
+    "correct_option_id": "c"
+  },
+  "db_er_001": {
+    "correct_option_id": "c"
+  },
+  "db_er_002": {
+    "correct_option_id": "a"
+  },
+  "db_fd_001": {
+    "correct_option_id": "b"
+  },
+  "db_fd_002": {
+    "correct_option_id": "c"
+  },
+  "db_norm_001": {
+    "correct_option_id": "b"
+  },
+  "db_norm_002": {
+    "correct_option_id": "c"
+  },
+  "db_sel_001": {
+    "correct_option_id": "a"
+  },
+  "db_sel_002": {
+    "correct_option_id": "d"
+  },
+  "db_join_001": {
+    "correct_option_id": "d"
+  },
+  "db_join_002": {
+    "correct_option_id": "a"
+  },
+  "db_agg_001": {
+    "correct_option_id": "a"
+  },
+  "db_agg_002": {
+    "correct_option_id": "d"
+  },
+  "db_tx_001": {
+    "correct_option_id": "c"
+  },
+  "db_tx_002": {
+    "correct_option_id": "b"
+  }
+}

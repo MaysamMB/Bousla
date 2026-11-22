@@ -26,6 +26,7 @@ Bousla/
 ├── docs/                      project-context, architecture, implementation-plan, ethics-privacy, demo-script, surveys/
 ├── data/
 │   ├── courses/database-systems/
+│   │   ├── course.json        course metadata
 │   │   ├── concepts.json      concepts + prerequisite links (bilingual)
 │   │   ├── questions.json     bilingual questions WITHOUT correct answers
 │   │   ├── answer_keys.json   correct option IDs (never bundled into the web app)
@@ -64,7 +65,7 @@ All IDs are language-independent. Every option carries both languages, so the tw
     { "id": "a", "text": { "ar": "ربط الجداول المرتبطة", "en": "Connect related tables" } },
     { "id": "b", "text": { "ar": "تكرار السجلات", "en": "Duplicate records" } }
   ],
-  "provenance": { "source": "ai_draft", "reviewed_by": "team", "status": "approved" },
+  "provenance": { "source": "ai_draft", "status": "approved", "reviewed_by": "team" },
   "synthetic": false
 }
 ```
@@ -123,7 +124,7 @@ All of these permissions are enforced in `firebase/firestore.rules` and tested w
 
 ## 6. Where scoring runs
 
-**MVP decision (Option A, pending team confirmation):** the engine runs in the **instructor app**.
+**MVP decision (Option A, confirmed by the team on 22 Nov 2026):** the engine runs in the **instructor app**.
 
 1. Students submit option IDs only. They never receive answer keys.
 2. The instructor app, which is allowed to read the keys, reads responses, runs the engine, and writes `aggregates/summary` live.

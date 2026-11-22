@@ -1,0 +1,964 @@
+[
+  {
+    "id": "db_rm_001",
+    "concept_ids": [
+      "relational_model"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "في النموذج العلائقي، ماذا يُسمّى الجدول؟",
+      "en": "In the relational model, what is a table called?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "سمة (Attribute)",
+          "en": "An attribute"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "مجال (Domain)",
+          "en": "A domain"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "صف (Tuple)",
+          "en": "A tuple"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "علاقة (Relation)",
+          "en": "A relation"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_rm_002",
+    "concept_ids": [
+      "relational_model"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "ماذا يمثّل كل صف (Tuple) في العلاقة؟",
+      "en": "What does each row (tuple) in a relation represent?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "سجلاً واحداً لكيان معيّن",
+          "en": "A single record of one entity"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "قيداً على الجدول",
+          "en": "A constraint on the table"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "قاعدة البيانات كاملة",
+          "en": "The whole database"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "نوع بيانات العمود",
+          "en": "The data type of a column"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_pk_001",
+    "concept_ids": [
+      "primary_key"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "أيّ خاصية يجب أن يحققها المفتاح الأساسي (Primary Key)؟",
+      "en": "Which property must a primary key have?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "أن يكون فريداً ولا يقبل القيمة الفارغة (NULL)",
+          "en": "Unique and not NULL"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "أن يسمح بالقيم المكررة",
+          "en": "It may contain duplicate values"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "أن يكون من نوع نصّي دائماً",
+          "en": "It must always be a text column"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "أن يكون أول عمود في الجدول دائماً",
+          "en": "It must always be the first column"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_pk_002",
+    "concept_ids": [
+      "primary_key"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "في الجدول Student(student_id, name, gpa)، ما أنسب مفتاح أساسي؟",
+      "en": "In the table Student(student_id, name, gpa), which is the most suitable primary key?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "لا حاجة لمفتاح أساسي",
+          "en": "No primary key is needed"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "gpa",
+          "en": "gpa"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "student_id",
+          "en": "student_id"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "name",
+          "en": "name"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_fk_001",
+    "concept_ids": [
+      "foreign_key"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "ما وظيفة المفتاح الخارجي (Foreign Key)؟",
+      "en": "What is the purpose of a foreign key?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "تشفير البيانات",
+          "en": "Encrypt the data"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "منع تكرار القيم في العمود نفسه",
+          "en": "Prevent duplicate values in the same column"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "تسريع ترتيب النتائج",
+          "en": "Speed up sorting of results"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "ربط صف بصف في جدول آخر عبر مفتاحه الأساسي",
+          "en": "Link a row to a row in another table through its primary key"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_fk_002",
+    "concept_ids": [
+      "foreign_key"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "في الجدول Enrollment(student_id, course_id) يشير student_id إلى الجدول Student. ماذا يحدث عند إدخال تسجيل بقيمة student_id غير موجودة في Student مع تفعيل القيد؟",
+      "en": "In Enrollment(student_id, course_id), student_id references Student. With the constraint enforced, what happens when inserting an enrollment whose student_id does not exist in Student?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "يُقبل الإدخال دون أي تحقق",
+          "en": "The insert is accepted without any check"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "يُنشأ الطالب تلقائياً",
+          "en": "The student is created automatically"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "يُرفض الإدخال للحفاظ على سلامة المراجع",
+          "en": "The insert is rejected to preserve referential integrity"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "يُحذف الجدول Student",
+          "en": "The Student table is deleted"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_er_001",
+    "concept_ids": [
+      "er_modeling"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "يمكن للطالب التسجيل في عدة مساقات، ويضم المساق عدة طلاب. ما نوع هذه العلاقة؟",
+      "en": "A student can enroll in many courses, and a course has many students. What type of relationship is this?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "لا توجد علاقة",
+          "en": "There is no relationship"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "واحد إلى واحد (One-to-One)",
+          "en": "One-to-one"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "متعدد إلى متعدد (Many-to-Many)",
+          "en": "Many-to-many"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "واحد إلى متعدد (One-to-Many)",
+          "en": "One-to-many"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_er_002",
+    "concept_ids": [
+      "er_modeling",
+      "foreign_key"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "كيف تُنفَّذ علاقة متعدد إلى متعدد عادةً في الجداول العلائقية؟",
+      "en": "How is a many-to-many relationship usually implemented in relational tables?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "بجدول ربط منفصل يحتوي مفتاحين خارجيين",
+          "en": "With a separate linking table containing two foreign keys"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "لا يمكن تمثيلها في قاعدة بيانات علائقية",
+          "en": "It cannot be represented in a relational database"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "بعمود واحد يخزّن قائمة من المعرّفات",
+          "en": "With one column storing a list of IDs"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "بدمج الجدولين في جدول واحد",
+          "en": "By merging both tables into one"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_fd_001",
+    "concept_ids": [
+      "functional_dependency"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "ماذا تعني الاعتمادية الوظيفية A → B؟",
+      "en": "What does the functional dependency A → B mean?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "كل قيمة لـ B تحدد قيمة واحدة فقط لـ A",
+          "en": "Each value of B determines exactly one value of A"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "كل قيمة لـ A تحدد قيمة واحدة فقط لـ B",
+          "en": "Each value of A determines exactly one value of B"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "قيم A وB متساوية دائماً",
+          "en": "A and B always have equal values"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "A مفتاح خارجي يشير إلى B",
+          "en": "A is a foreign key referencing B"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_fd_002",
+    "concept_ids": [
+      "functional_dependency",
+      "normalization"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "في الجدول Employee(emp_id, dept_id, dept_name)، أيّ اعتمادية تسبب تكرار البيانات؟",
+      "en": "In Employee(emp_id, dept_id, dept_name), which dependency causes data redundancy?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "لا توجد اعتمادية تسبب تكراراً",
+          "en": "No dependency causes redundancy"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "emp_id → emp_id",
+          "en": "emp_id → emp_id"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "dept_id → dept_name",
+          "en": "dept_id → dept_name"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "dept_name → emp_id",
+          "en": "dept_name → emp_id"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_norm_001",
+    "concept_ids": [
+      "normalization"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "متى يكون الجدول في الصيغة الطبيعية الأولى (1NF)؟",
+      "en": "When is a table in First Normal Form (1NF)?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "عندما تكون صفوفه مرتبة",
+          "en": "When its rows are sorted"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "عندما تحتوي كل خلية على قيمة ذرّية واحدة",
+          "en": "When every cell holds a single atomic value"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "عندما لا يحتوي على مفاتيح خارجية",
+          "en": "When it has no foreign keys"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "عندما يحتوي على عمود واحد فقط",
+          "en": "When it has only one column"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_norm_002",
+    "concept_ids": [
+      "normalization"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "ما الهدف الرئيسي من التطبيع (Normalization)؟",
+      "en": "What is the main goal of normalization?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "تخزين كل البيانات في جدول واحد",
+          "en": "Store all data in a single table"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "جعل كل الاستعلامات أسرع دائماً",
+          "en": "Always make every query faster"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "تقليل التكرار وتجنّب شذوذ التحديث",
+          "en": "Reduce redundancy and avoid update anomalies"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "إزالة جميع المفاتيح",
+          "en": "Remove all keys"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_sel_001",
+    "concept_ids": [
+      "sql_select"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "أيّ استعلام يعرض أسماء الطلاب الذين معدلهم أكبر من 3؟",
+      "en": "Which query returns the names of students whose GPA is greater than 3?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "SELECT name FROM Student WHERE gpa > 3;",
+          "en": "SELECT name FROM Student WHERE gpa > 3;"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "SELECT name FROM Student ORDER BY gpa > 3;",
+          "en": "SELECT name FROM Student ORDER BY gpa > 3;"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "SELECT * WHERE gpa > 3 FROM Student;",
+          "en": "SELECT * WHERE gpa > 3 FROM Student;"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "GET name FROM Student IF gpa > 3;",
+          "en": "GET name FROM Student IF gpa > 3;"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_sel_002",
+    "concept_ids": [
+      "sql_select"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "ما وظيفة جملة WHERE في استعلام SELECT؟",
+      "en": "What does the WHERE clause do in a SELECT query?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "تجميع الصفوف في مجموعات",
+          "en": "Group rows together"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "ترتيب النتائج",
+          "en": "Sort the results"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "اختيار الأعمدة المعروضة",
+          "en": "Choose which columns are shown"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "تصفية الصفوف حسب شرط",
+          "en": "Filter rows by a condition"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_join_001",
+    "concept_ids": [
+      "sql_join"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "ماذا يُرجع INNER JOIN بين Student وEnrollment على student_id؟",
+      "en": "What does an INNER JOIN between Student and Enrollment on student_id return?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "الطلاب غير المسجلين فقط",
+          "en": "Only students without enrollments"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "كل التركيبات الممكنة بين الجدولين",
+          "en": "Every possible combination of rows from both tables"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "كل الطلاب حتى غير المسجلين",
+          "en": "All students, including those without enrollments"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "الطلاب الذين لهم تسجيل واحد مطابق على الأقل فقط",
+          "en": "Only students with at least one matching enrollment"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_join_002",
+    "concept_ids": [
+      "sql_join"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "لعرض جميع الطلاب بما فيهم من ليس لديهم أي تسجيل، أيّ ربط نستخدم؟",
+      "en": "To list all students, including those with no enrollment, which join should be used?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "Student LEFT JOIN Enrollment",
+          "en": "Student LEFT JOIN Enrollment"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "Student INNER JOIN Enrollment",
+          "en": "Student INNER JOIN Enrollment"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "Student CROSS JOIN Enrollment",
+          "en": "Student CROSS JOIN Enrollment"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "Enrollment INNER JOIN Student",
+          "en": "Enrollment INNER JOIN Student"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_agg_001",
+    "concept_ids": [
+      "sql_aggregation"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "أيّ استعلام يحسب عدد الطلاب في كل قسم؟",
+      "en": "Which query counts the students in each department?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "SELECT dept, COUNT(*) FROM Student GROUP BY dept;",
+          "en": "SELECT dept, COUNT(*) FROM Student GROUP BY dept;"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "SELECT dept, COUNT(*) FROM Student;",
+          "en": "SELECT dept, COUNT(*) FROM Student;"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "SELECT COUNT(dept) GROUP BY Student;",
+          "en": "SELECT COUNT(dept) GROUP BY Student;"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "SELECT dept FROM Student ORDER BY COUNT(*);",
+          "en": "SELECT dept FROM Student ORDER BY COUNT(*);"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_agg_002",
+    "concept_ids": [
+      "sql_aggregation"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "ما الفرق بين WHERE وHAVING؟",
+      "en": "What is the difference between WHERE and HAVING?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "لا فرق بينهما",
+          "en": "There is no difference"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "WHERE تُستخدم فقط مع JOIN",
+          "en": "WHERE is only used with JOIN"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "HAVING تصفّي الصفوف قبل التجميع",
+          "en": "HAVING filters rows before grouping"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "HAVING تصفّي المجموعات بعد التجميع، وWHERE تصفّي الصفوف قبله",
+          "en": "HAVING filters groups after aggregation; WHERE filters rows before it"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_tx_001",
+    "concept_ids": [
+      "transactions_acid"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "basic",
+    "prompt": {
+      "ar": "ماذا يعني الحرف A في ACID؟",
+      "en": "What does the A in ACID stand for?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "التفويض (Authorization)",
+          "en": "Authorization"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "الدقة (Accuracy)",
+          "en": "Accuracy"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "الذرّية (Atomicity): تُنفَّذ المعاملة كاملة أو لا تُنفَّذ إطلاقاً",
+          "en": "Atomicity: the transaction happens completely or not at all"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "التوفّر (Availability)",
+          "en": "Availability"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  },
+  {
+    "id": "db_tx_002",
+    "concept_ids": [
+      "transactions_acid"
+    ],
+    "type": "multiple_choice",
+    "difficulty": "intermediate",
+    "prompt": {
+      "ar": "في عملية تحويل مالي نجح الخصم من الحساب الأول وفشل الإيداع في الحساب الثاني. ماذا يحدث إذا نُفّذت العملية كمعاملة واحدة؟",
+      "en": "In a money transfer, the debit from the first account succeeds but the credit to the second account fails. What happens if both steps run in one transaction?"
+    },
+    "options": [
+      {
+        "id": "a",
+        "text": {
+          "ar": "يُعاد الإيداع تلقائياً إلى ما لا نهاية",
+          "en": "The credit is retried forever"
+        }
+      },
+      {
+        "id": "b",
+        "text": {
+          "ar": "تُلغى المعاملة كاملة ويعود الحسابان كما كانا (Rollback)",
+          "en": "The whole transaction is rolled back and both accounts return to their previous state"
+        }
+      },
+      {
+        "id": "c",
+        "text": {
+          "ar": "يبقى الخصم ويُلغى الإيداع فقط",
+          "en": "The debit stays and only the credit is cancelled"
+        }
+      },
+      {
+        "id": "d",
+        "text": {
+          "ar": "تُحذف قاعدة البيانات",
+          "en": "The database is deleted"
+        }
+      }
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    },
+    "synthetic": false
+  }
+]

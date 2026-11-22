@@ -1,0 +1,191 @@
+[
+  {
+    "id": "relational_model",
+    "name": {
+      "ar": "النموذج العلائقي",
+      "en": "Relational Model"
+    },
+    "description": {
+      "ar": "تنظيم البيانات في علاقات (جداول) مكوّنة من صفوف وسمات.",
+      "en": "Organizing data into relations (tables) made of rows and attributes."
+    },
+    "prerequisites": [],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "primary_key",
+    "name": {
+      "ar": "المفتاح الأساسي",
+      "en": "Primary Key"
+    },
+    "description": {
+      "ar": "سمة أو مجموعة سمات تميّز كل صف في الجدول بشكل فريد.",
+      "en": "An attribute or set of attributes that uniquely identifies each row."
+    },
+    "prerequisites": [
+      "relational_model"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "foreign_key",
+    "name": {
+      "ar": "المفتاح الخارجي",
+      "en": "Foreign Key"
+    },
+    "description": {
+      "ar": "سمة تشير إلى المفتاح الأساسي في جدول آخر لربط البيانات وضمان سلامة المراجع.",
+      "en": "An attribute that references a primary key in another table to link data and enforce referential integrity."
+    },
+    "prerequisites": [
+      "primary_key"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "er_modeling",
+    "name": {
+      "ar": "نمذجة الكيانات والعلاقات",
+      "en": "Entity-Relationship Modeling"
+    },
+    "description": {
+      "ar": "وصف الكيانات والعلاقات بينها وأنواعها قبل بناء الجداول.",
+      "en": "Describing entities, their relationships and cardinalities before building tables."
+    },
+    "prerequisites": [
+      "relational_model"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "functional_dependency",
+    "name": {
+      "ar": "الاعتمادية الوظيفية",
+      "en": "Functional Dependency"
+    },
+    "description": {
+      "ar": "علاقة تحدد فيها قيمة سمة (أو مجموعة سمات) قيمة سمة أخرى بشكل وحيد.",
+      "en": "A relationship where the value of one attribute set uniquely determines another attribute."
+    },
+    "prerequisites": [
+      "primary_key"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "normalization",
+    "name": {
+      "ar": "التطبيع",
+      "en": "Normalization"
+    },
+    "description": {
+      "ar": "تنظيم الجداول لتقليل التكرار وتجنّب شذوذ التحديث.",
+      "en": "Structuring tables to reduce redundancy and avoid update anomalies."
+    },
+    "prerequisites": [
+      "functional_dependency"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "sql_select",
+    "name": {
+      "ar": "استعلامات SELECT الأساسية",
+      "en": "Basic SELECT Queries"
+    },
+    "description": {
+      "ar": "استرجاع البيانات واختيار الأعمدة وتصفية الصفوف باستخدام SQL.",
+      "en": "Retrieving data, choosing columns and filtering rows with SQL."
+    },
+    "prerequisites": [
+      "relational_model"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "sql_join",
+    "name": {
+      "ar": "ربط الجداول (JOIN)",
+      "en": "Joins"
+    },
+    "description": {
+      "ar": "دمج صفوف من جداول متعددة اعتماداً على قيم مشتركة.",
+      "en": "Combining rows from multiple tables based on matching values."
+    },
+    "prerequisites": [
+      "sql_select",
+      "foreign_key"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "sql_aggregation",
+    "name": {
+      "ar": "التجميع (GROUP BY)",
+      "en": "Aggregation (GROUP BY)"
+    },
+    "description": {
+      "ar": "حساب قيم إجمالية مثل العدد والمتوسط لكل مجموعة من الصفوف.",
+      "en": "Computing summary values such as counts and averages per group of rows."
+    },
+    "prerequisites": [
+      "sql_select"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  },
+  {
+    "id": "transactions_acid",
+    "name": {
+      "ar": "المعاملات وخصائص ACID",
+      "en": "Transactions and ACID"
+    },
+    "description": {
+      "ar": "تنفيذ مجموعة عمليات كوحدة واحدة مع ضمان الذرّية والاتساق والعزل والديمومة.",
+      "en": "Executing a group of operations as one unit with atomicity, consistency, isolation and durability."
+    },
+    "prerequisites": [
+      "relational_model"
+    ],
+    "provenance": {
+      "source": "ai_draft",
+      "status": "pending_review",
+      "reviewed_by": null
+    }
+  }
+]

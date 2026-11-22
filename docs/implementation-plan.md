@@ -15,6 +15,8 @@ Status legend used in progress notes: implemented / partial / planned / unverifi
 - `validate_data.py` (or Dart tests) for unique IDs, missing translations, broken references, answer keys matching option IDs, prerequisite cycles.
 Deliverable: dataset + validator + passing checks.
 
+Status (22 Nov): **partial.** Draft dataset written (10 concepts, 20 questions, 10 practice activities) with every item marked `provenance.status = "pending_review"`. `src/ai/validate_data.py` + 24 unit tests pass (`python -m unittest discover -s src/ai/tests`). Remaining: team review of the content, then set reviewed items to `approved`.
+
 ## Phase 2 — Educational engine (Days 1–2, can run in parallel with Phase 3)
 Pure Dart in `src/app/lib/core/engine`, no Flutter or Firebase imports.
 1. Models.
