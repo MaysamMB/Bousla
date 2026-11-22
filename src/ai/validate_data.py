@@ -14,8 +14,13 @@ Checks (errors fail the run with exit code 1):
   embed the correct answer (answer keys live in answer_keys.json only).
 - Every question has exactly one answer key that matches one of its options,
   and there are no keys for unknown questions.
-- Resources reference existing concepts.
-- Provenance status is one of the allowed values.
+- Questions have an integer version >= 1.
+- Resources reference existing concepts, use an allowed type and language,
+  and have a url (link/video), a storage_path (file) or a description
+  (activity).
+- Provenance source and status are allowed values; a source_material_id
+  refers to an entry in the optional materials.json.
+- course.json has an owner_id field (null allowed in seed files).
 
 Warnings (reported, do not fail):
 - Concepts with fewer than MIN_QUESTIONS_PER_CONCEPT questions; the engine
@@ -33,8 +38,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REQUIRED_FILES = ("course.json", "concepts.json", "questions.json", "answer_keys.json", "resources.json")
+OPTIONAL_MATERIALS_FILE = "materials.json"
 LANGUAGES = ("ar", "en")
 ALLOWED_STATUS = {"pending_review", "approved", "rejected"}
+ALLOWED_SOURCE = {"ai_draft", "instructor", "team"}
+ALLOWED_MATERIAL_STATUS = {"processing", "ready_for_review", "failed"}
+RESOURCE_TYPES = {"activity", "link", "video", "file"}
+RESOURCE_LANGUAGES = {"ar", "en", "both"}
 MIN_QUESTIONS_PER_CONCEPT = 2
 FORBIDDEN_QUESTION_FIELDS = {"correct_option_id", "answer", "correct"}
 ARABIC_LETTER = re.compile(r"[؀-ۿ]")
@@ -80,12 +90,18 @@ def _check_bilingual(value, where: str, report: Report, require_arabic: bool = F
         report.error(f"{where}: 'ar' text contains no Arabic letters")
 
 
-def _check_provenance(item: dict, where: str, report: Report) -> bool:
+def _check_provenance(item: dict, where: str, report: Report, material_ids: set[str]) -> bool:
     """Returns True if the item is approved."""
     prov = item.get("provenance")
     if not isinstance(prov, dict):
         report.error(f"{where}: missing provenance")
         return False
+    source = prov.get("source")
+    if source not in ALLOWED_SOURCE:
+        report.error(f"{where}: provenance.source '{source}' not in {sorted(ALLOWED_SOURCE)}")
+    material = prov.get("source_material_id")
+    if material is not None and material not in material_ids:
+        report.error(f"{where}: unknown source_material_id '{material}'")
     status = prov.get("status")
     if status not in ALLOWED_STATUS:
         report.error(f"{where}: provenance.status '{status}' not in {sorted(ALLOWED_STATUS)}")
@@ -156,6 +172,23 @@ def validate_course(course_dir: Path) -> Report:
         return report
 
     _check_bilingual(course.get("name"), "course.name", report, require_arabic=True)
+    if "owner_id" not in course:
+        report.error("course.json: missing owner_id (use null in seed files)")
+    elif course["owner_id"] is not None and not (isinstance(course["owner_id"], str) and course["owner_id"]):
+        report.error("course.json: owner_id must be a non-empty string or null")
+
+    # Materials (optional)
+    material_ids: set[str] = set()
+    if (course_dir / OPTIONAL_MATERIALS_FILE).exists():
+        materials = _load(course_dir / OPTIONAL_MATERIALS_FILE, report)
+        if materials is not None:
+            if not isinstance(materials, list):
+                report.error(f"{OPTIONAL_MATERIALS_FILE}: top level must be a list")
+            else:
+                material_ids = _unique_ids(materials, "materials", report)
+                for m in materials:
+                    if isinstance(m, dict) and "id" in m and m.get("status") not in ALLOWED_MATERIAL_STATUS:
+                        report.error(f"material '{m['id']}': status '{m.get('status')}' not in {sorted(ALLOWED_MATERIAL_STATUS)}")
 
     # Concepts
     concept_ids = _unique_ids(concepts, "concepts", report)
@@ -178,7 +211,7 @@ def validate_course(course_dir: Path) -> Report:
             elif p not in concept_ids:
                 report.error(f"{where}: unknown prerequisite '{p}'")
         graph[c["id"]] = [p for p in prereqs if p in concept_ids and p != c["id"]]
-        if not _check_provenance(c, where, report):
+        if not _check_provenance(c, where, report, material_ids):
             not_approved += 1
     cycle = _find_cycle(graph)
     if cycle:
@@ -222,7 +255,10 @@ def validate_course(course_dir: Path) -> Report:
                 report.error(f"{where}.options['{oid}']: contains an answer field")
             _check_bilingual(opt.get("text"), f"{where}.options['{oid}'].text", report)
         option_ids_by_question[q["id"]] = opt_ids
-        if not _check_provenance(q, where, report):
+        version = q.get("version")
+        if isinstance(version, bool) or not isinstance(version, int) or version < 1:
+            report.error(f"{where}: version must be an integer >= 1")
+        if not _check_provenance(q, where, report, material_ids):
             not_approved += 1
 
     # Answer keys
@@ -252,7 +288,22 @@ def validate_course(course_dir: Path) -> Report:
             for cid in cids:
                 if cid not in concept_ids:
                     report.error(f"{where}: unknown concept '{cid}'")
-        if not _check_provenance(r, where, report):
+        rtype = r.get("type")
+        if rtype not in RESOURCE_TYPES:
+            report.error(f"{where}: type '{rtype}' not in {sorted(RESOURCE_TYPES)}")
+        elif rtype in ("link", "video"):
+            url = r.get("url")
+            if not (isinstance(url, str) and url.startswith(("https://", "http://"))):
+                report.error(f"{where}: type '{rtype}' needs an http(s) url")
+        elif rtype == "file":
+            path = r.get("storage_path")
+            if not (isinstance(path, str) and path):
+                report.error(f"{where}: type 'file' needs a storage_path")
+        elif rtype == "activity":
+            _check_bilingual(r.get("description"), f"{where}.description", report, require_arabic=True)
+        if r.get("language") not in RESOURCE_LANGUAGES:
+            report.error(f"{where}: language '{r.get('language')}' not in {sorted(RESOURCE_LANGUAGES)}")
+        if not _check_provenance(r, where, report, material_ids):
             not_approved += 1
 
     # Warnings

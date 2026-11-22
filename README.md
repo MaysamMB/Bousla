@@ -6,9 +6,25 @@ An AI-powered educational intelligence platform for Educathon 2026 (Hebron Unive
 - **Student web portal** (Flutter web): join by link or QR, answer in Arabic or English, get personal feedback and recommendations.
 - **Shared backend** (Firebase) and **shared educational engine** (pure Dart).
 
-## Status
+## Status (22 Nov 2026)
 
-Documentation only. No application code has been written yet (as of 22 Nov 2026).
+- Draft bilingual Database Systems dataset (`data/courses/database-systems`), pending human review.
+- Data validator (`src/ai/validate_data.py`).
+- Deterministic educational engine (`src/engine`).
+- The Flutter app (instructor + student web) is not written yet.
+
+## Running the checks
+
+```bash
+# Data validation (Python 3.9+, no packages needed)
+python src/ai/validate_data.py data/courses/database-systems
+python -m unittest discover -s src/ai/tests
+
+# Engine (Dart 3.5+ or Flutter's bundled Dart)
+cd src/engine
+dart pub get
+dart test
+```
 
 ## Documentation
 
