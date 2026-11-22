@@ -1,2 +1,7 @@
 __pycache__/
 *.pyc
+
+# Dart
+.dart_tool/
+src/engine/pubspec.lock
+pubspec_overrides.yaml

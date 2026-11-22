@@ -19,7 +19,7 @@ Deliverable: dataset + validator + passing checks.
 Status (22 Nov): **partial.** Draft dataset written (10 concepts, 20 questions, 10 practice activities), every item marked `pending_review`. `src/ai/validate_data.py` + 37 unit tests pass (`python -m unittest discover -s src/ai/tests`). Remaining: team review of the content, then set reviewed items to `approved`.
 
 ## Phase 2 — Educational engine (Days 1–2)
-Pure Dart in `src/app/lib/core/engine`, no Flutter or Firebase imports.
+Pure Dart package `src/engine` (`bousla_engine`), no Flutter or Firebase dependency.
 1. Models (matching `architecture.md` §3 and §5).
 2. Scoring by option ID and question version.
 3. Mastery estimation with insufficient-evidence states (thresholds in `architecture.md` §8; test the boundaries).
@@ -27,6 +27,8 @@ Pure Dart in `src/app/lib/core/engine`, no Flutter or Firebase imports.
 5. Class aggregates with the small-group threshold.
 6. Resource recommendation (approved only; preferred language first).
 Deliverable: unit tests for boundaries, empty input, unknown IDs, identical results in AR and EN.
+
+Status (22 Nov): **implemented, tests to be confirmed on a developer machine.** Items 1–6 done, 54 tests across 5 files (including one that runs the whole engine on the real Database Systems dataset). `dart analyze`: no issues. In the build sandbox pub.dev was unreachable, so the tests ran against a minimal local stand-in for `package:test`; run `dart pub get && dart test` in `src/engine` on a normal machine to confirm with the real package.
 
 ## Phase 3 — Instructor session creation + student joining (Days 2–3)
 - Flutter project with `flutter_localizations`/`intl`, AR/EN ARB files, bundled Arabic font, locale-driven direction.
@@ -56,7 +58,7 @@ Deliverable: student question-to-insight journey.
 Deliverable: draft → review → approved → used in a live session.
 
 ## Phase 7 — AI level 2: explanations on top of the engine (Day 5)
-- Prompt builders and output guards in `lib/core/ai` (pure Dart, unit-tested): known concepts only, approved resource IDs only, requested language, no definitive diagnostic wording.
+- Prompt builders and output guards in the engine package (pure Dart, unit-tested): known concepts only, approved resource IDs only, requested language, no definitive diagnostic wording.
 - Student: personal explanation + short learning plan. Instructor: suggested teaching action.
 - Template fallback on model failure or guard failure; "AI-generated" label next to the evidence.
 - Evaluation: ~20 synthetic evidence cases in AR and EN; report the real guard pass rate.

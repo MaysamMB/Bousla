@@ -1,6 +1,6 @@
 # Bousla — Architecture
 
-> Status (22 Nov 2026): the application is **not implemented yet**. Implemented so far: a draft bilingual Database Systems dataset (`data/courses/database-systems`) and its validator (`src/ai/validate_data.py`, with tests). This is the agreed target design; update it when the implementation differs.
+> Status (22 Nov 2026): the Flutter application is **not implemented yet**. Implemented so far: a draft bilingual Database Systems dataset (`data/courses/database-systems`) with its validator (`src/ai/validate_data.py`), and the deterministic engine (`src/engine`), both with tests. This is the agreed target design; update it when the implementation differs.
 
 ## 1. Components
 
@@ -9,7 +9,7 @@
 | Instructor application | Flutter (web, optionally Android) | Instructors |
 | Student web portal | Flutter web, same codebase, separate routes | Students (no install; link or QR) |
 | Shared backend | Firebase on the no-cost Spark plan: Authentication, Cloud Firestore, Hosting, App Check | Both |
-| Educational intelligence engine | Pure Dart library inside the app (`lib/core/engine`) | Used by the instructor app |
+| Educational intelligence engine | Pure Dart package `src/engine` (`bousla_engine`) | Used by the instructor app |
 | Generative AI | Gemini through **Firebase AI Logic** (called from the instructor app; key stays on Google's proxy, protected by App Check) | Instructor app |
 | Offline content tools | Python scripts in `src/ai` (validation; batch generation fallback) | Team |
 
@@ -38,10 +38,11 @@ Bousla/
 │   ├── careers/backend-developer.json
 │   └── demo/                  synthetic responses, labeled synthetic
 ├── src/
-│   ├── app/                   Flutter project
-│   │   ├── lib/core/models/
-│   │   ├── lib/core/engine/   pure Dart: must NOT import Flutter or Firebase
-│   │   ├── lib/core/ai/       prompt builders + output guards (pure Dart, testable)
+│   ├── engine/                pure Dart package `bousla_engine` (no Flutter, no Firebase)
+│   │   ├── lib/src/           models, scoring, concept mapping, mastery, prerequisites,
+│   │   │                      class insights, recommender; later ai/ (prompt builders + output guards)
+│   │   └── test/
+│   ├── app/                   Flutter project; depends on ../engine by path
 │   │   ├── lib/data/          repositories/, services/ (Firebase, Firebase AI Logic)
 │   │   ├── lib/features/instructor/   dashboard, courses, materials, content_review, sessions, live_insights
 │   │   ├── lib/features/student_web/  join_session, answering, feedback, knowledge_map, learning_profile
@@ -51,7 +52,7 @@ Bousla/
 └── firebase/firestore.rules
 ```
 
-Rule: `lib/core/engine` and `lib/core/ai` depend only on `lib/core/models` and the Dart SDK. The network call to Gemini lives in `lib/data/services`, so prompts and guards can be unit-tested without the network.
+Rule: the engine is a separate pure Dart package (`src/engine`). Because it has no Flutter or Firebase dependency in its `pubspec.yaml`, importing them there fails to compile, so the "independent of UI and Firebase" rule is enforced by the build, and the tests run with plain `dart test`. The app depends on it by path (`bousla_engine: {path: ../engine}`). Prompt builders and output guards for AI level 2 will also live in this package; the network call to Gemini lives in the app's `lib/data/services`.
 
 ## 3. Content model
 
@@ -141,6 +142,10 @@ Answer keys are stored separately: `{ "db_fk_001": { "correct_option_id": "a" } 
 ```
 `status`: `processing`, `ready_for_review`, `failed`.
 
+**Extracted text instead of the file (MVP):** the original file is not stored. During AI drafting, Gemini also returns the material's text split by page or section. Each part is saved as `courses/{courseId}/materials/{materialId}/sections/{sectionId}` (`{ "location": "page 4", "text": "..." }`), staying well under Firestore's 1 MiB document limit. A draft's `source_location` points to these sections, so the instructor can check the original passage next to the draft during review.
+
+Files the instructor wants students to have (slides, PDFs) are added as `link` resources pointing to the instructor's own Google Drive, OneDrive or Moodle. Real file storage (Cloud Storage on Blaze, or another provider) is a later stage.
+
 Validation (`validate_data.py`, mirrored later in Dart): unique IDs; non-empty `ar`/`en`; Arabic fields contain Arabic letters; valid references and no prerequisite cycles; no answers inside questions; one matching key per question; `version` ≥ 1; allowed `type`/`language`/`source`/`status` values; resource URL/path rules; `source_material_id` refers to a listed material.
 
 **Public repository note:** this GitHub repository is public, so committed `answer_keys.json` is publicly readable. Acceptable only for demo questions. For real use, keep keys out of the repository and load them into Firestore privately.
@@ -180,7 +185,7 @@ One document per participant per question:
 | Path | Written by | Read by |
 |---|---|---|
 | `courses/{courseId}` | course owner | owner; students in a session of this course (public fields) |
-| `courses/{courseId}/materials/{materialId}` | owner | owner |
+| `courses/{courseId}/materials/{materialId}` + `sections/{sectionId}` | owner | owner |
 | `courses/{courseId}/concepts`, `questions`, `resources` | owner (drafts and approvals) | owner: all; students: **only `approved` items** |
 | `courses/{courseId}/answer_keys/{questionId}` | owner | **owner only** |
 | `sessions/{sessionId}` | owner | owner; students who know the code can read public fields |
@@ -219,6 +224,13 @@ Modules: `question_concept_mapper`, `mastery_estimator`, `prerequisite_analyzer`
 
 Every output carries its evidence (number of responses, accuracy) so the UI can show *why*. AI never changes these results.
 
+Implementation details (`src/engine`):
+- **Scoring** compares option IDs per question version. Unknown questions/versions, unknown options, missing keys and duplicate answers are returned as *ignored with a reason*, never silently dropped. For duplicates, the first answer counts.
+- **Concept evidence:** a question mapped to several concepts counts for each. Concepts with no answers stay visible with zero attempts.
+- **Prerequisites:** only direct prerequisites of a concept in possible difficulty are classified: *possible contributing gap* (prerequisite also struggling), *needs more evidence*, *uncertain* (emerging), or *unlikely cause* (demonstrated mastery).
+- **Class insights:** a concept with fewer than `minGroupSize` (default 5) respondents is suppressed (no counts, no accuracy) and its prerequisite signals are hidden. Output never contains participant IDs.
+- **Recommendations:** prerequisite gaps first (foundations first), then concepts in difficulty, then emerging concepts below mastery accuracy, then "assess more" for unassessed prerequisites. Emerging concepts answered at mastery accuracy (just too few answers) get no practice recommendation. Approved resources only; student's language first, then bilingual, then the other language.
+
 ## 9. AI in two levels
 
 ### Level 1 — AI in content preparation
@@ -231,7 +243,7 @@ The engine produces verified, structured evidence. Gemini turns it into language
 
 **Input given to the model:** only structured evidence: concept IDs and names, mastery states, response counts, prerequisite links, and IDs/titles of approved resources. **Never** names, UIDs, nicknames or raw responses.
 
-**Output guards** (pure Dart in `lib/core/ai`, unit-tested):
+**Output guards** (pure Dart in the engine package, unit-tested):
 - Mentions only concepts present in the evidence.
 - Recommends only approved resource IDs from the input.
 - Written in the requested language.
