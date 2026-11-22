@@ -1,0 +1,14 @@
+{
+  "id": "database_systems",
+  "name": {
+    "ar": "أنظمة قواعد البيانات",
+    "en": "Database Systems"
+  },
+  "version": "0.1.0",
+  "default_language": "ar",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "notes": "Draft content for the Bousla prototype. Must be reviewed by the team before use."
+}
