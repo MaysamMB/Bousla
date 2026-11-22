@@ -1,0 +1,37 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Bousla",
+  "languageToggle": "العربية",
+  "@languageToggle": { "description": "Button that switches to the OTHER language, so it is written in that language." },
+
+  "homeTagline": "Know what you understand, and what to learn next.",
+  "homeInstructor": "I'm an instructor",
+  "homeJoin": "Join a session",
+
+  "instructorCreateSessionTitle": "New session",
+  "instructorQuestionsAvailable": "{count} approved questions will be used",
+  "@instructorQuestionsAvailable": { "placeholders": { "count": { "type": "int" } } },
+  "instructorCreateSession": "Create session",
+  "instructorJoinCode": "Join code: {code}",
+  "@instructorJoinCode": { "placeholders": { "code": { "type": "String" } } },
+  "instructorJoinLink": "Join link: {link}",
+  "@instructorJoinLink": { "placeholders": { "link": { "type": "String" } } },
+  "instructorLiveCounts": "{participants} participants · {responses} answers",
+  "@instructorLiveCounts": { "placeholders": { "participants": { "type": "int" }, "responses": { "type": "int" } } },
+  "instructorCloseSession": "Close session",
+  "instructorSessionClosed": "Session closed",
+
+  "studentJoinTitle": "Join a session",
+  "studentEnterCode": "Join code",
+  "studentJoin": "Join",
+  "studentCodeNotFound": "No session found with this code.",
+  "studentSessionClosed": "This session is closed.",
+  "studentQuestionProgress": "Question {current} of {total}",
+  "@studentQuestionProgress": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "studentSubmit": "Submit",
+  "studentAllDone": "Thank you! Your answers were submitted.",
+  "studentNoQuestions": "This session has no questions yet.",
+
+  "errorGeneric": "Something went wrong. Please try again."
+}

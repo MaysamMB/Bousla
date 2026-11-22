@@ -5,3 +5,9 @@ __pycache__/
 .dart_tool/
 src/engine/pubspec.lock
 pubspec_overrides.yaml
+
+# Flutter (src/app)
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+src/app/lib/l10n/app_localizations*.dart
