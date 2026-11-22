@@ -4,7 +4,7 @@
     "concept_ids": [
       "relational_model"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: النموذج العلائقي",
       "en": "Practice: Relational Model"
@@ -17,15 +17,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_primary_key_practice",
     "concept_ids": [
       "primary_key"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: المفتاح الأساسي",
       "en": "Practice: Primary Key"
@@ -38,15 +43,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_foreign_key_practice",
     "concept_ids": [
       "foreign_key"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: المفتاح الخارجي",
       "en": "Practice: Foreign Key"
@@ -59,15 +69,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_er_modeling_practice",
     "concept_ids": [
       "er_modeling"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: نمذجة الكيانات والعلاقات",
       "en": "Practice: Entity-Relationship Modeling"
@@ -80,15 +95,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_functional_dependency_practice",
     "concept_ids": [
       "functional_dependency"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: الاعتمادية الوظيفية",
       "en": "Practice: Functional Dependency"
@@ -101,15 +121,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_normalization_practice",
     "concept_ids": [
       "normalization"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: التطبيع",
       "en": "Practice: Normalization"
@@ -122,15 +147,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_sql_select_practice",
     "concept_ids": [
       "sql_select"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: استعلامات SELECT الأساسية",
       "en": "Practice: Basic SELECT Queries"
@@ -143,15 +173,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_sql_join_practice",
     "concept_ids": [
       "sql_join"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: ربط الجداول (JOIN)",
       "en": "Practice: Joins"
@@ -164,15 +199,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_sql_aggregation_practice",
     "concept_ids": [
       "sql_aggregation"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: التجميع (GROUP BY)",
       "en": "Practice: Aggregation (GROUP BY)"
@@ -185,15 +225,20 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   },
   {
     "id": "res_transactions_acid_practice",
     "concept_ids": [
       "transactions_acid"
     ],
-    "type": "practice_activity",
+    "type": "activity",
     "title": {
       "ar": "تدريب: المعاملات وخصائص ACID",
       "en": "Practice: Transactions and ACID"
@@ -206,7 +251,12 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
-    }
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
+    },
+    "language": "both",
+    "storage_path": null,
+    "added_by": "team"
   }
 ]

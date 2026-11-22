@@ -84,7 +84,7 @@ Each student may have a personal learning profile containing:
 
 A session-only anonymous participant must not be treated as a persistent student identity.
 
-Persistent profiles require a secure and privacy-conscious identity or return mechanism (see `docs/architecture.md`, Identity).
+Persistent profiles require a secure and privacy-conscious identity or return mechanism (see `docs/architecture.md` §10, Identity).
 
 ## AI Strategy
 

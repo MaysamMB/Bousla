@@ -1,6 +1,7 @@
 [
   {
     "id": "db_rm_001",
+    "version": 1,
     "concept_ids": [
       "relational_model"
     ],
@@ -43,12 +44,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_rm_002",
+    "version": 1,
     "concept_ids": [
       "relational_model"
     ],
@@ -91,12 +95,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_pk_001",
+    "version": 1,
     "concept_ids": [
       "primary_key"
     ],
@@ -139,12 +146,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_pk_002",
+    "version": 1,
     "concept_ids": [
       "primary_key"
     ],
@@ -187,12 +197,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_fk_001",
+    "version": 1,
     "concept_ids": [
       "foreign_key"
     ],
@@ -235,12 +248,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_fk_002",
+    "version": 1,
     "concept_ids": [
       "foreign_key"
     ],
@@ -283,12 +299,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_er_001",
+    "version": 1,
     "concept_ids": [
       "er_modeling"
     ],
@@ -331,12 +350,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_er_002",
+    "version": 1,
     "concept_ids": [
       "er_modeling",
       "foreign_key"
@@ -380,12 +402,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_fd_001",
+    "version": 1,
     "concept_ids": [
       "functional_dependency"
     ],
@@ -428,12 +453,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_fd_002",
+    "version": 1,
     "concept_ids": [
       "functional_dependency",
       "normalization"
@@ -477,12 +505,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_norm_001",
+    "version": 1,
     "concept_ids": [
       "normalization"
     ],
@@ -525,12 +556,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_norm_002",
+    "version": 1,
     "concept_ids": [
       "normalization"
     ],
@@ -573,12 +607,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_sel_001",
+    "version": 1,
     "concept_ids": [
       "sql_select"
     ],
@@ -621,12 +658,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_sel_002",
+    "version": 1,
     "concept_ids": [
       "sql_select"
     ],
@@ -669,12 +709,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_join_001",
+    "version": 1,
     "concept_ids": [
       "sql_join"
     ],
@@ -717,12 +760,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_join_002",
+    "version": 1,
     "concept_ids": [
       "sql_join"
     ],
@@ -765,12 +811,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_agg_001",
+    "version": 1,
     "concept_ids": [
       "sql_aggregation"
     ],
@@ -813,12 +862,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_agg_002",
+    "version": 1,
     "concept_ids": [
       "sql_aggregation"
     ],
@@ -861,12 +913,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_tx_001",
+    "version": 1,
     "concept_ids": [
       "transactions_acid"
     ],
@@ -909,12 +964,15 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   },
   {
     "id": "db_tx_002",
+    "version": 1,
     "concept_ids": [
       "transactions_acid"
     ],
@@ -957,7 +1015,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     },
     "synthetic": false
   }

@@ -4,6 +4,7 @@
     "ar": "أنظمة قواعد البيانات",
     "en": "Database Systems"
   },
+  "owner_id": null,
   "version": "0.1.0",
   "default_language": "ar",
   "languages": [

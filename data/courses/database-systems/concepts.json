@@ -13,7 +13,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -32,7 +34,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -51,7 +55,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -70,7 +76,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -89,7 +97,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -108,7 +118,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -127,7 +139,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -147,7 +161,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -166,7 +182,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   },
   {
@@ -185,7 +203,9 @@
     "provenance": {
       "source": "ai_draft",
       "status": "pending_review",
-      "reviewed_by": null
+      "reviewed_by": null,
+      "source_material_id": null,
+      "source_location": null
     }
   }
 ]

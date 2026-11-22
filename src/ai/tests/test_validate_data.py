@@ -16,7 +16,7 @@ sys.path.insert(0, str(AI_DIR))
 
 import validate_data  # noqa: E402
 
-PROV = {"source": "test", "status": "approved", "reviewed_by": "test"}
+PROV = {"source": "team", "status": "approved", "reviewed_by": "test", "source_material_id": None, "source_location": None}
 
 
 def t(ar, en):
@@ -25,7 +25,7 @@ def t(ar, en):
 
 def minimal_dataset():
     return {
-        "course.json": {"id": "c", "name": t("مقرر", "Course")},
+        "course.json": {"id": "c", "name": t("مقرر", "Course"), "owner_id": None},
         "concepts.json": [
             {"id": "pk", "name": t("المفتاح الأساسي", "Primary Key"), "prerequisites": [], "provenance": dict(PROV)},
             {"id": "fk", "name": t("المفتاح الخارجي", "Foreign Key"), "prerequisites": ["pk"], "provenance": dict(PROV)},
@@ -33,6 +33,7 @@ def minimal_dataset():
         "questions.json": [
             {
                 "id": f"q{i}",
+                "version": 1,
                 "concept_ids": [cid],
                 "prompt": t("سؤال؟", "Question?"),
                 "options": [
@@ -45,7 +46,15 @@ def minimal_dataset():
         ],
         "answer_keys.json": {f"q{i}": {"correct_option_id": "a"} for i in range(4)},
         "resources.json": [
-            {"id": "r1", "concept_ids": ["fk"], "title": t("تدريب", "Practice"), "provenance": dict(PROV)},
+            {
+                "id": "r1",
+                "concept_ids": ["fk"],
+                "type": "activity",
+                "language": "both",
+                "title": t("تدريب", "Practice"),
+                "description": t("نشاط تدريبي", "A practice activity"),
+                "provenance": dict(PROV),
+            },
         ],
     }
 
@@ -182,6 +191,75 @@ class ValidateDataTests(unittest.TestCase):
         report = self.run_on(ds)
         self.assertTrue(report.ok, report.errors)
         self.assertTrue(any("not yet approved" in w for w in report.warnings), report.warnings)
+
+    # Instructor-owned content, versions and provenance
+
+    def test_course_without_owner_field(self):
+        ds = minimal_dataset()
+        del ds["course.json"]["owner_id"]
+        self.assertErrorContains(self.run_on(ds), "missing owner_id")
+
+    def test_course_with_owner_uid_passes(self):
+        ds = minimal_dataset()
+        ds["course.json"]["owner_id"] = "instructorUid123"
+        self.assertTrue(self.run_on(ds).ok)
+
+    def test_question_without_version(self):
+        ds = minimal_dataset()
+        del ds["questions.json"][0]["version"]
+        self.assertErrorContains(self.run_on(ds), "version must be an integer >= 1")
+
+    def test_question_version_zero(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["version"] = 0
+        self.assertErrorContains(self.run_on(ds), "version must be an integer >= 1")
+
+    def test_invalid_provenance_source(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"]["source"] = "internet"
+        self.assertErrorContains(self.run_on(ds), "provenance.source")
+
+    def test_source_material_must_exist(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"]["source_material_id"] = "mat_1"
+        self.assertErrorContains(self.run_on(ds), "unknown source_material_id 'mat_1'")
+
+    def test_source_material_listed_in_materials_passes(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"].update(source="ai_draft", source_material_id="mat_1", source_location="p. 3")
+        ds["materials.json"] = [{"id": "mat_1", "title": "Lecture 1", "status": "ready_for_review"}]
+        self.assertTrue(self.run_on(ds).ok)
+
+    def test_invalid_material_status(self):
+        ds = minimal_dataset()
+        ds["materials.json"] = [{"id": "mat_1", "status": "done"}]
+        self.assertErrorContains(self.run_on(ds), "material 'mat_1': status")
+
+    def test_resource_invalid_type(self):
+        ds = minimal_dataset()
+        ds["resources.json"][0]["type"] = "podcast"
+        self.assertErrorContains(self.run_on(ds), "type 'podcast'")
+
+    def test_video_resource_needs_url(self):
+        ds = minimal_dataset()
+        ds["resources.json"][0].update(type="video", url=None)
+        self.assertErrorContains(self.run_on(ds), "needs an http(s) url")
+
+    def test_link_resource_with_url_passes(self):
+        ds = minimal_dataset()
+        ds["resources.json"][0].update(type="link", url="https://example.org/fk", added_by="instructorUid123")
+        ds["resources.json"][0]["provenance"]["source"] = "instructor"
+        self.assertTrue(self.run_on(ds).ok)
+
+    def test_file_resource_needs_storage_path(self):
+        ds = minimal_dataset()
+        ds["resources.json"][0].update(type="file", storage_path=None)
+        self.assertErrorContains(self.run_on(ds), "needs a storage_path")
+
+    def test_resource_invalid_language(self):
+        ds = minimal_dataset()
+        ds["resources.json"][0]["language"] = "fr"
+        self.assertErrorContains(self.run_on(ds), "language 'fr'")
 
     def test_does_not_mutate_input(self):
         ds = minimal_dataset()
