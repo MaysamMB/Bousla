@@ -40,7 +40,10 @@ class BouslaApp extends StatelessWidget {
           theme: ThemeData(
             colorSchemeSeed: const Color(0xFF1B6E6A),
             useMaterial3: true,
-            // fontFamily: 'BouslaArabic', // enable after adding the font in pubspec.yaml
+            // Per-character fallback: Latin from NotoSans, Arabic from
+            // NotoSansArabic, arrows/math from NotoSansMath (see pubspec.yaml).
+            fontFamily: 'NotoSans',
+            fontFamilyFallback: const ['NotoSansArabic', 'NotoSansMath'],
           ),
           onGenerateRoute: _route,
         ),

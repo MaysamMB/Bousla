@@ -23,12 +23,27 @@ flutter:
   uses-material-design: true
   generate: true
 
-  # Arabic font: add a TTF (e.g. Noto Sans Arabic or Cairo, both under the
-  # SIL Open Font License) to assets/fonts/ and uncomment. Bundling it avoids
-  # downloading fonts at the venue.
-  # fonts:
-  #   - family: BouslaArabic
-  #     fonts:
-  #       - asset: assets/fonts/NotoSansArabic-Regular.ttf
-  #       - asset: assets/fonts/NotoSansArabic-Bold.ttf
-  #         weight: 700
+  # Bundled fonts (SIL Open Font License, see assets/fonts/OFL.txt), so text
+  # never depends on downloading fonts at the venue. Used together through
+  # fontFamily + fontFamilyFallback in lib/app.dart:
+  #   NotoSans        Latin letters and punctuation (subset)
+  #   NotoSansArabic  Arabic (has no Latin letters)
+  #   NotoSansMath    arrows and math operators only, e.g. "A → B" (subset)
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf
+        - asset: assets/fonts/NotoSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSans-Bold.ttf
+          weight: 700
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+        - asset: assets/fonts/NotoSansArabic-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+          weight: 700
+    - family: NotoSansMath
+      fonts:
+        - asset: assets/fonts/NotoSansMath-Symbols.ttf

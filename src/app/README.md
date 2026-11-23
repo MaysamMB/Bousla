@@ -21,7 +21,7 @@ them, without overwriting our files:
 ```bash
 cd src/app
 flutter create . --project-name bousla_app --platforms web,android
-rm test/widget_test.dart        # default counter test from flutter create
+rm test/widget_test.dart        # Windows cmd: del test\widget_test.dart
 flutter pub get                 # also generates lib/l10n/app_localizations*.dart
 flutter analyze
 flutter test
@@ -55,9 +55,16 @@ Every key must exist in both. Prefix keys with your area (`instructor…`,
 merge conflicts will happen. Course content (questions, concepts) is not in ARB
 files; it comes bilingual from the data.
 
-## Arabic font
+## Fonts
 
-Add a TTF with Arabic support (for example Noto Sans Arabic, SIL Open Font
-License) to `assets/fonts/`, then uncomment the `fonts:` block in
-`pubspec.yaml` and `fontFamily` in `lib/app.dart`. Bundling avoids downloading
-fonts at the venue.
+Bundled in `assets/fonts/` (SIL Open Font License, `OFL.txt`), so the app
+never downloads fonts at the venue:
+
+- `NotoSans-*` — Latin letters and punctuation, subset from Noto Sans.
+- `NotoSansArabic-*` — Arabic. It has no Latin letters, so mixed text such as
+  "المفتاح الأساسي (Primary Key)" uses both families.
+- `NotoSansMath-Symbols` — arrows and math operators only (e.g. `A → B`),
+  subset from Noto Sans Math.
+
+Source: github.com/notofonts/notofonts.github.io (unhinted TTF). Subsets were
+made with `pyftsubset` (fontTools).
