@@ -63,7 +63,15 @@ void main() {
     expect(find.text('1 participants · 1 answers'), findsOneWidget);
   });
 
+  // The join screen focuses the code field, and a blinking cursor keeps
+  // scheduling frames, so pumpAndSettle() would never return here. This test
+  // pumps for fixed durations instead.
   testWidgets('a student joins by code and answers in Arabic', (tester) async {
+    Future<void> settleWithCursor() async {
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+    }
+
     final services = AppServices.inMemory();
     final session = await services.sessions.createSession(
       courseId: 'database_systems',
@@ -79,10 +87,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('الانضمام إلى جلسة'));
-    await tester.pumpAndSettle();
+    await settleWithCursor();
     await tester.enterText(find.byType(TextField), session.code.toLowerCase());
     await tester.tap(find.text('انضمام'));
-    await tester.pumpAndSettle();
+    await settleWithCursor();
+    await settleWithCursor();
 
     expect(find.text('السؤال 1 من 4'), findsOneWidget);
     await tester.tap(
@@ -90,11 +99,11 @@ void main() {
     );
     await tester.pump();
     await tester.tap(find.text('إرسال'));
-    await tester.pumpAndSettle();
+    await settleWithCursor();
     expect(find.text('السؤال 2 من 4'), findsOneWidget);
 
     final responses = await services.sessions.watchResponses(session.id).first;
     expect(responses.single.displayLanguage, Language.ar);
     expect(responses.single.selectedOptionId, 'a');
-  });
+  }, timeout: const Timeout(Duration(seconds: 60)));
 }
