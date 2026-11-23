@@ -63,47 +63,67 @@ void main() {
     expect(find.text('1 participants · 1 answers'), findsOneWidget);
   });
 
-  // The join screen focuses the code field, and a blinking cursor keeps
-  // scheduling frames, so pumpAndSettle() would never return here. This test
-  // pumps for fixed durations instead.
+  // Step markers (STEP n) show where this test stops if it ever hangs again.
+  // Repository calls that are not driven by the UI run in tester.runAsync, and
+  // the code field is unfocused before tapping "join" so its blinking cursor
+  // cannot keep the test busy.
   testWidgets('a student joins by code and answers in Arabic', (tester) async {
-    Future<void> settleWithCursor() async {
+    void step(String name) => debugPrint('STEP $name');
+
+    Future<void> pumpFor(Duration d) async {
       await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(d);
     }
 
     final services = AppServices.inMemory();
-    final session = await services.sessions.createSession(
-      courseId: 'database_systems',
-      ownerId: 'teacher',
-      questions: [
-        for (final q in await services.content.listQuestions(
-          'database_systems',
-        ))
-          QuestionRef(q.id, q.version),
-      ],
-    );
+    step('1 create session');
+    final session = (await tester.runAsync(() async {
+      final questions = await services.content.listQuestions(
+        'database_systems',
+      );
+      return services.sessions.createSession(
+        courseId: 'database_systems',
+        ownerId: 'teacher',
+        questions: [for (final q in questions) QuestionRef(q.id, q.version)],
+      );
+    }))!;
+
+    step('2 home');
     await tester.pumpWidget(BouslaApp(services: services));
-    await tester.pumpAndSettle();
+    await pumpFor(const Duration(milliseconds: 500));
 
+    step('3 open join screen');
     await tester.tap(find.text('الانضمام إلى جلسة'));
-    await settleWithCursor();
-    await tester.enterText(find.byType(TextField), session.code.toLowerCase());
-    await tester.tap(find.text('انضمام'));
-    await settleWithCursor();
-    await settleWithCursor();
+    await pumpFor(const Duration(seconds: 1));
 
+    step('4 type code');
+    await tester.enterText(find.byType(TextField), session.code.toLowerCase());
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+
+    step('5 tap join');
+    await tester.tap(find.text('انضمام'));
+    await pumpFor(const Duration(seconds: 1));
+    await pumpFor(const Duration(seconds: 1));
+
+    step('6 first question');
     expect(find.text('السؤال 1 من 4'), findsOneWidget);
     await tester.tap(
       find.text('أن يكون فريداً ولا يقبل القيمة الفارغة (NULL)'),
     );
     await tester.pump();
+
+    step('7 submit');
     await tester.tap(find.text('إرسال'));
-    await settleWithCursor();
+    await pumpFor(const Duration(seconds: 1));
     expect(find.text('السؤال 2 من 4'), findsOneWidget);
 
-    final responses = await services.sessions.watchResponses(session.id).first;
+    step('8 check stored response');
+    final responses = (await tester.runAsync(
+      () => services.sessions.watchResponses(session.id).first,
+    ))!;
     expect(responses.single.displayLanguage, Language.ar);
     expect(responses.single.selectedOptionId, 'a');
+    step('9 done');
   }, timeout: const Timeout(Duration(seconds: 60)));
 }
