@@ -151,14 +151,14 @@ void main() {
     expect(find.text('خريطتك المعرفية لهذه الجلسة'), findsOneWidget);
     expect(find.text('الأساسيات'), findsOneWidget);
     expect(find.text('المستوى 3'), findsOneWidget);
-    expect(find.text('صعوبة محتملة · أجبت صح على 0 من 2 أسئلة عنه'), findsNWidgets(2));
+    expect(find.text('قد يحتاج مراجعة · أجبت 0 من 2 بشكل صحيح'), findsNWidgets(2));
     expect(find.text('يعتمد على: مفهوم pk'), findsOneWidget);
     expect(
       find.text('قد يكون «مفهوم pk» سبباً محتملاً، تستحسن مراجعته أولاً.'),
       findsOneWidget,
     );
     // No attempts: the state only, no "0 of 0".
-    expect(find.text('دليل غير كافٍ'), findsWidgets);
+    expect(find.text('لا توجد أدلة كافية بعد'), findsWidgets);
   });
 
   testWidgets('map in English fits a small phone with large text', (

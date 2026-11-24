@@ -8,17 +8,18 @@ import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
 import 'join_qr.dart';
 import 'live_insights_panel.dart';
+import 'publish_feedback_dialog.dart';
+
+/// All courses, the chosen one, and its approved questions.
+typedef _Content = (List<Course>, Course, List<QuestionView>);
 
 /// Skeleton for the instructor flow (owner: instructor app).
 ///
 /// Already works with the in-memory repositories: creates a session from all
 /// approved questions of the chosen course (see course_picker.dart), shows the join code and link, and
 /// live participation counts. Links to the question review screen. To do:
-/// instructor sign-in, course and question selection, QR code (qr_flutter), live insights from the engine, release
-/// feedback.
-/// All courses, the chosen one, and its approved questions.
-typedef _Content = (List<Course>, Course, List<QuestionView>);
-
+/// instructor sign-in, course and question selection, QR code (qr_flutter), live insights from the engine. Publishing
+/// feedback after closing: [showPublishFeedbackDialog].
 class CreateSessionScreen extends StatefulWidget {
   const CreateSessionScreen({super.key});
 
@@ -197,13 +198,34 @@ class _LiveSessionPanel extends StatelessWidget {
         StreamBuilder<Session>(
           stream: sessions.watchSession(session.id),
           builder: (context, snapshot) {
-            final closed = snapshot.data?.status == SessionStatus.closed;
-            return closed
-                ? Text(l.instructorSessionClosed, textAlign: TextAlign.center)
-                : OutlinedButton(
-                    onPressed: () => sessions.closeSession(session.id),
-                    child: Text(l.instructorCloseSession),
-                  );
+            final current = snapshot.data ?? session;
+            if (current.status != SessionStatus.closed) {
+              return OutlinedButton(
+                onPressed: () => sessions.closeSession(session.id),
+                child: Text(l.instructorCloseSession),
+              );
+            }
+            // Feedback is published after closing, once (the button goes
+            // away when the session says it is released).
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l.instructorSessionClosed, textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                if (current.feedbackReleased)
+                  Text(
+                    l.instructorFeedbackPublished,
+                    textAlign: TextAlign.center,
+                  )
+                else
+                  FilledButton.icon(
+                    onPressed: () =>
+                        showPublishFeedbackDialog(context, current),
+                    icon: const Icon(Icons.send_outlined),
+                    label: Text(l.instructorPublishFeedback),
+                  ),
+              ],
+            );
           },
         ),
       ],
