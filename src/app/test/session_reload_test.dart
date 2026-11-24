@@ -44,9 +44,36 @@ void main() {
         .code;
 
     await _open(tester, services); // "reload"
+    // Offered, not opened by itself: "create" is still there.
+    expect(find.text('You have a session that is still open'), findsOneWidget);
+    expect(find.textContaining(code), findsOneWidget);
+    expect(find.text('Create session'), findsOneWidget);
+
+    await tester.tap(find.text('Continue this session'));
+    await tester.pumpAndSettle();
     expect(find.text('Create session'), findsNothing);
     expect(find.text('Join code: $code'), findsOneWidget);
     expect(find.text('Close session'), findsOneWidget);
+  });
+
+  testWidgets('the open session can be closed from the card', (tester) async {
+    final services = AppServices.inMemory(initialLocale: const Locale('en'));
+    await _open(tester, services);
+    await tester.tap(find.text('Create session'));
+    await tester.pumpAndSettle();
+
+    await _open(tester, services); // "reload"
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Close session'));
+    await tester.pumpAndSettle();
+    expect(find.text('You have a session that is still open'), findsNothing);
+    expect(find.text('Create session'), findsOneWidget);
+    expect(
+      await services.sessions.latestOpenSession(
+        ownerId: services.auth.instructorId!,
+        courseId: 'database_systems',
+      ),
+      isNull,
+    );
   });
 
   testWidgets('after closing: start a new session; a closed one is not '

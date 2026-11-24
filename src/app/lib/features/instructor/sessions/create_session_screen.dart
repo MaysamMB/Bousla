@@ -34,6 +34,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   Future<_Content?>? _content;
   Session? _session;
 
+  /// A session of this course that is still open (e.g. after a reload).
+  /// Offered, not opened: the instructor chooses to continue or close it.
+  Session? _openFound;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -46,12 +50,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final courses = await repo.listCourses();
     final course = chooseCourse(courses, services.selectedCourseId.value);
     if (course == null) return null;
-    // After a page reload, come back to the session that is still running
-    // (its students keep answering it) instead of showing "create" again.
+    // A session that is still running (after a reload, or left open) is
+    // offered at the top; it is not opened by itself, so "new session"
+    // stays a new session.
     final owner = services.auth.instructorId;
+    _openFound = null;
     if (_session == null && owner != null) {
       try {
-        _session = await services.sessions.latestOpenSession(
+        _openFound = await services.sessions.latestOpenSession(
           ownerId: owner,
           courseId: course.id,
         );
@@ -60,6 +66,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       }
     }
     return (courses, course, await repo.listQuestions(course.id));
+  }
+
+  void _continue(Session open) => setState(() {
+    _session = open;
+    _openFound = null;
+  });
+
+  Future<void> _closeFound(Session open) async {
+    await ServicesScope.of(context).sessions.closeSession(open.id);
+    if (mounted) _reload();
   }
 
   /// After a session is closed: back to "create" for a new one.
@@ -152,6 +168,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               Text(l.instructorQuestionsAvailable(questions.length)),
               const SizedBox(height: 24),
               if (session == null) ...[
+                if (_openFound case final open?) ...[
+                  _OpenSessionCard(
+                    session: open,
+                    onContinue: () => _continue(open),
+                    onClose: () => _closeFound(open),
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 OutlinedButton.icon(
                   onPressed: _openReview,
                   icon: const Icon(Icons.fact_check_outlined),
@@ -276,6 +300,63 @@ class _LiveSessionPanel extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+/// "You have a session that is still open": continue it or close it.
+class _OpenSessionCard extends StatelessWidget {
+  const _OpenSessionCard({
+    required this.session,
+    required this.onContinue,
+    required this.onClose,
+  });
+
+  final Session session;
+  final VoidCallback onContinue;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l.instructorOpenSessionFound, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(sessionTitleText(context, session)),
+            Text(
+              [
+                sessionWhen(context, session.createdAt),
+                l.instructorJoinCode('\u2066${session.code}\u2069'),
+              ].where((t) => t.isNotEmpty).join(' · '),
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: onContinue,
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(l.instructorContinueSession),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onClose,
+                  icon: const Icon(Icons.lock_outline),
+                  label: Text(l.instructorCloseSession),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

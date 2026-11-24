@@ -493,5 +493,7 @@
   "instructorTitleArabic": "Title in Arabic",
   "instructorTitleEnglish": "Title in English",
   "instructorRenameSave": "Save",
-  "instructorCloseConfirm": "Students will no longer be able to answer this session. Its answers and results stay saved."
+  "instructorCloseConfirm": "Students will no longer be able to answer this session. Its answers and results stay saved.",
+  "instructorOpenSessionFound": "You have a session that is still open",
+  "instructorContinueSession": "Continue this session"
 }
