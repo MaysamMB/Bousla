@@ -4,17 +4,20 @@ import 'package:flutter/material.dart';
 import '../../../app_services.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import '../course_picker.dart';
 import 'join_qr.dart';
 
 /// Skeleton for the instructor flow (owner: instructor app).
 ///
 /// Already works with the in-memory repositories: creates a session from all
-/// approved questions of the first course, shows the join code and link, and
+/// approved questions of the chosen course (see course_picker.dart), shows the join code and link, and
 /// live participation counts. Links to the question review screen. To do:
 /// instructor sign-in, course and question selection, QR code (qr_flutter), live insights from the engine, release
 /// feedback.
+/// All courses, the chosen one, and its approved questions.
+typedef _Content = (List<Course>, Course, List<QuestionView>);
+
 class CreateSessionScreen extends StatefulWidget {
   const CreateSessionScreen({super.key});
 
@@ -24,7 +27,7 @@ class CreateSessionScreen extends StatefulWidget {
 
 class _CreateSessionScreenState extends State<CreateSessionScreen> {
   /// Null when the signed-in instructor has no course yet.
-  Future<(Course, List<QuestionView>)?>? _content;
+  Future<_Content?>? _content;
   Session? _session;
 
   @override
@@ -33,11 +36,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     _content ??= _loadContent();
   }
 
-  Future<(Course, List<QuestionView>)?> _loadContent() async {
-    final repo = ServicesScope.of(context).content;
-    final course = (await repo.listCourses()).firstOrNull;
+  Future<_Content?> _loadContent() async {
+    final services = ServicesScope.of(context);
+    final repo = services.content;
+    final courses = await repo.listCourses();
+    final course = chooseCourse(courses, services.selectedCourseId.value);
     if (course == null) return null;
-    return (course, await repo.listQuestions(course.id));
+    return (courses, course, await repo.listQuestions(course.id));
   }
 
   Future<void> _create(Course course, List<QuestionView> questions) async {
@@ -51,10 +56,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     setState(() => _session = session);
   }
 
+  // A block body: setState must not get a Future back.
+  void _reload() => setState(() {
+    _content = _loadContent();
+  });
+
   /// Review screen; the number of approved questions may change there.
   Future<void> _openReview() async {
     await Navigator.of(context).pushNamed('/instructor/review');
-    if (mounted) setState(() => _content = _loadContent());
+    if (mounted) _reload();
   }
 
   String? _joinLink(String code) =>
@@ -76,7 +86,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           const LanguageSwitcher(),
         ],
       ),
-      body: FutureBuilder<(Course, List<QuestionView>)?>(
+      body: FutureBuilder<_Content?>(
         future: _content,
         builder: (context, snapshot) {
           if (snapshot.hasError) return Center(child: Text(l.errorGeneric));
@@ -91,14 +101,17 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               ),
             );
           }
-          final (course, questions) = data;
+          final (courses, course, questions) = data;
           final session = _session;
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text(
-                course.name.of(currentLanguage(context)),
-                style: Theme.of(context).textTheme.headlineSmall,
+              CoursePicker(
+                courses: courses,
+                current: course,
+                // One session belongs to one course.
+                enabled: session == null,
+                onChanged: _reload,
               ),
               const SizedBox(height: 8),
               Text(l.instructorQuestionsAvailable(questions.length)),

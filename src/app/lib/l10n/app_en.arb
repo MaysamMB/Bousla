@@ -129,6 +129,7 @@
   "authErrorNetwork": "No connection to the server. Check the internet and try again.",
   "authErrorTooManyAttempts": "Too many attempts. Wait a few minutes and try again.",
   "authErrorNotEnabled": "Email sign-in is not enabled for this Firebase project (Authentication → Sign-in method).",
+  "instructorCourseLabel": "Course",
   "instructorNoCourse": "No course is linked to this account yet. Load the sample course with firebase/tools/seed.mjs (see firebase/README.md).",
 
   "reviewAiGenerate": "Draft questions from material (AI)",

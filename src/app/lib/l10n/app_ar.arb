@@ -110,6 +110,7 @@
   "authErrorNetwork": "لا يوجد اتصال بالخادم. تحقّق من الإنترنت وحاول مرة أخرى.",
   "authErrorTooManyAttempts": "محاولات كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى.",
   "authErrorNotEnabled": "تسجيل الدخول بالبريد الإلكتروني غير مفعّل في مشروع Firebase (Authentication ← Sign-in method).",
+  "instructorCourseLabel": "المقرر",
   "instructorNoCourse": "لا يوجد مقرر مرتبط بهذا الحساب بعد. حمّل المقرر التجريبي باستخدام firebase/tools/seed.mjs (انظر firebase/README.md).",
 
   "reviewAiGenerate": "اقتراح أسئلة من مادة (ذكاء اصطناعي)",
