@@ -21,16 +21,20 @@ class GeminiQuestionGenerator implements QuestionGenerator {
 
   /// Override at build time with --dart-define=GEMINI_MODEL=... if this model
   /// is not offered for the project (Firebase console → AI Logic).
+  ///
+  /// gemini-3.8-flash: the model Google's own error message pointed to on
+  /// 24 Nov, when gemini-2.5-flash answered "no longer available to new
+  /// users" and gemini-3.5-flash-lite kept answering "high demand".
   static const defaultModel = String.fromEnvironment(
     'GEMINI_MODEL',
-    defaultValue: 'gemini-3.5-flash-lite',
+    defaultValue: 'gemini-3.8-flash',
   );
 
   /// Tried when [defaultModel] stays busy (temporary overload or quota).
   /// --dart-define=GEMINI_FALLBACK_MODEL= (empty) turns it off.
   static const fallbackModel = String.fromEnvironment(
     'GEMINI_FALLBACK_MODEL',
-    defaultValue: 'gemini-2.5-flash',
+    defaultValue: 'gemini-3.5-flash-lite',
   );
 
   static const timeout = Duration(seconds: 120);
