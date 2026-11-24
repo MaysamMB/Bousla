@@ -78,7 +78,7 @@ cd build/web && python3 -m http.server 5000 --bind 0.0.0.0
    ```bash
    cd firebase
    npx firebase login
-   npx firebase use --add          # choose the project
+   # .firebaserc already points to bousla-educathon
    npx firebase deploy --only firestore:rules
    cd ../src/app
    flutter build web --no-web-resources-cdn --dart-define-from-file=firebase.env.json
