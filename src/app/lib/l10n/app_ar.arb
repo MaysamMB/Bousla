@@ -15,6 +15,9 @@
   "instructorJoinCode": "رمز الانضمام: {code}",
   "instructorJoinLink": "رابط الانضمام: {link}",
   "instructorLiveCounts": "طلاب أجابوا: {participants} · مجموع الإجابات: {responses}",
+  "instructorQrLabel": "رمز QR للانضمام إلى الجلسة {code}",
+  "instructorQrFullScreen": "عرض كبير للصف",
+  "instructorQrClose": "إغلاق",
   "instructorCloseSession": "إغلاق الجلسة",
   "instructorSessionClosed": "تم إغلاق الجلسة",
 
