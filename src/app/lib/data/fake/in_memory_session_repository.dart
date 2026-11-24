@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:bousla_engine/bousla_engine.dart';
 
+import '../feedback.dart';
 import '../join_code.dart';
 import '../models.dart';
 import '../repositories/session_repository.dart';
@@ -20,6 +21,8 @@ class InMemorySessionRepository implements SessionRepository {
   final _responses = <String, List<Response>>{};
   final _sessionControllers = <String, StreamController<Session>>{};
   final _responseControllers = <String, StreamController<List<Response>>>{};
+  final _feedback = <String, Map<String, StudentFeedback>>{};
+  final _feedbackSaved = StreamController<String>.broadcast();
   var _nextId = 1;
 
   Session _require(String sessionId) =>
@@ -132,4 +135,41 @@ class InMemorySessionRepository implements SessionRepository {
   @override
   Future<void> releaseFeedback(String sessionId) async =>
       _update(_require(sessionId).copyWith(feedbackReleased: true));
+
+  @override
+  Future<void> saveFeedback(
+    String sessionId,
+    Map<String, StudentFeedback> byParticipant,
+  ) async {
+    _require(sessionId);
+    (_feedback[sessionId] ??= {}).addAll(byParticipant);
+    _feedbackSaved.add(sessionId);
+  }
+
+  @override
+  Stream<StudentFeedback?> watchMyFeedback(
+    String sessionId,
+    String participantId,
+  ) {
+    StudentFeedback? current() {
+      if (!_require(sessionId).feedbackReleased) return null;
+      return (_feedback[sessionId] ?? const {})[participantId];
+    }
+
+    final sessionChanges = _sessionControllers.putIfAbsent(
+      sessionId,
+      () => StreamController<Session>.broadcast(),
+    );
+    return Stream.multi((listener) {
+      listener.add(current());
+      final a = sessionChanges.stream.listen((_) => listener.add(current()));
+      final b = _feedbackSaved.stream
+          .where((id) => id == sessionId)
+          .listen((_) => listener.add(current()));
+      listener.onCancel = () {
+        a.cancel();
+        b.cancel();
+      };
+    });
+  }
 }

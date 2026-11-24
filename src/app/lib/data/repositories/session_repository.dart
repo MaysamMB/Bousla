@@ -1,5 +1,6 @@
 import 'package:bousla_engine/bousla_engine.dart';
 
+import '../feedback.dart';
 import '../models.dart';
 
 /// Sessions, participation and responses.
@@ -43,4 +44,20 @@ abstract interface class SessionRepository {
   Future<void> closeSession(String sessionId);
 
   Future<void> releaseFeedback(String sessionId);
+
+  /// Instructor only. Stores each participant's feedback (keyed by
+  /// participant ID). Call this BEFORE [releaseFeedback], so students never
+  /// see a released session without their feedback.
+  Future<void> saveFeedback(
+    String sessionId,
+    Map<String, StudentFeedback> byParticipant,
+  );
+
+  /// The participant's own feedback: null until the instructor releases
+  /// feedback (or if there is none for them), then the feedback, updating
+  /// live. Students cannot read anyone else's.
+  Stream<StudentFeedback?> watchMyFeedback(
+    String sessionId,
+    String participantId,
+  );
 }

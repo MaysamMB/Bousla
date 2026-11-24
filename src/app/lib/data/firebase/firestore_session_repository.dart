@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bousla_engine/bousla_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../feedback.dart';
 import '../join_code.dart';
 import '../models.dart';
 import '../repositories/session_repository.dart';
@@ -163,4 +164,47 @@ class FirestoreSessionRepository implements SessionRepository {
   @override
   Future<void> releaseFeedback(String sessionId) =>
       _sessions.doc(sessionId).update({'feedback_released': true});
+
+  @override
+  Future<void> saveFeedback(
+    String sessionId,
+    Map<String, StudentFeedback> byParticipant,
+  ) async {
+    final feedback = _sessions.doc(sessionId).collection('feedback');
+    final entries = byParticipant.entries.toList();
+    // Firestore allows at most 500 writes in one batch.
+    for (var i = 0; i < entries.length; i += 450) {
+      final batch = _db.batch();
+      for (final e in entries.skip(i).take(450)) {
+        batch.set(feedback.doc(e.key), {
+          ...e.value.toJson(),
+          'created_at': FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    }
+  }
+
+  @override
+  Stream<StudentFeedback?> watchMyFeedback(
+    String sessionId,
+    String participantId,
+  ) {
+    final doc = _sessions
+        .doc(sessionId)
+        .collection('feedback')
+        .doc(participantId);
+    // The rules refuse reading feedback before it is released, so the
+    // document is only watched once the session says it is.
+    return watchSession(sessionId)
+        .map((s) => s.feedbackReleased)
+        .distinct()
+        .asyncExpand(
+          (released) => released
+              ? doc.snapshots().map(
+                    (d) => d.exists ? StudentFeedback.fromJson(d.data()!) : null,
+                  )
+              : Stream<StudentFeedback?>.value(null),
+        );
+  }
 }
