@@ -26,7 +26,9 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
   // emulators. Enforcement is switched on in the Firebase console.
   if (!config.useEmulator && config.appCheckSiteKey.isNotEmpty) {
     await FirebaseAppCheck.instance.activate(
-      providerWeb: ReCaptchaV3Provider(config.appCheckSiteKey),
+      // reCAPTCHA Enterprise ("Fraud Defense"): the classic v3 provider no
+      // longer accepts new registrations in the Firebase console.
+      providerWeb: ReCaptchaEnterpriseProvider(config.appCheckSiteKey),
     );
   }
   final auth = FirebaseAuth.instance;

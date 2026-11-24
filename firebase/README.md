@@ -124,14 +124,20 @@ cd build/web && python3 -m http.server 5000 --bind 0.0.0.0
 
 The web settings in the app are public, so without App Check anyone could
 call Gemini on this project's quota. With App Check, only requests from our
-site (with a reCAPTCHA v3 token) are accepted.
+site are accepted.
 
-1. https://www.google.com/recaptcha/admin/create → type **Score based (v3)**,
-   domains `bousla-educathon.web.app`, `bousla-educathon.firebaseapp.com`,
-   `localhost` → copy the **site key** and the **secret key**.
-2. Firebase console → **App Check** → **Apps** → `bousla-web` → **reCAPTCHA**
-   → paste the **secret key** → Save. (The secret key goes nowhere else.)
-3. Put the **site key** in `src/app/firebase.env.json` as
+The classic reCAPTCHA (v3) provider no longer accepts new registrations in
+the Firebase console (24 Nov 2026), so the app uses **reCAPTCHA Enterprise**
+("Fraud Defense").
+
+1. Google Cloud console (project `bousla-educathon`) → **Security → Fraud
+   Defense / reCAPTCHA** → **Create key** → platform **Website**, domains
+   `bousla-educathon.web.app`, `bousla-educathon.firebaseapp.com`,
+   `localhost` → copy the **site key** (the key ID). If it asks for a billing
+   account, stop: App Check stays off for now (known limitation).
+2. Firebase console → **App Check** → **Apps** → `bousla-web` → **Fraud
+   Defense (reCAPTCHA Enterprise)** → paste the **site key** → Save.
+3. Put the same site key in `src/app/firebase.env.json` as
    `"FIREBASE_APPCHECK_SITE_KEY"`, then `.\bousla deploy`.
 4. Use the AI button once, then in **App Check → APIs → Firebase AI Logic**
    check that requests show as verified, and press **Enforce** there.
