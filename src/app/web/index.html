@@ -18,21 +18,60 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Bousla: answer a short quiz and see what you understand and what to learn next.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="bousla_app">
+  <meta name="apple-mobile-web-app-title" content="Bousla">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>bousla_app</title>
+  <title>Bousla · بوصلة</title>
   <link rel="manifest" href="manifest.json">
+  <!-- Shown at once, before Flutter has downloaded (several MB on the first
+       visit); removed on Flutter's first frame. Plain HTML and CSS only. -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #f4fbf9; }
+    #bousla-loading {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+      color: #00504a; text-align: center; transition: opacity .3s;
+    }
+    #bousla-loading .name { font-size: 28px; font-weight: 600; }
+    #bousla-loading .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 4px solid #b2dfdb; border-top-color: #00695c;
+      animation: bousla-spin 1s linear infinite;
+    }
+    #bousla-loading .msg { font-size: 15px; line-height: 1.7; color: #3f4947; }
+    @keyframes bousla-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      #bousla-loading .spinner { animation-duration: 3s; }
+    }
+  </style>
 </head>
 <body>
+  <div id="bousla-loading" role="status" aria-live="polite">
+    <div class="name">بوصلة · Bousla</div>
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="msg">
+      <div dir="rtl" lang="ar">جاري التحميل… قد يستغرق ذلك بضع ثوانٍ في أول مرة.</div>
+      <div dir="ltr" lang="en">Loading… The first visit can take a few seconds.</div>
+    </div>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var el = document.getElementById('bousla-loading');
+      if (!el) return;
+      el.style.opacity = '0';
+      setTimeout(function () { el.remove(); }, 300);
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
