@@ -75,12 +75,16 @@ enum AuthProblem {
 /// Thrown by [AuthService.signInInstructor] and
 /// [AuthService.registerInstructor].
 class AuthFailure implements Exception {
-  const AuthFailure(this.problem);
+  const AuthFailure(this.problem, [this.code]);
 
   final AuthProblem problem;
 
+  /// The original error code, shown for [AuthProblem.unknown] so a new kind
+  /// of failure can still be diagnosed.
+  final String? code;
+
   @override
-  String toString() => 'AuthFailure($problem)';
+  String toString() => 'AuthFailure($problem, $code)';
 }
 
 /// Maps a Firebase Auth error code to an [AuthProblem].

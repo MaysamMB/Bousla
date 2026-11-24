@@ -27,7 +27,7 @@ class FirebaseAuthService implements AuthService {
     try {
       await call();
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(authProblemFromCode(e.code));
+      throw AuthFailure(authProblemFromCode(e.code), e.code);
     }
   }
 

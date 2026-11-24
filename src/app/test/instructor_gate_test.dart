@@ -21,7 +21,7 @@ class _FailingAuth implements AuthService {
   Stream<String?> instructorChanges() => Stream.value(null);
   @override
   Future<void> signInInstructor(String email, String password) async =>
-      throw AuthFailure(problem);
+      throw AuthFailure(problem, 'auth/some-new-code');
   @override
   Future<void> registerInstructor(String email, String password) async {
     registerCalls++;
@@ -34,8 +34,12 @@ class _FailingAuth implements AuthService {
   Future<String> ensureParticipant() async => 'p';
 }
 
-Future<_FailingAuth> _open(WidgetTester tester, Locale locale) async {
-  final auth = _FailingAuth(AuthProblem.wrongCredentials);
+Future<_FailingAuth> _open(
+  WidgetTester tester,
+  Locale locale, {
+  AuthProblem problem = AuthProblem.wrongCredentials,
+}) async {
+  final auth = _FailingAuth(problem);
   await tester.pumpWidget(
     BouslaApp(
       services: AppServices(
@@ -97,5 +101,14 @@ void main() {
           'An account with this email already exists. Press "Sign in" instead.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('an unknown failure shows its code so it can be diagnosed', (
+    tester,
+  ) async {
+    await _open(tester, const Locale('en'), problem: AuthProblem.unknown);
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    expect(find.textContaining('(auth/some-new-code)'), findsOneWidget);
   });
 }

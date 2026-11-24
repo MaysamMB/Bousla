@@ -41,6 +41,9 @@ class _SignInFormState extends State<_SignInForm> {
   var _busy = false;
   AuthProblem? _problem;
 
+  /// Shown after the generic message when the problem is unknown.
+  String? _detail;
+
   @override
   void dispose() {
     _email.dispose();
@@ -53,6 +56,7 @@ class _SignInFormState extends State<_SignInForm> {
     setState(() {
       _busy = true;
       _problem = null;
+      _detail = null;
     });
     try {
       if (register) {
@@ -61,9 +65,19 @@ class _SignInFormState extends State<_SignInForm> {
         await auth.signInInstructor(_email.text, _password.text);
       }
     } on AuthFailure catch (e) {
-      if (mounted) setState(() => _problem = e.problem);
-    } catch (_) {
-      if (mounted) setState(() => _problem = AuthProblem.unknown);
+      if (mounted) {
+        setState(() {
+          _problem = e.problem;
+          _detail = e.code;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _problem = AuthProblem.unknown;
+          _detail = '$e';
+        });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -115,7 +129,9 @@ class _SignInFormState extends State<_SignInForm> {
               if (_problem case final problem?) ...[
                 const SizedBox(height: 12),
                 Text(
-                  _message(l, problem),
+                  problem == AuthProblem.unknown && _detail != null
+                      ? '${_message(l, problem)}\n($_detail)'
+                      : _message(l, problem),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
