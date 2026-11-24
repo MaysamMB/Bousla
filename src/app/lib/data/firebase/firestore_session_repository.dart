@@ -108,11 +108,12 @@ class FirestoreSessionRepository implements SessionRepository {
           ),
         );
     Future<void> explainRefusal() async {
-      final session = await sessionRef.get();
-      if (session.data()?['status'] == 'closed') {
+      // Both reads at once: one round trip instead of two.
+      final checks = await Future.wait([sessionRef.get(), ref.get()]);
+      if (checks[0].data()?['status'] == 'closed') {
         throw SessionClosedException(sessionId);
       }
-      if ((await ref.get()).exists) {
+      if (checks[1].exists) {
         throw DuplicateAnswerException(response.questionId);
       }
     }
@@ -125,6 +126,25 @@ class FirestoreSessionRepository implements SessionRepository {
       if (e.code == 'permission-denied') await explainRefusal();
       rethrow;
     }
+  }
+
+  @override
+  Future<Set<QuestionRef>> answeredQuestions(
+    Session session,
+    String participantId,
+  ) async {
+    // Students may read their own answers one by one (not list them).
+    final responses = _sessions.doc(session.id).collection('responses');
+    final docs = await Future.wait([
+      for (final q in session.questions)
+        responses
+            .doc(responseDocId(participantId, q.questionId, q.version))
+            .get(),
+    ]);
+    return {
+      for (var i = 0; i < docs.length; i++)
+        if (docs[i].exists) session.questions[i],
+    };
   }
 
   @override

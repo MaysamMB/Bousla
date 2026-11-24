@@ -20,6 +20,7 @@
 // instructor reviews them in the app at /instructor/review.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
+import { fileURLToPath } from 'node:url';
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -49,7 +50,8 @@ const option = (name, fallback) => {
 };
 
 const root = new URL('../../', import.meta.url);
-const envFile = option('--env', new URL('src/app/firebase.env.json', root).pathname);
+// fileURLToPath, not URL.pathname: on Windows pathname gives "/C:/...".
+const envFile = option('--env', fileURLToPath(new URL('src/app/firebase.env.json', root)));
 const folder = option('--course', 'database-systems');
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const data = (file) => readJson(new URL(`data/courses/${folder}/${file}`, root));
@@ -57,6 +59,11 @@ const data = (file) => readJson(new URL(`data/courses/${folder}/${file}`, root))
 const env = readJson(envFile);
 if (!env.FIREBASE_PROJECT_ID) {
   console.error(`No FIREBASE_PROJECT_ID in ${envFile}`);
+  process.exit(1);
+}
+if (!env.USE_FIREBASE_EMULATOR && !/^AIza[0-9A-Za-z_-]{35}$/.test(env.FIREBASE_API_KEY ?? '')) {
+  console.error(`FIREBASE_API_KEY in ${envFile} is not a valid Firebase key (hidden "•" characters?). ` +
+    'Copy it again from Firebase console -> Project settings -> Your apps -> Config.');
   process.exit(1);
 }
 

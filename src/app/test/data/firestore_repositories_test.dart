@@ -364,6 +364,15 @@ void main() {
       );
     });
 
+    test('answeredQuestions lists only this participant\'s answers', () async {
+      await sessions.submitResponse(session.id, answer('s1'));
+      await sessions.submitResponse(session.id, answer('s2', q: 'db_pk_002'));
+      expect(await sessions.answeredQuestions(session, 's1'), {
+        const QuestionRef('db_pk_001', 1),
+      });
+      expect(await sessions.answeredQuestions(session, 's3'), isEmpty);
+    });
+
     test('releasing feedback is stored', () async {
       await sessions.releaseFeedback(session.id);
       expect(

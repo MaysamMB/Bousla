@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bousla_engine/bousla_engine.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +24,10 @@ class AnsweringScreen extends StatefulWidget {
   final Session session;
   final String participantId;
 
+  /// Longest wait for the server before telling the student to try again,
+  /// instead of leaving the screen frozen on a weak connection.
+  static const timeout = Duration(seconds: 20);
+
   @override
   State<AnsweringScreen> createState() => _AnsweringScreenState();
 }
@@ -42,8 +48,27 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
   /// Approved questions of this session, in the session's order. Uses the
   /// exact versions the session was created with, so an instructor editing a
   /// question during the session does not change it for students.
-  Future<List<QuestionView>> _load() => ServicesScope.of(context).content
-      .questionsForSession(widget.session.courseId, widget.session.questions);
+  ///
+  /// After a page reload the student continues at the first question they
+  /// have not answered yet.
+  Future<List<QuestionView>> _load() async {
+    final services = ServicesScope.of(context);
+    final (questions, answered) = await (
+      services.content.questionsForSession(
+        widget.session.courseId,
+        widget.session.questions,
+      ),
+      services.sessions.answeredQuestions(
+        widget.session,
+        widget.participantId,
+      ),
+    ).wait.timeout(AnsweringScreen.timeout);
+    final firstOpen = questions.indexWhere(
+      (q) => !answered.contains(QuestionRef(q.id, q.version)),
+    );
+    _index = firstOpen == -1 ? questions.length : firstOpen;
+    return questions;
+  }
 
   Future<void> _submit(QuestionView q) async {
     final l = AppLocalizations.of(context);
@@ -54,21 +79,27 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
       _error = null;
     });
     try {
-      await sessions.submitResponse(
-        widget.session.id,
-        Response(
-          participantId: widget.participantId,
-          questionId: q.id,
-          questionVersion: q.version,
-          selectedOptionId: _selected!,
-          displayLanguage: language,
-        ),
-      );
+      await sessions
+          .submitResponse(
+            widget.session.id,
+            Response(
+              participantId: widget.participantId,
+              questionId: q.id,
+              questionVersion: q.version,
+              selectedOptionId: _selected!,
+              displayLanguage: language,
+            ),
+          )
+          .timeout(AnsweringScreen.timeout);
       _next();
     } on DuplicateAnswerException {
       _next();
     } on SessionClosedException {
       if (mounted) setState(() => _error = l.studentSessionClosed);
+    } on TimeoutException {
+      // Safe to press again: a second answer to the same question is
+      // refused by the server and then skipped here.
+      if (mounted) setState(() => _error = l.studentConnectionSlow);
     } catch (_) {
       if (mounted) setState(() => _error = l.errorGeneric);
     } finally {
@@ -96,7 +127,16 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
       body: FutureBuilder<List<QuestionView>>(
         future: _questions,
         builder: (context, snapshot) {
-          if (snapshot.hasError) return Center(child: Text(l.errorGeneric));
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error is TimeoutException
+                    ? l.studentConnectionSlow
+                    : l.errorGeneric,
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
           if (!snapshot.hasData)
             return const Center(child: CircularProgressIndicator());
           final questions = snapshot.data!;

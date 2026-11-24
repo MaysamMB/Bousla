@@ -13,7 +13,7 @@
   "instructorCreateSession": "إنشاء الجلسة",
   "instructorJoinCode": "رمز الانضمام: {code}",
   "instructorJoinLink": "رابط الانضمام: {link}",
-  "instructorLiveCounts": "{participants} مشاركين · {responses} إجابات",
+  "instructorLiveCounts": "طلاب أجابوا: {participants} · مجموع الإجابات: {responses}",
   "instructorCloseSession": "إغلاق الجلسة",
   "instructorSessionClosed": "تم إغلاق الجلسة",
 
@@ -25,6 +25,7 @@
   "studentQuestionProgress": "السؤال {current} من {total}",
   "studentSubmit": "إرسال",
   "studentAllDone": "شكراً لك! تم إرسال إجاباتك.",
+  "studentConnectionSlow": "الاتصال بطيء. تحقّق من الإنترنت واضغط مرة أخرى؛ إجاباتك السابقة محفوظة.",
   "studentNoQuestions": "لا توجد أسئلة في هذه الجلسة بعد.",
 
   "instructorReviewQuestions": "مراجعة الأسئلة",
