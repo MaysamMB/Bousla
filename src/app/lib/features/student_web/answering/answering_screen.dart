@@ -8,13 +8,13 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
-import '../feedback/feedback_screen.dart';
+import '../feedback/my_feedback_screen.dart';
 
 /// One question at a time, in the student's chosen language (owner: student
 /// web portal). Switching language mid-way keeps the same question and
 /// options; only the text and direction change, and each answer records the
 /// language it was shown in. After the last answer it waits for the
-/// instructor to publish feedback and then opens [FeedbackScreen]. To do:
+/// instructor to publish feedback and then opens [MyFeedbackScreen]. To do:
 /// accessibility review.
 class AnsweringScreen extends StatefulWidget {
   const AnsweringScreen({
@@ -146,7 +146,7 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
             return Center(child: Text(l.studentNoQuestions));
           if (_index >= questions.length) {
             return _ThankYou(
-              sessionId: widget.session.id,
+              session: widget.session,
               participantId: widget.participantId,
             );
           }
@@ -235,13 +235,13 @@ class _OptionText extends StatelessWidget {
   );
 }
 
-/// "Thank you" after the last answer. Waits for this participant's feedback
-/// ([SessionRepository.watchMyFeedback] stays null until the instructor
-/// releases it) and then opens it.
+/// "Thank you" after the last answer. Watches the session and, when the
+/// instructor releases feedback, opens [MyFeedbackScreen] (no reload
+/// needed).
 class _ThankYou extends StatefulWidget {
-  const _ThankYou({required this.sessionId, required this.participantId});
+  const _ThankYou({required this.session, required this.participantId});
 
-  final String sessionId;
+  final Session session;
   final String participantId;
 
   @override
@@ -249,7 +249,7 @@ class _ThankYou extends StatefulWidget {
 }
 
 class _ThankYouState extends State<_ThankYou> {
-  StreamSubscription<Object?>? _sub;
+  StreamSubscription<Session>? _sub;
   var _opened = false;
 
   @override
@@ -257,15 +257,15 @@ class _ThankYouState extends State<_ThankYou> {
     super.didChangeDependencies();
     _sub ??= ServicesScope.of(context)
         .sessions
-        .watchMyFeedback(widget.sessionId, widget.participantId)
+        .watchSession(widget.session.id)
         .listen(
-      (feedback) {
-        if (feedback == null || _opened || !mounted) return;
+      (session) {
+        if (!session.feedbackReleased || _opened || !mounted) return;
         _opened = true;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => FeedbackScreen(
-              sessionId: widget.sessionId,
+            builder: (_) => MyFeedbackScreen(
+              session: session,
               participantId: widget.participantId,
             ),
           ),

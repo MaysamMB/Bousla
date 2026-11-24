@@ -98,16 +98,11 @@ Map<String, ComputedFeedback> computeFeedback({
     out[participant] = ComputedFeedback(
       feedback: StudentFeedback(
         language: language,
+        // FeedbackConcept.from keeps each concept's prerequisites, which
+        // the knowledge map needs.
         concepts: [
           for (final id in conceptIds)
-            if (masteries[id] case final m?)
-              FeedbackConcept(
-                conceptId: id,
-                name: byId[id]!.name,
-                state: m.state,
-                attempts: m.evidence.attempts,
-                correct: m.evidence.correct,
-              ),
+            FeedbackConcept.from(byId[id]!, masteries[id]),
         ],
         hints: [
           for (final f in findings)

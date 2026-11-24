@@ -7,6 +7,7 @@ import '../../../data/question_review.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import '../course_picker.dart';
 import 'generate_from_material.dart';
 import 'hide_language_toggle.dart';
 import 'question_editor_screen.dart';
@@ -39,6 +40,7 @@ class ContentReviewScreen extends StatefulWidget {
 class _ReviewData {
   const _ReviewData({
     required this.course,
+    this.courses = const [],
     required this.concepts,
     required this.questions,
     required this.keys,
@@ -46,6 +48,9 @@ class _ReviewData {
   });
 
   final Course course;
+
+  /// All the instructor's courses, for the picker.
+  final List<Course> courses;
 
   /// Files AI drafts were suggested from, newest first.
   final List<MaterialRecord> materials;
@@ -68,7 +73,7 @@ class _ReviewData {
 }
 
 class _ContentReviewScreenState extends State<ContentReviewScreen> {
-  Future<_ReviewData>? _data;
+  Future<_ReviewData?>? _data;
   final _selected = <String>{};
 
   /// The last AI suggestions made on this screen; their group is
@@ -81,15 +86,20 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     _data ??= _load();
   }
 
-  Future<_ReviewData> _load() async {
-    final repo = ServicesScope.of(context).content;
-    final course = (await repo.listCourses()).first;
+  /// Null when the instructor has no course yet.
+  Future<_ReviewData?> _load() async {
+    final services = ServicesScope.of(context);
+    final repo = services.content;
+    final courses = await repo.listCourses();
+    final course = chooseCourse(courses, services.selectedCourseId.value);
+    if (course == null) return null;
     final concepts = await repo.listConcepts(course.id);
     final questions = await repo.listQuestions(course.id, approvedOnly: false);
     final keys = await repo.answerKeys(course.id);
     final materials = await repo.listMaterials(course.id);
     return _ReviewData(
       course: course,
+      courses: courses,
       concepts: concepts,
       questions: questions,
       keys: keys,
@@ -240,20 +250,29 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return FutureBuilder<_ReviewData>(
+    return FutureBuilder<_ReviewData?>(
       future: _data,
       builder: (context, snapshot) {
-        if (snapshot.hasError || !snapshot.hasData) {
+        final data = snapshot.data;
+        if (snapshot.hasError || data == null) {
+          final done = snapshot.connectionState == ConnectionState.done;
           return Scaffold(
             appBar: AppBar(title: Text(l.reviewTitle)),
             body: Center(
               child: snapshot.hasError
                   ? Text(l.errorGeneric)
+                  : done
+                  ? Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        l.instructorNoCourse,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
                   : const CircularProgressIndicator(),
             ),
           );
         }
-        final data = snapshot.data!;
         final pending = data.withStatus(ReviewStatus.pendingReview);
         final approved = data.withStatus(ReviewStatus.approved);
         final rejected = data.withStatus(ReviewStatus.rejected);
@@ -282,6 +301,18 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
             ),
             body: Column(
               children: [
+                if (data.courses.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    child: CoursePicker(
+                      courses: data.courses,
+                      current: data.course,
+                      onChanged: () {
+                        _latest = null;
+                        _reload();
+                      },
+                    ),
+                  ),
                 _StatsBanner(stats: aiReviewStats(data.questions)),
                 if (ServicesScope.of(context).questionGenerator != null)
                   Padding(

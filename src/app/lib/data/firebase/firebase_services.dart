@@ -38,7 +38,7 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
     await auth.useAuthEmulator(config.emulatorHost, 9099);
     db.useFirestoreEmulator(config.emulatorHost, 8080);
   }
-  final authService = FirebaseAuthService(auth);
+  final authService = FirebaseAuthService(auth, db);
   return AppServices(
     auth: authService,
     content: FirestoreContentRepository(

@@ -104,6 +104,23 @@ void main() {
       expect(groups.profiles.map((p) => p.id), ['p1', 'p2']);
     });
 
+    test('the same state with different evidence is not merged', () {
+      // 3 of 3 and 4 of 4 are both demonstrated mastery, but not the same
+      // evidence.
+      final responses = [
+        ...answers('s1', 'primary_key', 3, 3),
+        ...answers('s2', 'primary_key', 4, 4),
+      ];
+      final p1 = _profileFor(responses, 's1');
+      final p2 = _profileFor(responses, 's2');
+      expect(p1.concept('primary_key')!.state, MasteryState.demonstratedMastery);
+      expect(p2.concept('primary_key')!.state, MasteryState.demonstratedMastery);
+      final groups = groupProfiles({'s1': p1, 's2': p2});
+      expect(groups.profiles, hasLength(2));
+      expect(p1.concept('primary_key')!.attempts, 3);
+      expect(p2.concept('primary_key')!.correct, 4);
+    });
+
     test('profile IDs do not depend on the order of students', () {
       final responses = [..._struggling('s1'), ..._strong('s2')];
       final a = groupProfiles({
@@ -128,7 +145,7 @@ void main() {
       // No option IDs, question IDs, counts or URLs either.
       expect(json, isNot(contains('selected')));
       expect(json, isNot(contains('primary_key_1')));
-      expect(json, isNot(contains('attempts')));
+      expect(json, isNot(contains('correct_option_id')));
       expect(json, isNot(contains('https://')));
       expect(
         groups.profiles.single.toPromptJson().keys,

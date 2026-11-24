@@ -7,6 +7,7 @@ What is here:
 | `firestore.rules` | Security rules: the real access control (docs/architecture.md §6). |
 | `test/rules.test.mjs` | 27 rules tests, run on the Firestore emulator. |
 | `tools/seed.mjs` | Loads a course from `data/courses/` into Firestore as the signed-in instructor. |
+| `tools/approve_instructor.mjs` | Approves an instructor account on the emulators (the real project: Firebase console). |
 | `../firebase.json` | Firestore, Hosting (`src/app/build/web`) and emulator settings. |
 
 The app's Firebase code is in `src/app/lib/data/firebase/`. Without Firebase
@@ -24,6 +25,7 @@ All the commands below are wrapped in one script, run from the repository root:
 | `.\bousla demo` | `./scripts/bousla.sh demo` | offline demo mode |
 | `.\bousla seed` | `./scripts/bousla.sh seed` | load the course as the instructor |
 | `.\bousla test` | `./scripts/bousla.sh test` | analyze + Flutter tests + rules tests |
+| `.\bousla approve EMAIL` | `./scripts/bousla.sh approve EMAIL` | approve an instructor account (emulators only) |
 | `.\bousla simulate CODE` | `./scripts/bousla.sh simulate CODE` | 6 simulated students answer session CODE (emulators only) |
 | `.\bousla help` | `./scripts/bousla.sh help` | all commands |
 
@@ -57,11 +59,14 @@ cd firebase
 npx firebase emulators:start --only auth,firestore --project demo-bousla
 ```
 
-Terminal 2, load the course (creates the instructor account in the emulator):
+Terminal 2, create the instructor account, approve it, and load the course
+(the first command creates the account and stops: it is not approved yet):
 
 ```bash
 cd firebase
-BOUSLA_EMAIL=teacher@test.dev BOUSLA_PASSWORD=secret123 node tools/seed.mjs --env ../src/app/firebase.env.emulator.json --approve-concepts --create-account
+BOUSLA_EMAIL=teacher@test.dev BOUSLA_PASSWORD=secret123 node tools/seed.mjs --env ../src/app/firebase.env.emulator.json --create-account
+node tools/approve_instructor.mjs teacher@test.dev
+BOUSLA_EMAIL=teacher@test.dev BOUSLA_PASSWORD=secret123 node tools/seed.mjs --env ../src/app/firebase.env.emulator.json --approve-concepts
 ```
 
 Terminal 3, the app:
@@ -109,7 +114,7 @@ cd build/web && python3 -m http.server 5000 --bind 0.0.0.0
    `https://<project-id>.web.app/#/join/ABC234`.
 
 6. Create the instructor account in the app (`/instructor` → Create account),
-   then load the course with the same email:
+   approve it (next section), then load the course with the same email:
 
    ```bash
    cd firebase
@@ -147,9 +152,41 @@ the Firebase console (24 Nov 2026), so the app uses **reCAPTCHA Enterprise**
 
 The site also needs `www.google.com/recaptcha` at the venue.
 
+## Approved instructors
+
+Creating an account is not enough to be an instructor: the security rules
+(`isInstructor`) also require a document `instructors/{uid}`. No app or
+script can write that list on the real project; it is edited in the
+Firebase console, where the rules do not apply. Students are not affected
+(they sign in anonymously).
+
+An account that is not approved sees "Account waiting for approval" with its
+UID after signing in.
+
+**Approve an account (real project):**
+
+1. Firebase console → **Authentication → Users**: copy the account's
+   **User UID** (or copy it from the "waiting for approval" screen).
+2. **Firestore Database → Data → + Start collection** (or open
+   `instructors` if it exists). Collection ID `instructors`.
+3. **Document ID**: paste the UID. Add a field `email` (string) with the
+   email, so the list is readable. Save.
+4. In the app, press **Check again**.
+
+To remove an instructor, delete their document: they lose access to their
+courses and sessions at once (the data stays).
+
+**Before deploying these rules for the first time**, add the existing
+instructor accounts (at least the one that owns the course), otherwise
+they are locked out of their own course until added.
+
+On the emulators: `.\bousla approve EMAIL` (`tools/approve_instructor.mjs`,
+refuses any project that is not a `demo-` emulator project).
+
 ## Data layout
 
 ```
+instructors/{uid}                          approved instructors (console only)
 courses/{courseId}                         name, owner_id
 courses/{courseId}/concepts/{conceptId}
 courses/{courseId}/questions/{id}_v{n}     one document per version

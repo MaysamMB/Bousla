@@ -78,10 +78,12 @@ switch ($Command) {
     Ensure-Npm
     Run $App 'flutter' @('pub', 'get')
     Run $App 'flutter' @('build', 'web', '--no-web-resources-cdn', '--dart-define-from-file=firebase.env.json')
+    Write-Host 'Reminder: the rules require approved instructors (Firestore -> instructors/{UID}). See firebase/README.md.' -ForegroundColor Yellow
     Run $Fb 'npx' @('firebase', 'deploy', '--only', 'hosting,firestore:rules')
     Write-Host 'Done: https://bousla-educathon.web.app  (press Ctrl+Shift+R in the browser)' -ForegroundColor Green
   }
   'rules' {
+    Write-Host 'Reminder: the rules require approved instructors (Firestore -> instructors/{UID}). See firebase/README.md.' -ForegroundColor Yellow
     Ensure-Npm
     Run $Fb 'npx' @('firebase', 'deploy', '--only', 'firestore:rules')
   }
@@ -111,6 +113,11 @@ switch ($Command) {
     Ensure-Npm
     Run $Fb 'node' (@('tools/seed.mjs', '--approve-concepts') + $Rest)
   }
+  'approve' {
+    # Approve an instructor account on the local emulators: .\bousla approve EMAIL
+    if ($Rest.Count -lt 1) { Fail 'Usage: .\bousla approve <EMAIL>  (emulators only; real project: Firebase console)' }
+    Run $Fb 'node' (@('tools/approve_instructor.mjs') + $Rest)
+  }
   'simulate' {
     # Simulated students on the local emulators: .\bousla simulate ABC234
     if ($Rest.Count -lt 1) { Fail 'Usage: .\bousla simulate <JOIN CODE> [--students 6]' }
@@ -136,6 +143,7 @@ Bousla commands (run from the repository root):
   .\bousla rules         publish only the security rules
   .\bousla emulators     local Firebase for testing (keep open)
   .\bousla emulator-run  app in Chrome on the local emulators
+  .\bousla approve EMAIL approve an instructor account (emulators only)
   .\bousla simulate CODE simulated students answer session CODE (emulators only)
   .\bousla test          flutter analyze + flutter test + rules tests
 '@

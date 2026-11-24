@@ -40,7 +40,20 @@ class FeedbackConcept {
     required this.state,
     required this.attempts,
     required this.correct,
+    this.prerequisites = const [],
   });
+
+  /// From the course concept and this student's estimate (null when the
+  /// session had no question on it: insufficient evidence, 0 of 0).
+  factory FeedbackConcept.from(Concept concept, ConceptMastery? mastery) =>
+      FeedbackConcept(
+        conceptId: concept.id,
+        name: concept.name,
+        state: mastery?.state ?? MasteryState.insufficientEvidence,
+        attempts: mastery?.evidence.attempts ?? 0,
+        correct: mastery?.evidence.correct ?? 0,
+        prerequisites: List.unmodifiable(concept.prerequisites),
+      );
 
   final String conceptId;
   final LocalizedText name;
@@ -50,12 +63,16 @@ class FeedbackConcept {
   final int attempts;
   final int correct;
 
+  /// IDs of this concept's direct prerequisites (for the knowledge map).
+  final List<String> prerequisites;
+
   Map<String, dynamic> toJson() => {
         'concept_id': conceptId,
         'name': _textJson(name),
         'state': state.name,
         'attempts': attempts,
         'correct': correct,
+        'prerequisites': prerequisites,
       };
 
   factory FeedbackConcept.fromJson(Map<String, dynamic> json) =>
@@ -69,6 +86,11 @@ class FeedbackConcept {
         ),
         attempts: (json['attempts'] as num?)?.toInt() ?? 0,
         correct: (json['correct'] as num?)?.toInt() ?? 0,
+        prerequisites: [
+          if (json['prerequisites'] case final List list)
+            for (final p in list)
+              if (p is String) p,
+        ],
       );
 }
 

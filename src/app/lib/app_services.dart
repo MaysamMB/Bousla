@@ -53,6 +53,10 @@ class AppServices {
   /// direction (RTL for Arabic, LTR for English).
   final ValueNotifier<Locale> locale;
 
+  /// The course the instructor chose (see `CoursePicker`), shared by the
+  /// session and review screens. Null means the first course.
+  final ValueNotifier<String?> selectedCourseId = ValueNotifier(null);
+
   void toggleLanguage() => locale.value = locale.value.languageCode == 'ar'
       ? const Locale('en')
       : const Locale('ar');

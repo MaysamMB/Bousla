@@ -8,7 +8,7 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
-import '../feedback/feedback_screen.dart';
+import '../feedback/my_feedback_screen.dart';
 
 /// Student entry point (owner: student web portal).
 ///
@@ -53,21 +53,20 @@ class _JoinScreenState extends State<JoinScreen> {
         return;
       }
       if (session.status == SessionStatus.closed) {
-        // Closed, but feedback may be published: the same browser keeps the
-        // same anonymous participant, so it can still open its feedback.
-        final participantId =
-            session.feedbackReleased
-            ? await _releasedFeedbackFor(services, session)
-            : null;
-        if (!mounted) return;
-        if (participantId == null) {
+        if (!session.feedbackReleased) {
           setState(() => _error = l.studentSessionClosed);
           return;
         }
+        // Coming back after the session: show this browser's feedback. The
+        // anonymous account is the one that answered (same browser), so no
+        // new participant is created.
+        final participantId = await services.auth
+            .ensureParticipant()
+            .timeout(AnsweringScreen.timeout);
         await navigator.pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => FeedbackScreen(
-              sessionId: session.id,
+            builder: (_) => MyFeedbackScreen(
+              session: session,
               participantId: participantId,
             ),
           ),
@@ -88,31 +87,6 @@ class _JoinScreenState extends State<JoinScreen> {
       if (mounted) setState(() => _error = l.errorGeneric);
     } finally {
       if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  /// The participant ID of this browser if it has released feedback in
-  /// [session], else null. Does not join (the session is closed) and does
-  /// not create a new identity: [AuthService.ensureParticipant] returns the
-  /// existing anonymous user.
-  Future<String?> _releasedFeedbackFor(
-    AppServices services,
-    Session session,
-  ) async {
-    try {
-      final participantId = await services.auth
-          .ensureParticipant()
-          .timeout(AnsweringScreen.timeout);
-      final feedback = await services.sessions
-          .watchMyFeedback(session.id, participantId)
-          .first
-          .timeout(AnsweringScreen.timeout);
-      return feedback == null ? null : participantId;
-    } on TimeoutException {
-      rethrow;
-    } catch (_) {
-      // No readable feedback for this browser: keep "session closed".
-      return null;
     }
   }
 
@@ -148,6 +122,17 @@ class _JoinScreenState extends State<JoinScreen> {
                     onSubmitted: (_) => _busy ? null : _join(),
                   ),
                 ),
+                // Came without a link: remind them the QR code is scanned
+                // with the phone's own camera (it opens this page with the
+                // code filled in). Outside the LTR box, so Arabic reads RTL.
+                if (widget.initialCode == null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l.studentScanHint,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _busy ? null : _join,
