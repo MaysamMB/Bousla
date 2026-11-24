@@ -277,6 +277,76 @@ class FirestoreContentRepository implements ContentRepository {
   }
 
   @override
+  Future<List<QuestionView>> saveAiDrafts(
+    String courseId, {
+    required String materialName,
+    required String modelName,
+    required List<GeneratedQuestion> drafts,
+    int droppedByChecks = 0,
+  }) async {
+    final approvedConcepts = {
+      for (final c in await listConcepts(courseId))
+        if (c.status == ReviewStatus.approved) c.id,
+    };
+    final questions = _items(courseId, 'questions');
+    final keys = _items(courseId, 'answer_keys');
+    final material = _items(courseId, 'materials').doc();
+    final materialId = 'mat_${material.id}';
+    final batch = _db.batch();
+    final saved = <QuestionView>[];
+    var skipped = 0;
+    for (final g in drafts) {
+      final draft = draftFromGenerated(g);
+      if (validateDraft(draft, approvedConcepts).isNotEmpty) {
+        skipped++;
+        continue;
+      }
+      final id = 'ai_q_${questions.doc().id}';
+      final q = buildQuestion(
+        id: id,
+        version: 1,
+        draft: draft,
+        status: ReviewStatus.pendingReview,
+        source: ContentSource.aiDraft,
+        edited: false,
+        sourceLocation: g.sourceLocation,
+        rejectionReason: null,
+      );
+      batch.set(
+        questions.doc(questionDocId(id, 1)),
+        questionToJson(
+          q,
+          base: {
+            if (g.difficulty != null) 'difficulty': g.difficulty,
+            'provenance': {
+              'source_material_id': materialId,
+              'generated_by': modelName,
+            },
+          },
+        ),
+      );
+      batch.set(
+        keys.doc(questionDocId(id, 1)),
+        answerKeyToJson(id, 1, draft.correctOptionId!),
+      );
+      saved.add(q);
+    }
+    // Metadata only: the file itself is never stored.
+    batch.set(_items(courseId, 'materials').doc(materialId), {
+      'id': materialId,
+      'file_name': materialName,
+      'uploaded_by': currentUserId(),
+      'generated_by': modelName,
+      'status': 'ready_for_review',
+      'drafts_saved': saved.length,
+      'drafts_dropped': droppedByChecks + skipped,
+      'created_at': FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+    return saved;
+  }
+
+  @override
   Future<List<Resource>> listResources(
     String courseId, {
     bool approvedOnly = true,

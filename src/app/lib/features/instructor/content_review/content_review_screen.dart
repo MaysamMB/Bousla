@@ -7,6 +7,7 @@ import '../../../data/question_review.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import 'generate_from_material.dart';
 import 'hide_language_toggle.dart';
 import 'question_editor_screen.dart';
 import 'review_texts.dart';
@@ -26,7 +27,10 @@ import 'review_texts.dart';
 /// There is deliberately no "approve all" button: every AI draft is seen by
 /// the instructor before it is approved.
 class ContentReviewScreen extends StatefulWidget {
-  const ContentReviewScreen({super.key});
+  const ContentReviewScreen({super.key, this.pickMaterial});
+
+  /// File picker for "draft questions from material"; replaced in tests.
+  final PickMaterial? pickMaterial;
 
   @override
   State<ContentReviewScreen> createState() => _ContentReviewScreenState();
@@ -139,6 +143,26 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     );
   }
 
+  /// AI level 1: drafts from the instructor's material, saved as pending.
+  Future<void> _generateFromMaterial(_ReviewData data) async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final outcome = await showDialog<GenerationOutcome>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => GenerateFromMaterialDialog(
+        courseId: data.course.id,
+        concepts: data.concepts,
+        pickMaterial: widget.pickMaterial ?? pickMaterialFile,
+      ),
+    );
+    if (outcome == null || !mounted) return;
+    _reload();
+    messenger.showSnackBar(
+      SnackBar(content: Text(l.reviewAiDone(outcome.saved, outcome.dropped))),
+    );
+  }
+
   Future<void> _openEditor(_ReviewData data, [QuestionView? question]) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -199,6 +223,18 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
             body: Column(
               children: [
                 _StatsBanner(stats: aiReviewStats(data.questions)),
+                if (ServicesScope.of(context).questionGenerator != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: FilledButton.tonalIcon(
+                        onPressed: () => _generateFromMaterial(data),
+                        icon: const Icon(Icons.auto_awesome),
+                        label: Text(l.reviewAiGenerate),
+                      ),
+                    ),
+                  ),
                 // Applies to every question of the course, in all tabs.
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),

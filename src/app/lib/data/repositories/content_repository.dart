@@ -68,6 +68,20 @@ abstract interface class ContentRepository {
     RejectionReason? reason,
   });
 
+  /// Instructor only. Saves questions drafted by AI (level 1) as
+  /// `source: ai_draft`, `pending_review`, with their answer keys and where
+  /// in the material they come from. Also records the material's name (not
+  /// the file, which is never stored) with how many drafts were kept or
+  /// dropped. Drafts that fail [validateDraft] against the approved concepts
+  /// are skipped. Returns the saved questions.
+  Future<List<QuestionView>> saveAiDrafts(
+    String courseId, {
+    required String materialName,
+    required String modelName,
+    required List<GeneratedQuestion> drafts,
+    int droppedByChecks = 0,
+  });
+
   Future<List<Resource>> listResources(
     String courseId, {
     bool approvedOnly = true,

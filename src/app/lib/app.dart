@@ -49,6 +49,26 @@ class BouslaApp extends StatelessWidget {
             fontFamilyFallback: const ['NotoSansArabic', 'NotoSansMath'],
           ),
           onGenerateRoute: _route,
+          builder: services.inMemory
+              ? (context, child) => Banner(
+                    message: AppLocalizations.of(context).appInMemoryBanner,
+                    location: BannerLocation.bottomStart,
+                    layoutDirection: Directionality.of(context),
+                    textDirection: Directionality.of(context),
+                    color: const Color(0xFFB3261E),
+                    // The ribbon does not inherit the theme: use the bundled
+                    // fonts so Arabic does not show as empty boxes.
+                    textStyle: const TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                      fontFamily: 'NotoSans',
+                      fontFamilyFallback: ['NotoSansArabic'],
+                    ),
+                    child: child!,
+                  )
+              : null,
         ),
       ),
     );

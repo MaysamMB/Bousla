@@ -24,6 +24,7 @@ All the commands below are wrapped in one script, run from the repository root:
 | `.\bousla demo` | `./scripts/bousla.sh demo` | offline demo mode |
 | `.\bousla seed` | `./scripts/bousla.sh seed` | load the course as the instructor |
 | `.\bousla test` | `./scripts/bousla.sh test` | analyze + Flutter tests + rules tests |
+| `.\bousla simulate CODE` | `./scripts/bousla.sh simulate CODE` | 6 simulated students answer session CODE (emulators only) |
 | `.\bousla help` | `./scripts/bousla.sh help` | all commands |
 
 In VS Code: **Ctrl+Shift+P → Tasks: Run Task → Bousla: …** (`.vscode/tasks.json`);

@@ -79,6 +79,15 @@ bool sameQuestionContent(QuestionView q, String? key, QuestionDraft d) {
   return true;
 }
 
+/// A model's draft as a [QuestionDraft], so it passes the same checks as a
+/// question written by hand.
+QuestionDraft draftFromGenerated(GeneratedQuestion g) => QuestionDraft(
+  conceptIds: List.of(g.conceptIds),
+  prompt: g.prompt,
+  options: [for (final o in g.options) OptionView(id: o.id, text: o.text)],
+  correctOptionId: g.correctOptionId,
+);
+
 /// The next unused option ID: a, b, c, ...
 String nextOptionId(Iterable<String> used) {
   final taken = used.toSet();

@@ -2,6 +2,8 @@
   "@@locale": "en",
 
   "appTitle": "Bousla",
+  "appInMemoryBanner": "LOCAL DEMO",
+  "@appInMemoryBanner": { "description": "Corner banner in the offline demo mode (in-memory data, nothing saved). Keep it very short." },
   "languageToggle": "العربية",
   "@languageToggle": { "description": "Button that switches to the OTHER language, so it is written in that language." },
 
@@ -124,6 +126,26 @@
   "authErrorTooManyAttempts": "Too many attempts. Wait a few minutes and try again.",
   "authErrorNotEnabled": "Email sign-in is not enabled for this Firebase project (Authentication → Sign-in method).",
   "instructorNoCourse": "No course is linked to this account yet. Load the sample course with firebase/tools/seed.mjs (see firebase/README.md).",
+
+  "reviewAiGenerate": "Draft questions from material (AI)",
+  "reviewAiDialogTitle": "Draft questions from your material",
+  "reviewAiPrivacy": "The file is sent to Google Gemini (through Firebase) to suggest questions in Arabic and English. It is not stored. Do not upload files with personal data. Every suggested question stays a draft until you review it.",
+  "reviewAiPickFile": "Choose a file (PDF or text)",
+  "reviewAiFileChosen": "{name} · {sizeKb} KB",
+  "@reviewAiFileChosen": {"placeholders": {"name": {"type": "String"}, "sizeKb": {"type": "int"}}},
+  "reviewAiCount": "How many questions to suggest?",
+  "reviewAiStart": "Draft questions",
+  "reviewAiWorking": "Gemini is reading the material. This can take up to a minute.",
+  "reviewAiDone": "{saved} AI drafts are waiting for your review. {dropped} were dropped by the automatic checks.",
+  "@reviewAiDone": {"placeholders": {"saved": {"type": "int"}, "dropped": {"type": "int"}}},
+  "reviewAiNoConcepts": "There are no approved concepts in this course yet, so drafts could not be linked to any.",
+  "reviewAiNothingUsable": "No usable drafts: the material may not match the course concepts, or every draft failed the automatic checks. Try another file.",
+  "reviewAiErrorNotEnabled": "AI is not enabled for this Firebase project (Firebase console → AI Logic → Get started → Gemini Developer API).",
+  "reviewAiErrorQuota": "The free AI quota is used up for now. Try again in a few minutes.",
+  "reviewAiErrorTooLarge": "The file is too large (15 MB at most).",
+  "reviewAiErrorUnsupported": "Only PDF, .txt and .md files are supported.",
+  "reviewAiErrorEmpty": "Gemini returned no answer. Try again, or try another file.",
+  "reviewAiErrorNetwork": "No answer from Gemini in time. Check the connection and try again.",
 
   "errorGeneric": "Something went wrong. Please try again."
 }
