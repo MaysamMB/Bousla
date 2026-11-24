@@ -29,6 +29,7 @@
   "instructorSessionClosed": "Session closed",
 
   "studentJoinTitle": "Join a session",
+  "studentScanHint": "Or scan the QR code shown on the screen with your phone camera",
   "studentEnterCode": "Join code",
   "studentJoin": "Join",
   "studentCodeNotFound": "No session found with this code.",
@@ -115,6 +116,9 @@
   "reviewHiddenOptionsHint": "Answers are still required in both languages. A student using a hidden language sees the answers in the other one.",
   "reviewProblemAllOptionLanguagesHidden": "Students must see the answers in at least one language.",
 
+  "authNotApprovedTitle": "Account waiting for approval",
+  "authNotApprovedBody": "Your account was created, but it is not an approved instructor yet. Send this ID to the project administrator, who adds it in the Firebase console, then press \"Check again\".",
+  "authCheckAgain": "Check again",
   "authTitle": "Instructor sign-in",
   "authEmail": "Email",
   "authPassword": "Password",
@@ -172,5 +176,24 @@
   "reviewAiErrorEmpty": "Gemini returned no answer. Try again, or try another file.",
   "reviewAiErrorNetwork": "No answer from Gemini in time. Check the connection and try again.",
 
-  "errorGeneric": "Something went wrong. Please try again."
+  "errorGeneric": "Something went wrong. Please try again.",
+  "studentMapTitle": "Your knowledge map for this session",
+  "studentMapNote": "Based only on your answers in this session. These are estimates, not a final judgement.",
+  "studentMapFoundations": "Foundations",
+  "studentMapLevel": "Level {level}",
+  "@studentMapLevel": {"placeholders": {"level": {"type": "int"}}},
+  "studentMapEvidence": "you got {correct} of {attempts} questions on it right",
+  "@studentMapEvidence": {"placeholders": {"correct": {"type": "int"}, "attempts": {"type": "int"}}},
+  "studentMapBuildsOn": "Builds on: {names}",
+  "@studentMapBuildsOn": {"placeholders": {"names": {"type": "String"}}},
+  "studentMapPossibleGap": "“{prerequisite}” may be a possible cause: worth reviewing first.",
+  "@studentMapPossibleGap": {"placeholders": {"prerequisite": {"type": "String"}}},
+  "studentMapStateDifficulty": "Possible difficulty",
+  "studentMapStateEmerging": "Emerging",
+  "studentMapStateMastery": "Demonstrated mastery",
+  "studentMapStateInsufficient": "Not enough evidence",
+  "studentMapEmpty": "No concepts in this session.",
+  "studentMapSave": "Save the map to my phone",
+  "studentMapSaved": "Map saved as an image.",
+  "studentMapSaveFailed": "Could not save the image. Take a screenshot instead."
 }

@@ -22,6 +22,7 @@
   "instructorSessionClosed": "تم إغلاق الجلسة",
 
   "studentJoinTitle": "الانضمام إلى جلسة",
+  "studentScanHint": "أو امسح رمز QR المعروض على الشاشة بكاميرا هاتفك",
   "studentEnterCode": "رمز الانضمام",
   "studentJoin": "انضمام",
   "studentCodeNotFound": "لا توجد جلسة بهذا الرمز.",
@@ -96,6 +97,9 @@
   "reviewHiddenOptionsHint": "الإجابات مطلوبة باللغتين دائماً. الطالب الذي يستخدم لغة مخفية يرى الإجابات باللغة الأخرى.",
   "reviewProblemAllOptionLanguagesHidden": "يجب أن يرى الطالب الإجابات بلغة واحدة على الأقل.",
 
+  "authNotApprovedTitle": "الحساب بانتظار الاعتماد",
+  "authNotApprovedBody": "تم إنشاء حسابك، لكنه لم يُعتمد كحساب مدرّس بعد. أرسل هذا الرقم إلى مسؤول المشروع ليضيفه من Firebase console، ثم اضغط «تحقّق مجدداً».",
+  "authCheckAgain": "تحقّق مجدداً",
   "authTitle": "دخول المدرّس",
   "authEmail": "البريد الإلكتروني",
   "authPassword": "كلمة المرور",
@@ -146,5 +150,20 @@
   "reviewAiErrorEmpty": "لم يُرجع Gemini أي إجابة. حاول مرة أخرى أو جرّب ملفاً آخر.",
   "reviewAiErrorNetwork": "لم يصل رد من Gemini في الوقت المحدد. تحقّق من الاتصال وحاول مرة أخرى.",
 
-  "errorGeneric": "حدث خطأ. حاول مرة أخرى."
+  "errorGeneric": "حدث خطأ. حاول مرة أخرى.",
+  "studentMapTitle": "خريطتك المعرفية لهذه الجلسة",
+  "studentMapNote": "مبنية فقط على إجاباتك في هذه الجلسة. هذه تقديرات وليست حكماً نهائياً.",
+  "studentMapFoundations": "الأساسيات",
+  "studentMapLevel": "المستوى {level}",
+  "studentMapEvidence": "أجبت صح على {correct} من {attempts} أسئلة عنه",
+  "studentMapBuildsOn": "يعتمد على: {names}",
+  "studentMapPossibleGap": "قد يكون «{prerequisite}» سبباً محتملاً، تستحسن مراجعته أولاً.",
+  "studentMapStateDifficulty": "صعوبة محتملة",
+  "studentMapStateEmerging": "قيد التكوّن",
+  "studentMapStateMastery": "إتقان ظاهر",
+  "studentMapStateInsufficient": "دليل غير كافٍ",
+  "studentMapEmpty": "لا توجد مفاهيم في هذه الجلسة.",
+  "studentMapSave": "حفظ الخريطة على هاتفي",
+  "studentMapSaved": "تم حفظ الخريطة كصورة.",
+  "studentMapSaveFailed": "تعذّر حفظ الصورة. يمكنك أخذ لقطة شاشة بدلاً من ذلك."
 }

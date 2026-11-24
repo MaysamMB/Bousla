@@ -21,6 +21,8 @@ dependencies:
   file_picker: ^13.4.1
   firebase_app_check: ^0.5.1
   qr_flutter: ^4.1.0
+  # Already in the app through Firebase; used directly to save the knowledge map.
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

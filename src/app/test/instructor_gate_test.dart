@@ -31,6 +31,8 @@ class _FailingAuth implements AuthService {
   @override
   Future<void> signOut() async {}
   @override
+  Future<bool> isApprovedInstructor() async => false;
+  @override
   Future<String> ensureParticipant() async => 'p';
 }
 

@@ -189,6 +189,7 @@ One document per participant per question:
 
 | Path | Written by | Read by |
 |---|---|---|
+| `instructors/{uid}` | **nobody from an app**: added in the Firebase console | that user only (to show "waiting for approval"). An "instructor" in every rule below is an email/password account listed here |
 | `courses/{courseId}` | course owner | owner; students in a session of this course (public fields) |
 | `courses/{courseId}/materials/{materialId}` + `sections/{sectionId}` | owner | owner |
 | `courses/{courseId}/concepts`, `questions`, `resources` | owner (drafts and approvals) | owner: all; students: **only `approved` items** |
@@ -273,7 +274,7 @@ AI never scores multiple-choice answers and never overrides engine results.
 ## 10. Identity
 
 1. **Session participation (MVP):** students join with Firebase Anonymous Authentication. The anonymous UID identifies a participant within a session only. It is tied to a browser, not a person, and must not be presented as a persistent student identity.
-2. **Optional persistent profile (staged):** a "Save my progress" action links the anonymous account to a real sign-in (university email link or Google) using Firebase account linking (`linkWithCredential`). The same UID is kept, so the session's data moves into the profile. Only then is longitudinal tracking claimed.
+2. **Optional persistent profile (staged):** a "Save my progress" action links the anonymous account to a real sign-in (university email link or Google) using Firebase account linking (`linkWithCredential`). The same UID is kept, so the session's data moves into the profile. Only then is longitudinal tracking claimed. Signing in does not de-anonymise answering: instructors still see aggregates only, and the profile is readable by the student alone.
 3. Optional nickname only; no real name required to join.
 4. The QR code / join link contains only the session code, never a personal token.
 

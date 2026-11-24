@@ -21,6 +21,7 @@ import {
   where,
   limit,
   deleteDoc,
+  writeBatch,
 } from 'firebase/firestore';
 
 const COURSE = 'database_systems';
@@ -36,6 +37,9 @@ const otherInstructor = () =>
 const student = (uid = 'student1') =>
   env.authenticatedContext(uid, { firebase: { sign_in_provider: 'anonymous' } }).firestore();
 const nobody = () => env.unauthenticatedContext().firestore();
+// Signed in with a password but not in the instructors list.
+const unapproved = () =>
+  env.authenticatedContext('stranger', { firebase: { sign_in_provider: 'password' } }).firestore();
 
 const question = (id, status) => ({
   id,
@@ -75,6 +79,8 @@ beforeEach(async () => {
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
+    await setDoc(doc(db, 'instructors', 'teacher'), { email: 'teacher@example.com' });
+    await setDoc(doc(db, 'instructors', 'teacher2'), { email: 'teacher2@example.com' });
     await setDoc(doc(db, 'courses', COURSE), {
       name: { ar: 'أنظمة قواعد البيانات', en: 'Database Systems' },
       owner_id: 'teacher',
@@ -99,6 +105,51 @@ beforeEach(async () => {
 const closeSession = () =>
   env.withSecurityRulesDisabled((ctx) =>
     updateDoc(doc(ctx.firestore(), 'sessions', CODE), { status: 'closed' }));
+
+describe('approved instructors', () => {
+  test('an account not in the list is not an instructor', async () => {
+    const db = unapproved();
+    await assertFails(setDoc(doc(db, 'courses', 'mine'), { owner_id: 'stranger' }));
+    await assertFails(getDocs(query(collection(db, 'courses'), where('owner_id', '==', 'stranger'))));
+    await assertFails(getDoc(doc(db, 'courses', COURSE, 'answer_keys', 'q_ok_v1')));
+    await assertFails(getDocs(query(collection(db, 'sessions'), where('owner_id', '==', 'stranger'))));
+  });
+
+  test('a removed instructor loses access to their own course', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      deleteDoc(doc(ctx.firestore(), 'instructors', 'teacher')));
+    await assertFails(getDoc(doc(instructor(), 'courses', COURSE, 'answer_keys', 'q_ok_v1')));
+    await assertFails(updateDoc(doc(instructor(), 'sessions', CODE), { status: 'closed' }));
+  });
+
+  test('users check only their own entry', async () => {
+    await assertSucceeds(getDoc(doc(instructor(), 'instructors', 'teacher')));
+    await assertSucceeds(getDoc(doc(unapproved(), 'instructors', 'stranger')));
+    await assertFails(getDoc(doc(unapproved(), 'instructors', 'teacher')));
+    await assertFails(getDocs(collection(instructor(), 'instructors')));
+    await assertFails(getDoc(doc(nobody(), 'instructors', 'teacher')));
+  });
+
+  test('nobody approves themselves from the app', async () => {
+    await assertFails(setDoc(doc(unapproved(), 'instructors', 'stranger'), { email: 'x' }));
+    await assertFails(setDoc(doc(student(), 'instructors', 'student1'), { email: 'x' }));
+    await assertFails(updateDoc(doc(instructor(), 'instructors', 'teacher'), { role: 'admin' }));
+    await assertFails(setDoc(doc(instructor(), 'instructors', 'teacher3'), { email: 'x' }));
+    await assertFails(deleteDoc(doc(instructor(), 'instructors', 'teacher2')));
+  });
+
+  test('a large batch by the owner stays within the rules lookup limit', async () => {
+    const db = instructor();
+    const batch = writeBatch(db);
+    for (let i = 0; i < 40; i++) {
+      batch.set(doc(db, 'courses', COURSE, 'questions', `bulk${i}_v1`), question(`bulk${i}`, 'pending_review'));
+      batch.set(doc(db, 'courses', COURSE, 'answer_keys', `bulk${i}_v1`), {
+        question_id: `bulk${i}`, question_version: 1, correct_option_id: 'a',
+      });
+    }
+    await assertSucceeds(batch.commit());
+  });
+});
 
 describe('course content', () => {
   test('signed-out users read nothing', async () => {

@@ -26,6 +26,12 @@ abstract interface class AuthService {
 
   Future<void> signOut();
 
+  /// Whether the signed-in instructor is in the approved list
+  /// (`instructors/{uid}`, edited in the Firebase console). Anyone can
+  /// create an account; only approved accounts can own courses and
+  /// sessions, and the security rules enforce it. False when not signed in.
+  Future<bool> isApprovedInstructor();
+
   /// The current user's UID, signing in anonymously first if needed.
   Future<String> ensureParticipant();
 }
@@ -51,6 +57,9 @@ class InMemoryAuthService implements AuthService {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Future<bool> isApprovedInstructor() async => true;
 
   @override
   Future<String> ensureParticipant() async => 'participant';
