@@ -21,6 +21,10 @@
   "@instructorJoinLink": { "placeholders": { "link": { "type": "String" } } },
   "instructorLiveCounts": "Students who answered: {participants} · Answers: {responses}",
   "@instructorLiveCounts": { "placeholders": { "participants": { "type": "int" }, "responses": { "type": "int" } } },
+  "instructorQrLabel": "QR code to join session {code}",
+  "@instructorQrLabel": {"placeholders": {"code": {"type": "String"}}},
+  "instructorQrFullScreen": "Show large for the class",
+  "instructorQrClose": "Close",
   "instructorCloseSession": "Close session",
   "instructorSessionClosed": "Session closed",
 

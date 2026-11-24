@@ -6,6 +6,7 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import 'join_qr.dart';
 
 /// Skeleton for the instructor flow (owner: instructor app).
 ///
@@ -156,6 +157,10 @@ class _LiveSessionPanel extends StatelessWidget {
             l.instructorJoinLink(joinLink!),
             textAlign: TextAlign.center,
           ),
+        if (joinLink != null) ...[
+          const SizedBox(height: 16),
+          JoinQr(link: joinLink!, code: session.code),
+        ],
         const SizedBox(height: 24),
         StreamBuilder(
           stream: sessions.watchResponses(session.id),
