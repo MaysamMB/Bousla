@@ -46,6 +46,9 @@ case "$cmd" in
   emulators) ensure_npm; run "$FB" npx firebase emulators:start --only auth,firestore --project demo-bousla ;;
   emulator-run) check_env "$EMU_FILE"; run "$APP" flutter run -d chrome --dart-define-from-file=firebase.env.emulator.json ;;
   seed) check_env "$ENV_FILE"; ensure_npm; run "$FB" node tools/seed.mjs --approve-concepts "$@" ;;
+  simulate)
+    [ $# -ge 1 ] || fail "Usage: ./scripts/bousla.sh simulate <JOIN CODE> [--students 6]"
+    ensure_npm; run "$FB" node tools/simulate_students.mjs --code "$@" ;;
   test)
     run "$APP" flutter pub get; run "$APP" flutter analyze; run "$APP" flutter test
     ensure_npm; run "$FB" npm test ;;
@@ -60,6 +63,7 @@ Bousla commands (macOS/Linux: ./scripts/bousla.sh <command>, Windows: .\bousla <
   rules         publish only the security rules
   emulators     local Firebase for testing (keep open)
   emulator-run  app in Chrome on the local emulators
+  simulate CODE simulated students answer session CODE (emulators only)
   test          flutter analyze + flutter test + rules tests
 HELP
   ;;

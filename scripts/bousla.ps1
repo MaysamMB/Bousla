@@ -108,6 +108,12 @@ switch ($Command) {
     Ensure-Npm
     Run $Fb 'node' (@('tools/seed.mjs', '--approve-concepts') + $Rest)
   }
+  'simulate' {
+    # Simulated students on the local emulators: .\bousla simulate ABC234
+    if ($Rest.Count -lt 1) { Fail 'Usage: .\bousla simulate <JOIN CODE> [--students 6]' }
+    Ensure-Npm
+    Run $Fb 'node' (@('tools/simulate_students.mjs', '--code') + $Rest)
+  }
   'test' {
     Run $App 'flutter' @('pub', 'get')
     Run $App 'flutter' @('analyze')
@@ -127,6 +133,7 @@ Bousla commands (run from the repository root):
   .\bousla rules         publish only the security rules
   .\bousla emulators     local Firebase for testing (keep open)
   .\bousla emulator-run  app in Chrome on the local emulators
+  .\bousla simulate CODE simulated students answer session CODE (emulators only)
   .\bousla test          flutter analyze + flutter test + rules tests
 '@
   }
