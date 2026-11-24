@@ -8,12 +8,14 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import '../feedback/feedback_screen.dart';
 
 /// One question at a time, in the student's chosen language (owner: student
 /// web portal). Switching language mid-way keeps the same question and
 /// options; only the text and direction change, and each answer records the
-/// language it was shown in. To do: feedback screen after release, progress
-/// saving on reload, accessibility review.
+/// language it was shown in. After the last answer it waits for the
+/// instructor to publish feedback and then opens [FeedbackScreen]. To do:
+/// accessibility review.
 class AnsweringScreen extends StatefulWidget {
   const AnsweringScreen({
     super.key,
@@ -143,11 +145,9 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
           if (questions.isEmpty)
             return Center(child: Text(l.studentNoQuestions));
           if (_index >= questions.length) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(l.studentAllDone, textAlign: TextAlign.center),
-              ),
+            return _ThankYou(
+              sessionId: widget.session.id,
+              participantId: widget.participantId,
             );
           }
           final q = questions[_index];
@@ -233,4 +233,74 @@ class _OptionText extends StatelessWidget {
         ? TextAlign.right
         : TextAlign.left,
   );
+}
+
+/// "Thank you" after the last answer. Waits for this participant's feedback
+/// ([SessionRepository.watchMyFeedback] stays null until the instructor
+/// releases it) and then opens it.
+class _ThankYou extends StatefulWidget {
+  const _ThankYou({required this.sessionId, required this.participantId});
+
+  final String sessionId;
+  final String participantId;
+
+  @override
+  State<_ThankYou> createState() => _ThankYouState();
+}
+
+class _ThankYouState extends State<_ThankYou> {
+  StreamSubscription<Object?>? _sub;
+  var _opened = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sub ??= ServicesScope.of(context)
+        .sessions
+        .watchMyFeedback(widget.sessionId, widget.participantId)
+        .listen(
+      (feedback) {
+        if (feedback == null || _opened || !mounted) return;
+        _opened = true;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => FeedbackScreen(
+              sessionId: widget.sessionId,
+              participantId: widget.participantId,
+            ),
+          ),
+        );
+      },
+      // Waiting for feedback is optional: on an error the thank-you stays.
+      onError: (Object _) {},
+    );
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l.studentAllDone, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            Text(
+              l.studentFeedbackWaiting,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

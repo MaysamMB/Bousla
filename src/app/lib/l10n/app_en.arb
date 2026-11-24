@@ -363,17 +363,6 @@
                                                             }
                                               }
                          },
-    "studentMapEvidence":  "you got {correct} of {attempts} questions on it right",
-    "@studentMapEvidence":  {
-                                "placeholders":  {
-                                                     "correct":  {
-                                                                     "type":  "int"
-                                                                 },
-                                                     "attempts":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                 }
-                            },
     "studentMapBuildsOn":  "Builds on: {names}",
     "@studentMapBuildsOn":  {
                                 "placeholders":  {
@@ -390,10 +379,6 @@
                                                                          }
                                                     }
                                },
-    "studentMapStateDifficulty":  "Possible difficulty",
-    "studentMapStateEmerging":  "Emerging",
-    "studentMapStateMastery":  "Demonstrated mastery",
-    "studentMapStateInsufficient":  "Not enough evidence",
     "studentMapEmpty":  "No concepts in this session.",
     "studentMapSave":  "Save the map to my phone",
     "studentMapSaved":  "Map saved as an image.",
@@ -438,5 +423,58 @@
   "instructorInsightsSignal": "{gap, plural, =1{1 of the {struggling} students with a possible difficulty in {concept} also shows one in {prerequisite}.} other{{gap} of the {struggling} students with a possible difficulty in {concept} also show one in {prerequisite}.}}",
   "@instructorInsightsSignal": {"placeholders": {"gap": {"type": "int"}, "struggling": {"type": "int"}, "concept": {"type": "String"}, "prerequisite": {"type": "String"}}},
   "instructorInsightsSignalAction": "{prerequisite} may be a contributing cause: consider reviewing it with the class.",
-  "@instructorInsightsSignalAction": {"placeholders": {"prerequisite": {"type": "String"}}}
+  "@instructorInsightsSignalAction": {"placeholders": {"prerequisite": {"type": "String"}}},
+  "instructorPublishFeedback": "Publish feedback",
+  "instructorFeedbackPublished": "Feedback published. Students can open it from the session link.",
+  "instructorPublishDialogTitle": "Publish feedback",
+  "instructorPublishDialogBody": "Each student who answered gets their own feedback: concept states with evidence, possible prerequisites and next steps, all from the engine's fixed rules. Students see only their own feedback.",
+  "instructorPublishAiOption": "Add an AI explanation",
+  "instructorPublishAiOptionHint": "Gemini puts the results into words in one request for the whole class, from anonymous profiles only (no names, IDs or answers). It cannot change any result; text that fails the safety checks is replaced by a fixed template. Students see an \"AI-generated\" label.",
+  "instructorPublishAiUnavailable": "AI is not available in this mode; a fixed template explanation is used.",
+  "instructorPublishConfirm": "Publish",
+  "instructorPublishCancel": "Cancel",
+  "instructorPublishClose": "Close",
+  "instructorPublishWorking": "Preparing feedback…",
+  "instructorPublishWorkingAi": "Preparing feedback and asking Gemini for explanations…",
+  "instructorPublishError": "The feedback could not be saved, so nothing was published. Check the connection and try again.",
+  "instructorPublishDone": "Feedback published for {count} students.",
+  "@instructorPublishDone": {"placeholders": {"count": {"type": "int"}}},
+  "instructorPublishSummary": "AI explanation: {ai} students · template: {template} students · {profiles} different result profiles",
+  "@instructorPublishSummary": {"placeholders": {"ai": {"type": "int"}, "template": {"type": "int"}, "profiles": {"type": "int"}}},
+  "instructorPublishAiFailed": "Gemini was not available, so the fixed template was used for everyone.",
+  "instructorPublishGuardReplaced": "{count} AI explanations failed the safety checks and were replaced by the template.",
+  "@instructorPublishGuardReplaced": {"placeholders": {"count": {"type": "int"}}},
+  "studentFeedbackIntro": "Based on your answers in this session. These are estimates from a few questions, not a final judgement.",
+  "studentFeedbackConceptsTitle": "Concepts",
+  "studentStateInsufficientEvidence": "Not enough evidence yet",
+  "studentStatePossibleDifficulty": "May need review",
+  "studentStateEmerging": "Still forming",
+  "studentStateDemonstratedMastery": "Shown good understanding",
+  "studentFeedbackEvidence": "You answered {correct} of {attempts} correctly",
+  "@studentFeedbackEvidence": {"placeholders": {"correct": {"type": "int"}, "attempts": {"type": "int"}}},
+  "studentFeedbackNoEvidence": "No questions on this concept in this session",
+  "studentFeedbackHintsTitle": "Foundations that may help",
+  "studentFeedbackHintGap": "Reviewing {prerequisite} first may help with {concept}.",
+  "@studentFeedbackHintGap": {"placeholders": {"prerequisite": {"type": "String"}, "concept": {"type": "String"}}},
+  "studentFeedbackHintMoreEvidence": "There is not enough evidence yet about {prerequisite}, which {concept} builds on.",
+  "@studentFeedbackHintMoreEvidence": {"placeholders": {"prerequisite": {"type": "String"}, "concept": {"type": "String"}}},
+  "studentFeedbackHintsNote": "These are possibilities, not a diagnosis.",
+  "studentFeedbackNextStepsTitle": "Next steps",
+  "studentFeedbackStepReviewPrerequisite": "Review {concept} first (it supports {related})",
+  "@studentFeedbackStepReviewPrerequisite": {"placeholders": {"concept": {"type": "String"}, "related": {"type": "String"}}},
+  "studentFeedbackStepReviewConcept": "Review {concept}",
+  "@studentFeedbackStepReviewConcept": {"placeholders": {"concept": {"type": "String"}}},
+  "studentFeedbackStepPractice": "Practise {concept} a little more",
+  "@studentFeedbackStepPractice": {"placeholders": {"concept": {"type": "String"}}},
+  "studentFeedbackStepAssessMore": "Answer more questions on {concept} when you can",
+  "@studentFeedbackStepAssessMore": {"placeholders": {"concept": {"type": "String"}}},
+  "studentFeedbackNoSteps": "No next steps are suggested right now.",
+  "studentFeedbackResourceActivity": "Activity",
+  "studentFeedbackResourceLink": "Link: {url}",
+  "@studentFeedbackResourceLink": {"placeholders": {"url": {"type": "String"}}},
+  "studentFeedbackExplanationTitle": "About your results",
+  "studentFeedbackAiLabel": "AI-generated",
+  "studentFeedbackAiNote": "Written by AI from the results above; it does not change them.",
+  "studentFeedbackNotAvailable": "Your feedback is not available yet.",
+  "studentFeedbackWaiting": "Your personal feedback will appear here when your instructor publishes it."
 }
