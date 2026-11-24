@@ -1,0 +1,208 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Bousla: deploy (build + publish)",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "deploy"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "deploy"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Bousla: run on Firebase",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "run"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "run"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Bousla: offline demo",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "demo"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "demo"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Bousla: load course",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "seed"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "seed"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Bousla: check settings",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "check"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "check"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Bousla: all tests",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "test"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "test"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Bousla: start emulators",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "emulators"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "emulators"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "isBackground": false
+    },
+    {
+      "label": "Bousla: run on emulators",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "emulator-run"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "emulator-run"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Bousla: publish rules",
+      "type": "shell",
+      "command": "./scripts/bousla.sh",
+      "args": [
+        "rules"
+      ],
+      "windows": {
+        "command": ".\\bousla.cmd",
+        "args": [
+          "rules"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

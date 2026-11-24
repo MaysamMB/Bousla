@@ -13,6 +13,24 @@ The app's Firebase code is in `src/app/lib/data/firebase/`. Without Firebase
 settings the app still runs on the in-memory repositories: that is the
 **offline demo mode**.
 
+## Shortcuts
+
+All the commands below are wrapped in one script, run from the repository root:
+
+| Windows (PowerShell or cmd) | macOS / Linux | What it does |
+|---|---|---|
+| `.\bousla deploy` | `./scripts/bousla.sh deploy` | check settings, build, publish site + rules |
+| `.\bousla run` | `./scripts/bousla.sh run` | app in Chrome on the real project |
+| `.\bousla demo` | `./scripts/bousla.sh demo` | offline demo mode |
+| `.\bousla seed` | `./scripts/bousla.sh seed` | load the course as the instructor |
+| `.\bousla test` | `./scripts/bousla.sh test` | analyze + Flutter tests + rules tests |
+| `.\bousla help` | `./scripts/bousla.sh help` | all commands |
+
+In VS Code: **Ctrl+Shift+P → Tasks: Run Task → Bousla: …** (`.vscode/tasks.json`);
+**Ctrl+Shift+B** runs deploy. Every build first checks
+`src/app/firebase.env.json` (valid JSON, no empty values, no hidden `•`
+characters from a masked key, key shaped `AIza…` with 39 characters).
+
 ## Requirements
 
 Node 20+ and Java 11+ (for the emulators). Then once:

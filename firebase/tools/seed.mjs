@@ -59,6 +59,11 @@ if (!env.FIREBASE_PROJECT_ID) {
   console.error(`No FIREBASE_PROJECT_ID in ${envFile}`);
   process.exit(1);
 }
+if (!env.USE_FIREBASE_EMULATOR && !/^AIza[0-9A-Za-z_-]{35}$/.test(env.FIREBASE_API_KEY ?? '')) {
+  console.error(`FIREBASE_API_KEY in ${envFile} is not a valid Firebase key (hidden "•" characters?). ` +
+    'Copy it again from Firebase console -> Project settings -> Your apps -> Config.');
+  process.exit(1);
+}
 
 const app = initializeApp({
   apiKey: env.FIREBASE_API_KEY,
