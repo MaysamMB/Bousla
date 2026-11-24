@@ -80,6 +80,8 @@ abstract interface class ContentRepository {
     required String modelName,
     required List<GeneratedQuestion> drafts,
     int droppedByChecks = 0,
+    int requested = 0,
+    Map<String, int> droppedReasons = const {},
   });
 
   /// Instructor only. Materials questions were drafted from, newest first.

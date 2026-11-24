@@ -112,11 +112,11 @@ String buildQuestionDraftingInstructions({
   return '''
 You help a university instructor prepare a short in-class quiz from their own course material, which is attached.
 
-Write up to $count multiple-choice questions that check understanding of the material. Rules:
-1. Use only what the material says. Do not add facts that are not in it. If the material does not support $count good questions, return fewer.
+Write $count multiple-choice questions that check understanding of the material. Rules:
+1. Use only what the material says. Do not add facts that are not in it. Several questions may cover the same concept or the same part of the material, as long as each tests a different point. Return fewer than $count only if the material really cannot support more good questions.
 2. Link every question to one or more of these concept IDs, and to nothing else:
 $conceptLines
-   Skip material that fits none of them.
+   Skip parts of the material that fit none of them, and use the parts that do.
 3. Write every question and every option in BOTH Arabic (Modern Standard Arabic) and English, with the same meaning. In Arabic, a technical term may be followed by the English term in parentheses, for example: المفتاح الأساسي (Primary Key). Code, table and column names stay as they are in both languages.
 4. Give 4 options with exactly one correct answer. Wrong options must be plausible to a student who has not understood the idea, not silly. Do not use "all of the above" or "none of the above". Vary the position of the correct answer between questions.
 5. The question text must not reveal the answer, and must not list the options: put them only in "options".

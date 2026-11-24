@@ -117,6 +117,7 @@ void main() {
       );
       expect(saved, hasLength(1));
       expect(repo.materials.single.draftsDropped, 1);
+      expect(repo.materials.single.droppedReasons, {'app_checks': 1});
     });
   });
 
@@ -137,6 +138,8 @@ void main() {
         modelName: 'fake-model',
         drafts: [_g('Can a primary key be NULL?')],
         droppedByChecks: 1,
+        requested: 5,
+        droppedReasons: const {'duplicate': 1},
       );
       final id = saved.single.id;
       expect(id, startsWith('ai_q_'));
@@ -170,6 +173,8 @@ void main() {
       expect(materials.single.id, back.sourceMaterialId);
       expect(materials.single.fileName, 'lecture03.pdf');
       expect(materials.single.modelName, 'fake-model');
+      expect(materials.single.draftsRequested, 5);
+      expect(materials.single.droppedReasons, {'duplicate': 1});
       // Editing the draft keeps the link to its material.
       final key2 = await course
           .collection('answer_keys')
@@ -259,14 +264,14 @@ void main() {
       expect(generator.lastMaterial?.name, 'lecture03.pdf');
       expect(generator.lastCount, 10);
       expect(
-        find.text(
-            '1 AI drafts are waiting for your review. 1 were dropped by the automatic checks.'),
+        find.text('You asked for 10 · Gemini wrote 2 · 1 saved for your review\n'
+            'Dropped by the automatic checks: not about the course concepts 1'),
         findsOneWidget,
       );
       expect(find.text('Can a primary key be NULL?'), findsOneWidget);
       // The new suggestions come first, under their own heading.
       expect(find.text('New AI suggestions (1)'), findsOneWidget);
-      expect(find.textContaining('From «lecture03.pdf» · fake-model'),
+      expect(find.textContaining('lecture03.pdf'),
           findsOneWidget);
       expect(find.text('Other drafts waiting for review'), findsOneWidget);
       final newHeading = tester.getTopLeft(find.text('New AI suggestions (1)'));
@@ -333,9 +338,9 @@ void main() {
       expect(find.text('New AI suggestions (1)'), findsNothing);
       expect(find.text('AI suggestions (1)'), findsNWidgets(2));
       final week2 =
-          tester.getTopLeft(find.textContaining('«week2.pdf» · model-b'));
+          tester.getTopLeft(find.textContaining('week2.pdf'));
       final week1 =
-          tester.getTopLeft(find.textContaining('«week1.pdf» · model-a'));
+          tester.getTopLeft(find.textContaining('week1.pdf'));
       final others =
           tester.getTopLeft(find.text('Other drafts waiting for review'));
       final q2 = tester.getTopLeft(find.text('Can a foreign key be NULL?'));

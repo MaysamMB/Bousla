@@ -136,6 +136,12 @@ MaterialRecord materialFromJson(String id, Map<String, dynamic> json) =>
           : null,
       draftsSaved: (json['drafts_saved'] as num?)?.toInt() ?? 0,
       draftsDropped: (json['drafts_dropped'] as num?)?.toInt() ?? 0,
+      draftsRequested: (json['drafts_requested'] as num?)?.toInt() ?? 0,
+      droppedReasons: {
+        if (json['dropped_reasons'] case final Map<String, dynamic> m)
+          for (final e in m.entries)
+            if (e.value is num) e.key: (e.value as num).toInt(),
+      },
     );
 
 Map<String, dynamic> answerKeyToJson(
