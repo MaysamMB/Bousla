@@ -113,12 +113,21 @@ class _JoinScreenState extends State<JoinScreen> {
           .watchMyFeedback(session.id, participantId)
           .first
           .timeout(AnsweringScreen.timeout);
-      return feedback == null ? null : participantId;
-    } on TimeoutException {
+      if (feedback == null) {
+        // For diagnosis from the browser console: compare with the IDs
+        // under sessions/{code}/feedback (first characters only).
+        debugPrint(
+          'Bousla: no feedback for this browser in ${session.code} '
+          '(participant ${participantId.substring(0, 6)}…)',
+        );
+        return null;
+      }
+      return participantId;
+    } catch (e) {
+      // A real failure (connection, permission) is reported as an error,
+      // not as "no feedback for you", which would hide it.
+      debugPrint('Bousla: feedback lookup failed: $e');
       rethrow;
-    } catch (_) {
-      // No readable feedback for this browser: keep "session closed".
-      return null;
     }
   }
 
