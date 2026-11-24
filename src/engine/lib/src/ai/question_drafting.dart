@@ -8,6 +8,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:math';
 
 import '../models.dart';
 
@@ -42,6 +43,7 @@ class GeneratedQuestion {
   final LocalizedText prompt;
 
   /// Option IDs are always a, b, c, ... in order, whatever the model used.
+  /// The order is shuffled (see [parseQuestionDrafts]).
   final List<GeneratedOption> options;
   final String correctOptionId;
 
@@ -113,7 +115,7 @@ Write up to $count multiple-choice questions that check understanding of the mat
 $conceptLines
    Skip material that fits none of them.
 3. Write every question and every option in BOTH Arabic (Modern Standard Arabic) and English, with the same meaning. In Arabic, a technical term may be followed by the English term in parentheses, for example: المفتاح الأساسي (Primary Key). Code, table and column names stay as they are in both languages.
-4. Give 4 options with exactly one correct answer. Wrong options must be plausible to a student who has not understood the idea, not silly. Do not use "all of the above" or "none of the above".
+4. Give 4 options with exactly one correct answer. Wrong options must be plausible to a student who has not understood the idea, not silly. Do not use "all of the above" or "none of the above". Vary the position of the correct answer between questions.
 5. The question text must not reveal the answer.
 6. source_location says where in the material the question comes from, for example "page 4" or "section 2.1", so the instructor can check it quickly.
 7. difficulty is one of: basic, intermediate, advanced.
@@ -123,56 +125,58 @@ Your questions are drafts. The instructor reviews, edits or rejects every one be
 
 /// JSON schema for the model's answer (Gemini `responseJsonSchema`).
 Map<String, Object?> questionDraftingJsonSchema() => {
-  'type': 'object',
-  'properties': {
-    'questions': {
-      'type': 'array',
-      'items': {
-        'type': 'object',
-        'properties': {
-          'concept_ids': {
-            'type': 'array',
-            'items': {'type': 'string'},
-          },
-          'prompt_ar': {'type': 'string'},
-          'prompt_en': {'type': 'string'},
-          'options': {
-            'type': 'array',
-            'items': {
-              'type': 'object',
-              'properties': {
-                'id': {'type': 'string'},
-                'text_ar': {'type': 'string'},
-                'text_en': {'type': 'string'},
+      'type': 'object',
+      'properties': {
+        'questions': {
+          'type': 'array',
+          'items': {
+            'type': 'object',
+            'properties': {
+              'concept_ids': {
+                'type': 'array',
+                'items': {'type': 'string'},
               },
-              'required': ['id', 'text_ar', 'text_en'],
+              'prompt_ar': {'type': 'string'},
+              'prompt_en': {'type': 'string'},
+              'options': {
+                'type': 'array',
+                'items': {
+                  'type': 'object',
+                  'properties': {
+                    'id': {'type': 'string'},
+                    'text_ar': {'type': 'string'},
+                    'text_en': {'type': 'string'},
+                  },
+                  'required': ['id', 'text_ar', 'text_en'],
+                },
+              },
+              'correct_option_id': {'type': 'string'},
+              'source_location': {'type': 'string'},
+              'difficulty': {
+                'type': 'string',
+                'enum': ['basic', 'intermediate', 'advanced'],
+              },
             },
-          },
-          'correct_option_id': {'type': 'string'},
-          'source_location': {'type': 'string'},
-          'difficulty': {
-            'type': 'string',
-            'enum': ['basic', 'intermediate', 'advanced'],
+            'required': [
+              'concept_ids',
+              'prompt_ar',
+              'prompt_en',
+              'options',
+              'correct_option_id',
+              'source_location',
+            ],
           },
         },
-        'required': [
-          'concept_ids',
-          'prompt_ar',
-          'prompt_en',
-          'options',
-          'correct_option_id',
-          'source_location',
-        ],
       },
-    },
-  },
-  'required': ['questions'],
-};
+      'required': ['questions'],
+    };
 
 /// Checks the model's answer. At most [maxCount] drafts are accepted.
 /// Concept IDs not in [knownConceptIds] are removed; a draft left with none
-/// is dropped. Option IDs are renamed a, b, c, ... (the correct answer
-/// follows its option).
+/// is dropped. Options are shuffled and renamed a, b, c, ... (the correct
+/// answer follows its option): models tend to put the correct answer first,
+/// which students would learn to exploit. The shuffle is seeded by the
+/// question text, so the same answer always gives the same order.
 DraftParseResult parseQuestionDrafts(
   String modelText, {
   required Set<String> knownConceptIds,
@@ -257,21 +261,28 @@ DraftParseResult parseQuestionDrafts(
   if (rawOptions.length > maxDraftOptions) {
     return (null, DraftIssue.tooManyOptions);
   }
-  final options = <GeneratedOption>[];
-  String? correctId;
-  for (var i = 0; i < rawOptions.length; i++) {
-    final o = rawOptions[i];
+  final parsed = <(LocalizedText, bool)>[];
+  var hasCorrect = false;
+  for (final o in rawOptions) {
     if (o is! Map) return (null, DraftIssue.malformed);
     final ar = text(o['text_ar']) ?? '';
     final en = text(o['text_en']) ?? '';
     // Option text may be code (e.g. student_id) in both languages, so only
     // emptiness is checked here, as in the app's validateDraft.
     if (ar.isEmpty || en.isEmpty) return (null, DraftIssue.optionTextMissing);
-    final id = String.fromCharCode('a'.codeUnitAt(0) + i);
-    if (text(o['id']) == correct) correctId ??= id;
-    options.add(GeneratedOption(id: id, text: LocalizedText(ar: ar, en: en)));
+    final isCorrect = !hasCorrect && text(o['id']) == correct;
+    hasCorrect = hasCorrect || isCorrect;
+    parsed.add((LocalizedText(ar: ar, en: en), isCorrect));
   }
-  if (correctId == null) return (null, DraftIssue.correctOptionMissing);
+  if (!hasCorrect) return (null, DraftIssue.correctOptionMissing);
+  parsed.shuffle(Random(_stableHash(promptEn)));
+  final options = <GeneratedOption>[];
+  late String correctId;
+  for (var i = 0; i < parsed.length; i++) {
+    final id = String.fromCharCode('a'.codeUnitAt(0) + i);
+    if (parsed[i].$2) correctId = id;
+    options.add(GeneratedOption(id: id, text: parsed[i].$1));
+  }
 
   final difficulty = text(entry['difficulty']);
   final location = text(entry['source_location']);
@@ -282,12 +293,24 @@ DraftParseResult parseQuestionDrafts(
       options: options,
       correctOptionId: correctId,
       sourceLocation: location == null || location.isEmpty ? null : location,
-      difficulty: const {'basic', 'intermediate', 'advanced'}.contains(difficulty)
-          ? difficulty
-          : null,
+      difficulty:
+          const {'basic', 'intermediate', 'advanced'}.contains(difficulty)
+              ? difficulty
+              : null,
     ),
     null,
   );
+}
+
+/// FNV-1a over the UTF-16 code units: the same on every platform and run
+/// (String.hashCode is not guaranteed to be).
+int _stableHash(String s) {
+  var h = 0x811c9dc5;
+  for (final c in s.codeUnits) {
+    h ^= c;
+    h = (h * 0x01000193) & 0xffffffff;
+  }
+  return h;
 }
 
 /// Models sometimes wrap JSON in a ```json fence despite the schema.

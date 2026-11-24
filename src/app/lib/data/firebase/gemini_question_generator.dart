@@ -77,7 +77,16 @@ class GeminiQuestionGenerator implements QuestionGenerator {
     } on TimeoutException {
       throw const QuestionGenerationException(GenerationProblem.network);
     } on FirebaseAIException catch (e) {
-      throw QuestionGenerationException(GenerationProblem.unknown, e.message);
+      // Setup problems also arrive as generic server errors, e.g. right
+      // after AI Logic is enabled, while permissions propagate.
+      final setup = RegExp(
+        'PERMISSION_DENIED|has not been used|is disabled|serviceusage',
+        caseSensitive: false,
+      ).hasMatch(e.message);
+      throw QuestionGenerationException(
+        setup ? GenerationProblem.notEnabled : GenerationProblem.unknown,
+        e.message,
+      );
     }
     final text = response.text;
     if (text == null || text.trim().isEmpty) {

@@ -7,38 +7,43 @@ const _known = {'primary_key', 'foreign_key'};
 
 Map<String, Object?> _q({
   List<Object?> concepts = const ['primary_key'],
-  Object? promptAr = 'ما الخاصية التي يجب أن يحققها المفتاح الأساسي (Primary Key)؟',
+  Object? promptAr =
+      'ما الخاصية التي يجب أن يحققها المفتاح الأساسي (Primary Key)؟',
   Object? promptEn = 'Which property must a primary key have?',
   List<Object?>? options,
   Object? correct = 'x2',
   Object? location = 'page 4',
   Object? difficulty = 'basic',
-}) => {
-  'concept_ids': concepts,
-  'prompt_ar': promptAr,
-  'prompt_en': promptEn,
-  'options':
-      options ??
-      [
-        {'id': 'x1', 'text_ar': 'يقبل التكرار', 'text_en': 'Allows duplicates'},
-        {
-          'id': 'x2',
-          'text_ar': 'فريد ولا يقبل NULL',
-          'text_en': 'Unique and not NULL',
-        },
-        {'id': 'x3', 'text_ar': 'نصي دائماً', 'text_en': 'Always text'},
-        {'id': 'x4', 'text_ar': 'اختياري', 'text_en': 'Optional'},
-      ],
-  'correct_option_id': correct,
-  'source_location': location,
-  'difficulty': difficulty,
-};
+}) =>
+    {
+      'concept_ids': concepts,
+      'prompt_ar': promptAr,
+      'prompt_en': promptEn,
+      'options': options ??
+          [
+            {
+              'id': 'x1',
+              'text_ar': 'يقبل التكرار',
+              'text_en': 'Allows duplicates'
+            },
+            {
+              'id': 'x2',
+              'text_ar': 'فريد ولا يقبل NULL',
+              'text_en': 'Unique and not NULL',
+            },
+            {'id': 'x3', 'text_ar': 'نصي دائماً', 'text_en': 'Always text'},
+            {'id': 'x4', 'text_ar': 'اختياري', 'text_en': 'Optional'},
+          ],
+      'correct_option_id': correct,
+      'source_location': location,
+      'difficulty': difficulty,
+    };
 
 DraftParseResult _parse(Object json, {int max = 10}) => parseQuestionDrafts(
-  json is String ? json : jsonEncode(json),
-  knownConceptIds: _known,
-  maxCount: max,
-);
+      json is String ? json : jsonEncode(json),
+      knownConceptIds: _known,
+      maxCount: max,
+    );
 
 void main() {
   group('parseQuestionDrafts', () {
@@ -49,12 +54,33 @@ void main() {
       expect(r.dropped, isEmpty);
       final q = r.accepted.single;
       expect([for (final o in q.options) o.id], ['a', 'b', 'c', 'd']);
-      // The correct answer follows its option (was x2, now b).
-      expect(q.correctOptionId, 'b');
-      expect(q.options[1].text.en, 'Unique and not NULL');
+      // The correct answer follows its option (it was x2).
+      final correct = q.options.singleWhere((o) => o.id == q.correctOptionId);
+      expect(correct.text.en, 'Unique and not NULL');
+      expect(correct.text.ar, 'فريد ولا يقبل NULL');
+      expect(
+        {for (final o in q.options) o.text.en},
+        {'Allows duplicates', 'Unique and not NULL', 'Always text', 'Optional'},
+      );
       expect(q.prompt.ar, contains('(Primary Key)'));
       expect(q.sourceLocation, 'page 4');
       expect(q.difficulty, 'basic');
+    });
+
+    test('the correct answer is not always first, and the order is stable', () {
+      // Models tend to put the correct answer first.
+      final drafts = [
+        for (var i = 0; i < 12; i++)
+          _q(promptEn: 'Question number $i about primary keys?', correct: 'x1'),
+      ];
+      final first = _parse({'questions': drafts}, max: 20).accepted;
+      final positions = {for (final q in first) q.correctOptionId};
+      expect(positions.length, greaterThan(1));
+      final again = _parse({'questions': drafts}, max: 20).accepted;
+      expect(
+        [for (final q in again) q.correctOptionId],
+        [for (final q in first) q.correctOptionId],
+      );
     });
 
     test('code in options is allowed in both languages', () {
@@ -151,8 +177,8 @@ void main() {
 
     test('accepts JSON wrapped in a code fence, or a bare list', () {
       final fenced = '```json\n${jsonEncode({
-        'questions': [_q()],
-      })}\n```';
+            'questions': [_q()],
+          })}\n```';
       expect(_parse(fenced).accepted, hasLength(1));
       expect(_parse([_q()]).accepted, hasLength(1));
     });
@@ -181,6 +207,7 @@ void main() {
       expect(text, contains('up to 5'));
       expect(text, contains('BOTH Arabic'));
       expect(text, contains('reviews, edits or rejects'));
+      expect(text, contains('Vary the position of the correct answer'));
     });
   });
 
