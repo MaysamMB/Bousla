@@ -11,6 +11,7 @@ import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
 import '../knowledge_map/knowledge_map_view.dart';
+import 'open_link.dart' as device;
 
 /// A student's released feedback for one session (owner: student portal;
 /// the content is Lina's task, docs/implementation-plan.md Phase 5).
@@ -48,10 +49,12 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // One stream for the screen's life, so rebuilds do not re-subscribe.
-    _feedback ??= ServicesScope.of(context)
-        .sessions
-        .watchMyFeedback(widget.session.id, widget.participantId)
-        .timeout(AnsweringScreen.timeout);
+    _feedback ??= firstEventWithin(
+      ServicesScope.of(context)
+          .sessions
+          .watchMyFeedback(widget.session.id, widget.participantId),
+      AnsweringScreen.timeout,
+    );
   }
 
   /// Switches the UI to the feedback's language once, when it first arrives.
@@ -110,6 +113,24 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
   }
 }
 
+/// [stream], with a [TimeoutException] if its FIRST event takes longer than
+/// [limit] (a slow connection). Later quiet periods are normal: released
+/// feedback rarely changes, and `Stream.timeout` alone would replace it with
+/// "connection slow" after [limit] without a new event (seen in the browser
+/// on the emulators, 24 Nov).
+Stream<T> firstEventWithin<T>(Stream<T> stream, Duration limit) {
+  var seen = false;
+  return stream.map((event) {
+    seen = true;
+    return event;
+  }).timeout(
+    limit,
+    onTimeout: (sink) {
+      if (!seen) sink.addError(TimeoutException('No feedback yet', limit));
+    },
+  );
+}
+
 class _Message extends StatelessWidget {
   const _Message(this.text);
 
@@ -126,9 +147,16 @@ class _Message extends StatelessWidget {
 
 /// The explanation and the next steps, shown above the knowledge map.
 class FeedbackSummary extends StatelessWidget {
-  const FeedbackSummary({super.key, required this.feedback});
+  const FeedbackSummary({
+    super.key,
+    required this.feedback,
+    this.openLink = device.openLink,
+  });
 
   final StudentFeedback feedback;
+
+  /// Opens a resource link; replaced in tests.
+  final Future<void> Function(Uri url) openLink;
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +169,10 @@ class FeedbackSummary extends StatelessWidget {
     String name(String? id) => names[id] ?? id ?? '';
     final explanation = feedback.explanation;
     final isAi = explanation?.source == ExplanationSource.ai;
+    final moreEvidence = [
+      for (final h in feedback.hints)
+        if (h.signal == PrerequisiteSignal.needsMoreEvidence) h,
+    ];
 
     Widget heading(String text) => Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -182,6 +214,20 @@ class FeedbackSummary extends StatelessWidget {
             ),
           ),
         ],
+        // Prerequisites without enough evidence. Possible gaps are drawn on
+        // the knowledge map below, so they are not repeated here.
+        if (moreEvidence.isNotEmpty) ...[
+          heading(l.studentFeedbackHintsTitle),
+          for (final h in moreEvidence)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(l.studentFeedbackHintMoreEvidence(
+                name(h.prerequisiteId),
+                name(h.conceptId),
+              )),
+            ),
+          Text(l.studentFeedbackHintsNote, style: theme.textTheme.bodySmall),
+        ],
         // 3-5. Next steps with approved resources only.
         heading(l.studentFeedbackNextStepsTitle),
         if (feedback.recommendations.isEmpty)
@@ -197,7 +243,11 @@ class FeedbackSummary extends StatelessWidget {
                     Text(_stepText(l, r, name),
                         style: theme.textTheme.bodyLarge),
                     for (final res in r.resources)
-                      _ResourceTile(resource: res, language: language),
+                      _ResourceTile(
+                        resource: res,
+                        language: language,
+                        openLink: openLink,
+                      ),
                   ],
                 ),
               ),
@@ -227,15 +277,31 @@ String _stepText(
     };
 
 class _ResourceTile extends StatelessWidget {
-  const _ResourceTile({required this.resource, required this.language});
+  const _ResourceTile({
+    required this.resource,
+    required this.language,
+    required this.openLink,
+  });
 
   final FeedbackResource resource;
   final Language language;
+  final Future<void> Function(Uri url) openLink;
+
+  /// Only web links: the URL stored with the approved resource, never one
+  /// built here.
+  Uri? get _link {
+    final uri = Uri.tryParse(resource.url?.trim() ?? '');
+    return uri != null &&
+            (uri.scheme == 'https' || uri.scheme == 'http') &&
+            uri.host.isNotEmpty
+        ? uri
+        : null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final url = resource.url;
+    final link = _link;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(switch (resource.type) {
@@ -245,17 +311,27 @@ class _ResourceTile extends StatelessWidget {
         ResourceType.activity => Icons.edit_note,
       }),
       title: Text(resource.title.of(language)),
-      // Only the URL stored with the approved resource; links read
-      // left-to-right in both languages.
-      subtitle: url == null || url.isEmpty
+      // Links read left-to-right in both languages.
+      subtitle: link == null
           ? Text(l.studentFeedbackResourceActivity)
           : Directionality(
               textDirection: TextDirection.ltr,
-              child: SelectableText(
-                url,
-                semanticsLabel: l.studentFeedbackResourceLink(url),
+              child: Text(
+                link.toString(),
+                semanticsLabel: l.studentFeedbackResourceLink(link.toString()),
               ),
             ),
+      trailing: link == null ? null : const Icon(Icons.open_in_new),
+      onTap: link == null
+          ? null
+          : () async {
+              try {
+                await openLink(link);
+              } catch (_) {
+                // Opening refused (e.g. a pop-up blocker): the link is
+                // still shown, so the student can copy it.
+              }
+            },
     );
   }
 }

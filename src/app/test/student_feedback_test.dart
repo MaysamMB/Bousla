@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/ai/feedback_explainer.dart';
 import 'package:bousla_app/data/fake/in_memory_content_repository.dart';
@@ -206,6 +208,44 @@ void main() {
       );
     });
 
+    testWidgets('feedback stays on screen when nothing changes for minutes',
+        (tester) async {
+      _tallView(tester);
+      final (services, sessions, session) = await _setUp();
+      await _publish(sessions, session, _feedback());
+      await tester.pumpWidget(_app(
+        services,
+        MyFeedbackScreen(session: session, participantId: _me),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Primary Key may need review.'), findsOneWidget);
+      // Longer than the first-answer limit (20 s) with no new event.
+      await tester.pump(const Duration(seconds: 25));
+      await tester.pump(const Duration(minutes: 2));
+      expect(find.text('Primary Key may need review.'), findsOneWidget);
+      expect(find.textContaining('connection is slow'), findsNothing);
+    });
+
+    test('only a missing FIRST event is a timeout', () async {
+      final quiet = StreamController<int>();
+      final events = <Object>[];
+      final sub = firstEventWithin(quiet.stream, const Duration(milliseconds: 50))
+          .listen(events.add, onError: events.add);
+      quiet.add(1);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+      expect(events, [1]);
+      await sub.cancel();
+
+      final silent = StreamController<int>();
+      final errors = <Object>[];
+      final sub2 =
+          firstEventWithin(silent.stream, const Duration(milliseconds: 50))
+              .listen((_) {}, onError: errors.add);
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      expect(errors.first, isA<TimeoutException>());
+      await sub2.cancel();
+    });
+
     testWidgets('no AI label for a template explanation', (tester) async {
       _tallView(tester);
       final (services, sessions, session) = await _setUp();
@@ -284,6 +324,86 @@ void main() {
         expect(find.text('Primary Key may need review.'), findsOneWidget);
       }
       expect(explainer.calls, 0);
+    });
+  });
+
+  group('summary', () {
+    StudentFeedback withExtras() {
+      final f = _feedback();
+      return StudentFeedback(
+        language: f.language,
+        concepts: f.concepts,
+        hints: const [
+          FeedbackHint(
+            conceptId: 'foreign_key',
+            prerequisiteId: 'primary_key',
+            signal: PrerequisiteSignal.needsMoreEvidence,
+          ),
+        ],
+        recommendations: const [
+          FeedbackRecommendation(
+            conceptId: 'primary_key',
+            reason: RecommendationReason.reviewConcept,
+            resources: [
+              FeedbackResource(
+                id: 'res_pk_video',
+                title: LocalizedText(ar: 'فيديو', en: 'Primary keys explained'),
+                type: ResourceType.video,
+                url: 'https://example.com/pk',
+              ),
+              FeedbackResource(
+                id: 'res_bad',
+                title: LocalizedText(ar: 'سيء', en: 'Not a web link'),
+                type: ResourceType.link,
+                url: 'javascript:alert(1)',
+              ),
+            ],
+          ),
+        ],
+        explanation: f.explanation,
+      );
+    }
+
+    testWidgets('a prerequisite without enough evidence is worded cautiously',
+        (tester) async {
+      final (services, _, _) = await _setUp();
+      await tester.pumpWidget(_app(
+        services,
+        Scaffold(body: ListView(children: [FeedbackSummary(feedback: withExtras())])),
+      ));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('There is not enough evidence yet about Primary Key, '
+            'which Foreign Key builds on.'),
+        findsOneWidget,
+      );
+      expect(find.text('These are possibilities, not a diagnosis.'),
+          findsOneWidget);
+    });
+
+    testWidgets('a resource opens its stored web link only', (tester) async {
+      final (services, _, _) = await _setUp();
+      final opened = <Uri>[];
+      await tester.pumpWidget(_app(
+        services,
+        Scaffold(
+          body: ListView(children: [
+            FeedbackSummary(
+              feedback: withExtras(),
+              openLink: (url) async => opened.add(url),
+            ),
+          ]),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Primary keys explained'));
+      await tester.pumpAndSettle();
+      expect(opened, [Uri.parse('https://example.com/pk')]);
+      // Not a web link: shown as an activity, not opened.
+      await tester.tap(find.text('Not a web link'));
+      await tester.pumpAndSettle();
+      expect(opened, hasLength(1));
+      expect(find.textContaining('javascript'), findsNothing);
     });
   });
 

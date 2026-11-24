@@ -227,8 +227,9 @@ class _ConceptCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
+              // Every state with its evidence, also when there was none.
               concept.attempts == 0
-                  ? style.label
+                  ? '${style.label} · ${l.studentMapNoQuestions}'
                   : '${style.label} · '
                       '${l.studentMapEvidence(concept.correct, concept.attempts)}',
               style: theme.textTheme.bodyMedium?.copyWith(color: style.color),
