@@ -208,5 +208,8 @@
   "studentFeedbackAiLabel": "مولّد بالذكاء الاصطناعي",
   "studentFeedbackAiNote": "كتبه الذكاء الاصطناعي اعتمادًا على النتائج أعلاه، ولا يغيّرها.",
   "studentFeedbackNotAvailable": "ملاحظاتك غير متاحة بعد.",
-  "studentFeedbackWaiting": "ستظهر ملاحظاتك الشخصية هنا عندما ينشرها المدرّس."
+  "studentFeedbackWaiting": "ستظهر ملاحظاتك الشخصية هنا عندما ينشرها المدرّس.",
+  "studentMapOpen": "عرض خريطتي المعرفية",
+  "studentMapOpenHint": "كيف تُبنى المفاهيم على بعضها، وبأيّها تبدأ المراجعة. يمكنك حفظها على هاتفك.",
+  "studentMapScreenTitle": "الخريطة المعرفية"
 }
