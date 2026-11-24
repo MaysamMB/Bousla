@@ -271,7 +271,7 @@ void main() {
       expect(find.text('Can a primary key be NULL?'), findsOneWidget);
       // The new suggestions come first, under their own heading.
       expect(find.text('New AI suggestions (1)'), findsOneWidget);
-      expect(find.textContaining('From «lecture03.pdf» · fake-model'),
+      expect(find.textContaining('lecture03.pdf'),
           findsOneWidget);
       expect(find.text('Other drafts waiting for review'), findsOneWidget);
       final newHeading = tester.getTopLeft(find.text('New AI suggestions (1)'));
@@ -338,9 +338,9 @@ void main() {
       expect(find.text('New AI suggestions (1)'), findsNothing);
       expect(find.text('AI suggestions (1)'), findsNWidgets(2));
       final week2 =
-          tester.getTopLeft(find.textContaining('«week2.pdf» · model-b'));
+          tester.getTopLeft(find.textContaining('week2.pdf'));
       final week1 =
-          tester.getTopLeft(find.textContaining('«week1.pdf» · model-a'));
+          tester.getTopLeft(find.textContaining('week1.pdf'));
       final others =
           tester.getTopLeft(find.text('Other drafts waiting for review'));
       final q2 = tester.getTopLeft(find.text('Can a foreign key be NULL?'));

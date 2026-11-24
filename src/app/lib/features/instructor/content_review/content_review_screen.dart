@@ -178,6 +178,8 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     );
   }
 
+  static String _isolate(String text) => '\u2068$text\u2069';
+
   /// Groups "waiting" by the file each AI draft was suggested from, newest
   /// file first, then the other drafts. Null when there are no AI files.
   _Grouping? _pendingGroups(
@@ -206,7 +208,13 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
           title: isNew
               ? l.reviewAiNewSection(ids.length)
               : l.reviewAiGroupTitle(ids.length),
-          subtitle: l.reviewAiNewSectionFrom(m.fileName, m.modelName, when),
+          // Isolated (U+2068 … U+2069): a mixed Arabic/English file name
+          // must not pull the date or model into its own direction.
+          subtitle: l.reviewAiNewSectionFrom(
+            _isolate(m.fileName),
+            _isolate(m.modelName),
+            _isolate(when),
+          ),
           highlighted: isNew,
         ),
       );
