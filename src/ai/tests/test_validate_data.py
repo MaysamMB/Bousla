@@ -164,6 +164,49 @@ class ValidateDataTests(unittest.TestCase):
         ds["concepts.json"][0]["provenance"]["status"] = "done"
         self.assertErrorContains(self.run_on(ds), "provenance.status")
 
+    def test_edited_flag_must_be_boolean(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"]["edited"] = "yes"
+        self.assertErrorContains(self.run_on(ds), "provenance.edited")
+
+    def test_rejected_item_with_reason_passes(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"].update(
+            {"source": "ai_draft", "status": "rejected", "edited": True, "rejection_reason": "off_topic"}
+        )
+        self.assertEqual(self.run_on(ds).errors, [])
+
+    def test_unknown_rejection_reason(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"].update({"status": "rejected", "rejection_reason": "boring"})
+        self.assertErrorContains(self.run_on(ds), "rejection_reason")
+
+    def test_rejection_reason_only_on_rejected_items(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"]["rejection_reason"] = "unclear"
+        self.assertErrorContains(self.run_on(ds), "only allowed on rejected")
+
+    def test_hiding_one_option_language_passes(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["ar"]
+        self.assertEqual(self.run_on(ds).errors, [])
+
+    def test_cannot_hide_both_option_languages(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["ar", "en"]
+        self.assertErrorContains(self.run_on(ds), "cannot hide both")
+
+    def test_unknown_hidden_option_language(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["fr"]
+        self.assertErrorContains(self.run_on(ds), "hidden_option_languages")
+
+    def test_hidden_option_language_still_needs_text(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["ar"]
+        ds["questions.json"][0]["options"][0]["text"]["ar"] = ""
+        self.assertTrue(self.run_on(ds).errors)
+
     def test_resource_unknown_concept(self):
         ds = minimal_dataset()
         ds["resources.json"][0]["concept_ids"] = ["nope"]

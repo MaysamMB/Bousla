@@ -15,11 +15,15 @@ Checks (errors fail the run with exit code 1):
 - Every question has exactly one answer key that matches one of its options,
   and there are no keys for unknown questions.
 - Questions have an integer version >= 1.
+- The optional hidden_option_languages (answers not shown to students in that
+  language; the text is still required) lists "ar" or "en", never both.
 - Resources reference existing concepts, use an allowed type and language,
   and have a url (link/video), a storage_path (file) or a description
   (activity).
 - Provenance source and status are allowed values; a source_material_id
-  refers to an entry in the optional materials.json.
+  refers to an entry in the optional materials.json; the optional "edited"
+  flag is a boolean; an optional "rejection_reason" is an allowed value and
+  only appears on rejected items.
 - course.json has an owner_id field (null allowed in seed files).
 
 Warnings (reported, do not fail):
@@ -43,6 +47,7 @@ LANGUAGES = ("ar", "en")
 ALLOWED_STATUS = {"pending_review", "approved", "rejected"}
 ALLOWED_SOURCE = {"ai_draft", "instructor", "team"}
 ALLOWED_MATERIAL_STATUS = {"processing", "ready_for_review", "failed"}
+ALLOWED_REJECTION_REASONS = {"incorrect", "unclear", "translation", "duplicate", "off_topic", "other"}
 RESOURCE_TYPES = {"activity", "link", "video", "file"}
 RESOURCE_LANGUAGES = {"ar", "en", "both"}
 MIN_QUESTIONS_PER_CONCEPT = 2
@@ -102,7 +107,15 @@ def _check_provenance(item: dict, where: str, report: Report, material_ids: set[
     material = prov.get("source_material_id")
     if material is not None and material not in material_ids:
         report.error(f"{where}: unknown source_material_id '{material}'")
+    if "edited" in prov and not isinstance(prov["edited"], bool):
+        report.error(f"{where}: provenance.edited must be true or false")
     status = prov.get("status")
+    reason = prov.get("rejection_reason")
+    if reason is not None:
+        if reason not in ALLOWED_REJECTION_REASONS:
+            report.error(f"{where}: provenance.rejection_reason '{reason}' not in {sorted(ALLOWED_REJECTION_REASONS)}")
+        elif status != "rejected":
+            report.error(f"{where}: provenance.rejection_reason is only allowed on rejected items")
     if status not in ALLOWED_STATUS:
         report.error(f"{where}: provenance.status '{status}' not in {sorted(ALLOWED_STATUS)}")
         return False
@@ -255,6 +268,11 @@ def validate_course(course_dir: Path) -> Report:
                 report.error(f"{where}.options['{oid}']: contains an answer field")
             _check_bilingual(opt.get("text"), f"{where}.options['{oid}'].text", report)
         option_ids_by_question[q["id"]] = opt_ids
+        hidden = q.get("hidden_option_languages", [])
+        if not isinstance(hidden, list) or any(h not in LANGUAGES for h in hidden):
+            report.error(f"{where}: hidden_option_languages must be a list of 'ar'/'en'")
+        elif set(hidden) == set(LANGUAGES):
+            report.error(f"{where}: hidden_option_languages cannot hide both languages")
         version = q.get("version")
         if isinstance(version, bool) or not isinstance(version, int) or version < 1:
             report.error(f"{where}: version must be an integer >= 1")

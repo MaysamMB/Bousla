@@ -28,7 +28,9 @@ Pure Dart package `src/engine` (`bousla_engine`), no Flutter or Firebase depende
 6. Resource recommendation (approved only; preferred language first).
 Deliverable: unit tests for boundaries, empty input, unknown IDs, identical results in AR and EN.
 
-Status (22 Nov): **implemented, tests to be confirmed on a developer machine.** Items 1–6 done, 54 tests across 5 files (including one that runs the whole engine on the real Database Systems dataset). `dart analyze`: no issues. In the build sandbox pub.dev was unreachable, so the tests ran against a minimal local stand-in for `package:test`; run `dart pub get && dart test` in `src/engine` on a normal machine to confirm with the real package.
+Status (24 Nov): **implemented and verified.** `dart test` in `src/engine` on a developer machine: 54 tests passed with the real `package:test`.
+
+Earlier status (22 Nov): implemented, tests to be confirmed on a developer machine. Items 1–6 done, 54 tests across 5 files (including one that runs the whole engine on the real Database Systems dataset). `dart analyze`: no issues. In the build sandbox pub.dev was unreachable, so the tests ran against a minimal local stand-in for `package:test`; run `dart pub get && dart test` in `src/engine` on a normal machine to confirm with the real package.
 
 ## Phase 3 — Instructor session creation + student joining (Days 2–3)
 - Flutter project with `flutter_localizations`/`intl`, AR/EN ARB files, bundled Arabic font, locale-driven direction.
@@ -38,7 +40,9 @@ Status (22 Nov): **implemented, tests to be confirmed on a developer machine.** 
 - `firebase/firestore.rules` with emulator tests (students see approved content only, cannot read answer keys or other students' data; no writes after close).
 Deliverable: a full join-and-answer loop in both languages.
 
-Status (22 Nov): **skeleton written, not yet compiled with Flutter.** `src/app` has routes, AR/EN localization with locale-driven direction, repository interfaces with in-memory implementations, and placeholder instructor/student screens (create session with join code and live counts; join by code; answer one question at a time). The data layer (`lib/data`) was analyzed and its 13 tests pass with plain Dart; screens and widget tests still need their first `flutter analyze` / `flutter test` (see `src/app/README.md`). Remaining: Firebase, auth, QR, Firestore rules, insights, feedback.
+Status (24 Nov): **skeleton compiles and its tests pass.** Platform folders (`web/`, `android/`) committed; `flutter analyze` reported no issues and `flutter test` passed 16 tests on a developer machine (Flutter beta, Dart 3.10). Remaining: Firebase, auth, QR, Firestore rules, insights, feedback.
+
+Earlier status (22 Nov): skeleton written, not yet compiled with Flutter. `src/app` has routes, AR/EN localization with locale-driven direction, repository interfaces with in-memory implementations, and placeholder instructor/student screens (create session with join code and live counts; join by code; answer one question at a time). The data layer (`lib/data`) was analyzed and its 13 tests pass with plain Dart; screens and widget tests still need their first `flutter analyze` / `flutter test` (see `src/app/README.md`). Remaining: Firebase, auth, QR, Firestore rules, insights, feedback.
 
 ## Phase 4 — Instructor insights (Day 3)
 - Instructor app runs the engine on live responses (Option A, `architecture.md` §7) and shows aggregates: participation, concept difficulty, possible prerequisite gaps.
@@ -57,6 +61,8 @@ Deliverable: student question-to-insight journey.
 - Review screen: approve / edit / reject each draft; only approved items usable.
 - Instructor can also add own resources (links, videos, activities).
 - Fallback: if in-app generation is not ready in time, run batch generation offline and demo the review screen, and say so openly.
+
+Status (24 Nov): **review screen implemented; `flutter analyze` clean and `flutter test` 37/37 on a developer machine** (data tests + two widget tests for approve / reject / select). The editor screen has no widget test yet. Hide answer language (per question and for all questions; students see the other language): added 24 Nov; `flutter analyze` clean and `flutter test` all passing on a developer machine. `/instructor/review`: approve / edit / reject one question, select several, reject all waiting, optional rejection reason, add questions by hand, AI-draft statistics (approved as is / edited / rejected). In-memory repository only; the Firestore implementation of `saveQuestion` / `setQuestionsStatus` (answer key written in the same batch) is for the backend owner. Drafting with Gemini is not started.
 Deliverable: draft → review → approved → used in a live session.
 
 ## Phase 7 — AI level 2: explanations on top of the engine (Day 5)

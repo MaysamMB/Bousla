@@ -39,16 +39,11 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
     _questions ??= _load();
   }
 
-  /// Approved questions of this session, in the session's order.
-  Future<List<QuestionView>> _load() async {
-    final all = await ServicesScope.of(context).content
-        .listQuestions(widget.session.courseId);
-    final byRef = {for (final q in all) QuestionRef(q.id, q.version): q};
-    return [
-      for (final ref in widget.session.questions)
-        if (byRef[ref] != null) byRef[ref]!,
-    ];
-  }
+  /// Approved questions of this session, in the session's order. Uses the
+  /// exact versions the session was created with, so an instructor editing a
+  /// question during the session does not change it for students.
+  Future<List<QuestionView>> _load() => ServicesScope.of(context).content
+      .questionsForSession(widget.session.courseId, widget.session.questions);
 
   Future<void> _submit(QuestionView q) async {
     final l = AppLocalizations.of(context);
@@ -132,6 +127,9 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
+                  // The instructor may hide the options in one language;
+                  // then they are shown in the other one, with its own
+                  // direction. The question text stays in the UI language.
                   for (final option in q.options)
                     Card(
                       color: option.id == _selected
@@ -143,7 +141,10 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                               ? Icons.check_circle
                               : Icons.circle_outlined,
                         ),
-                        title: Text(option.text.of(language)),
+                        title: _OptionText(
+                          option: option,
+                          language: q.optionLanguageFor(language),
+                        ),
                         onTap: _busy
                             ? null
                             : () => setState(() => _selected = option.id),
@@ -173,4 +174,23 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
       ),
     );
   }
+}
+
+class _OptionText extends StatelessWidget {
+  const _OptionText({required this.option, required this.language});
+
+  final OptionView option;
+  final Language language;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    option.text.of(language),
+    // Read in its own direction, but aligned with the rest of the screen.
+    textDirection: language == Language.ar
+        ? TextDirection.rtl
+        : TextDirection.ltr,
+    textAlign: Directionality.of(context) == TextDirection.rtl
+        ? TextAlign.right
+        : TextAlign.left,
+  );
 }
