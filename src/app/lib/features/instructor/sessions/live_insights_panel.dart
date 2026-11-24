@@ -114,6 +114,12 @@ class _LiveInsightsPanelState
               context,
               insights,
               concepts,
+              // Only concepts this session asks about: the others have no
+              // answers at all, and showing them as "hidden for privacy"
+              // would give the wrong reason.
+              {
+                for (final q in questions) ...q.conceptIds,
+              },
             );
           },
         );
@@ -125,6 +131,7 @@ class _LiveInsightsPanelState
     BuildContext context,
     ClassInsights insights,
     List<Concept> concepts,
+    Set<String> covered,
   ) {
     final l = AppLocalizations.of(context);
     final language = currentLanguage(context);
@@ -165,6 +172,7 @@ class _LiveInsightsPanelState
           )
         else ...[
           for (final concept in insights.concepts)
+            if (covered.contains(concept.conceptId))
             _ConceptInsightCard(
               name: names[concept.conceptId] ??
                   concept.conceptId,
