@@ -1,5 +1,7 @@
 import 'package:bousla_app/data/ai/model_retry.dart';
 import 'package:bousla_app/data/ai/question_generator.dart';
+import 'package:bousla_app/data/firebase/gemini_question_generator.dart'
+    show retryDelayFrom;
 import 'package:flutter_test/flutter_test.dart';
 
 const _busy = QuestionGenerationException(
@@ -86,5 +88,35 @@ void main() {
         GenerationProblem.notEnabled);
     expect(calls, ['main']);
     expect(waits, isEmpty);
+  });
+
+  test('waits as long as the quota error asks', () async {
+    const quota = QuestionGenerationException(
+      GenerationProblem.quota,
+      'Quota exceeded for metric: generate_content_free_tier_requests, '
+      'limit: 5 ... Please retry in 16.952169101s.',
+    );
+    final result = await callWithModelFallback(
+      models: ['main', 'backup'],
+      isBusy: (e) => e is QuestionGenerationException,
+      retryAfter: (e) =>
+          retryDelayFrom((e as QuestionGenerationException).detail),
+      wait: wait,
+      call: (m) async {
+        calls.add(m);
+        if (calls.length == 1) throw quota;
+        return 'ok';
+      },
+    );
+    expect(result, 'ok');
+    expect(calls, ['main', 'main']);
+    expect(waits, [const Duration(milliseconds: 17953)]);
+  });
+
+  test('retryDelayFrom ignores missing or very long delays', () {
+    expect(retryDelayFrom('Please retry in 3s.'), const Duration(seconds: 4));
+    expect(retryDelayFrom('Please retry in 120s.'), isNull);
+    expect(retryDelayFrom('high demand'), isNull);
+    expect(retryDelayFrom(null), isNull);
   });
 }

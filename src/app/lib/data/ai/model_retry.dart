@@ -6,7 +6,8 @@ import 'question_generator.dart';
 ///
 /// - [isBusy] tells a temporary overload (or quota) error apart from others.
 /// - The first model is tried `1 + delays.length` times, waiting [delays]
-///   in between; each fallback model once.
+///   in between, or what [retryAfter] reads from the error; each fallback
+///   model once.
 /// - Other errors stop immediately and are rethrown.
 /// - If every attempt was busy, or a fallback failed for another reason
 ///   (e.g. that model is not offered for the project), throws
@@ -17,6 +18,7 @@ Future<T> callWithModelFallback<T>({
   required Future<T> Function(String model) call,
   required bool Function(Object error) isBusy,
   List<Duration> delays = const [Duration(seconds: 2), Duration(seconds: 5)],
+  Duration? Function(Object error)? retryAfter,
   Future<void> Function(Duration) wait = Future<void>.delayed,
 }) async {
   assert(models.isNotEmpty);
@@ -31,7 +33,12 @@ Future<T> callWithModelFallback<T>({
         if (!busy && m == 0) rethrow;
         firstBusy ??= e;
         if (!busy) break; // fallback model unusable: try the next one
-        if (m == 0 && a < delays.length) await wait(delays[a]);
+        // The service may say how long to wait ("Please retry in 17s",
+        // seen live with a 5-requests-per-minute free tier); waiting less
+        // only spends more of the same quota.
+        if (m == 0 && a < delays.length) {
+          await wait(retryAfter?.call(e) ?? delays[a]);
+        }
       }
     }
   }

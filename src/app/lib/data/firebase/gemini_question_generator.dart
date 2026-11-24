@@ -82,6 +82,9 @@ class GeminiQuestionGenerator implements QuestionGenerator {
           e is QuestionGenerationException &&
           (e.problem == GenerationProblem.busy ||
               e.problem == GenerationProblem.quota),
+      retryAfter: (e) => e is QuestionGenerationException
+          ? retryDelayFrom(e.detail)
+          : null,
       call: (name) async {
         final r = await _generate(name, [
           Content.multi([TextPart(instructions), materialPart]),
@@ -164,4 +167,13 @@ class GeminiQuestionGenerator implements QuestionGenerator {
       );
     }
   }
+}
+
+/// Reads "Please retry in 16.95s" from a quota error. Null if absent or
+/// longer than 40 s (then the next model is tried instead).
+Duration? retryDelayFrom(String? message) {
+  final match = RegExp(r'retry in ([0-9.]+)\s*s').firstMatch(message ?? '');
+  final seconds = double.tryParse(match?.group(1) ?? '');
+  if (seconds == null || seconds > 40) return null;
+  return Duration(milliseconds: (seconds * 1000).ceil() + 1000);
 }
