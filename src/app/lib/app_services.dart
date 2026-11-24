@@ -2,17 +2,20 @@ import 'package:flutter/widgets.dart';
 
 import 'data/fake/in_memory_content_repository.dart';
 import 'data/fake/in_memory_session_repository.dart';
+import 'data/repositories/auth_service.dart';
 import 'data/repositories/content_repository.dart';
 import 'data/repositories/session_repository.dart';
 
-/// Everything screens need from outside the UI. Swap the in-memory
-/// repositories for Firestore ones in one place (main.dart).
+/// Everything screens need from outside the UI. In-memory for
+/// development, or Firebase when configured (see main.dart).
 class AppServices {
   AppServices({
     required this.content,
     required this.sessions,
+    AuthService? auth,
     Locale initialLocale = const Locale('ar'),
-  }) : locale = ValueNotifier(initialLocale);
+  })  : auth = auth ?? InMemoryAuthService(),
+        locale = ValueNotifier(initialLocale);
 
   factory AppServices.inMemory({Locale initialLocale = const Locale('ar')}) =>
       AppServices(
@@ -23,6 +26,9 @@ class AppServices {
 
   final ContentRepository content;
   final SessionRepository sessions;
+
+  /// Instructor sign-in and anonymous student participation.
+  final AuthService auth;
 
   /// Current UI language. Changing it rebuilds the app in that language and
   /// direction (RTL for Arabic, LTR for English).

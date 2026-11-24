@@ -202,6 +202,8 @@ One document per participant per question:
 
 All of these permissions are enforced in `firebase/firestore.rules` and tested with the Firebase emulator. Hiding things in the UI is not authorization.
 
+Implementation notes (24 Nov): the session document ID **is** the join code, so a student opens a session with one read and sessions cannot be listed (no guessing codes). Question versions are separate documents `questions/{id}_v{n}`, and answer keys use the same IDs. Responses are `responses/{uid}_{questionId}_v{n}` and the rules check that ID, that the question version belongs to the session (`question_keys`), that the session is open and that `submitted_at` is the server time. Known gap: students can read any *approved* concept, question or resource by ID, not only those of a session they joined. Setup and data layout: `firebase/README.md`.
+
 ## 7. Where scoring runs
 
 **MVP decision (Option A, confirmed by the team on 22 Nov 2026):** the engine runs in the **instructor app**.

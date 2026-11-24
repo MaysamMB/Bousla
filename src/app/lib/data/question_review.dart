@@ -57,6 +57,28 @@ List<DraftProblem> validateDraft(
   return problems;
 }
 
+/// True when saving [d] would not change question [q] (whose answer key is
+/// [key]): same prompt, options, concepts and answer. The hidden answer
+/// language is a display setting and is not compared.
+bool sameQuestionContent(QuestionView q, String? key, QuestionDraft d) {
+  bool sameText(LocalizedText a, LocalizedText b) =>
+      a.ar.trim() == b.ar.trim() && a.en.trim() == b.en.trim();
+  if (key != d.correctOptionId) return false;
+  if (!sameText(q.prompt, d.prompt)) return false;
+  if (q.conceptIds.length != d.conceptIds.length ||
+      !q.conceptIds.toSet().containsAll(d.conceptIds)) {
+    return false;
+  }
+  if (q.options.length != d.options.length) return false;
+  for (var i = 0; i < q.options.length; i++) {
+    if (q.options[i].id != d.options[i].id ||
+        !sameText(q.options[i].text, d.options[i].text)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// The next unused option ID: a, b, c, ...
 String nextOptionId(Iterable<String> used) {
   final taken = used.toSet();

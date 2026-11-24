@@ -14,10 +14,14 @@ dependencies:
   intl: any
   bousla_engine:
     path: ../engine
+  firebase_core: ^5.1.0
+  firebase_auth: ^7.0.1
+  cloud_firestore: ^7.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  fake_cloud_firestore: ^4.5.0
 
 flutter:
   uses-material-design: true

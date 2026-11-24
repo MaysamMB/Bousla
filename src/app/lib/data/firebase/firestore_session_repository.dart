@@ -1,0 +1,146 @@
+import 'dart:math';
+
+import 'package:bousla_engine/bousla_engine.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../join_code.dart';
+import '../models.dart';
+import '../repositories/session_repository.dart';
+import 'firestore_codec.dart';
+
+/// [SessionRepository] on Cloud Firestore. Layout (docs/architecture.md §6):
+///
+///   sessions/{CODE}                          the document ID is the join code
+///   sessions/{CODE}/participants/{uid}
+///   sessions/{CODE}/responses/{uid}_{questionId}_v{n}
+///
+/// Using the join code as the ID lets a student open a session with a single
+/// read, while the security rules refuse listing sessions (no guessing).
+/// The rules also refuse answers after closing and second answers; the
+/// checks here only turn those cases into the exceptions screens expect.
+class FirestoreSessionRepository implements SessionRepository {
+  FirestoreSessionRepository(
+    this._db, {
+    required this.ensureParticipant,
+    Random? random,
+  }) : _random = random ?? Random.secure();
+
+  final FirebaseFirestore _db;
+  final Random _random;
+
+  /// Signs the student in (anonymously) if needed and returns their UID.
+  final Future<String> Function() ensureParticipant;
+
+  static final _validCode = RegExp(r'^[A-Z0-9]{1,20}$');
+
+  CollectionReference<Map<String, dynamic>> get _sessions =>
+      _db.collection('sessions');
+
+  @override
+  Future<Session> createSession({
+    required String courseId,
+    required String ownerId,
+    required List<QuestionRef> questions,
+  }) async {
+    for (var attempt = 0; attempt < 10; attempt++) {
+      final code = generateJoinCode(_random);
+      final created = Session(
+        id: code,
+        code: code,
+        courseId: courseId,
+        ownerId: ownerId,
+        questions: List.unmodifiable(questions),
+        status: SessionStatus.open,
+        feedbackReleased: false,
+      );
+      final ref = _sessions.doc(created.id);
+      final taken = await _db.runTransaction((tx) async {
+        if ((await tx.get(ref)).exists) return true;
+        tx.set(ref, {
+          ...sessionToJson(created),
+          'created_at': FieldValue.serverTimestamp(),
+        });
+        return false;
+      });
+      if (!taken) return created;
+    }
+    throw StateError('Could not find a free join code');
+  }
+
+  @override
+  Future<Session?> findByCode(String code) async {
+    final normalized = normalizeJoinCode(code);
+    if (!_validCode.hasMatch(normalized)) return null;
+    // The rules only let signed-in users read sessions, so a student coming
+    // from a link or QR code is signed in (anonymously) first.
+    await ensureParticipant();
+    final doc = await _sessions.doc(normalized).get();
+    return doc.exists ? sessionFromDoc(doc.id, doc.data()!) : null;
+  }
+
+  @override
+  Stream<Session> watchSession(String sessionId) => _sessions
+      .doc(sessionId)
+      .snapshots()
+      .where((d) => d.exists)
+      .map((d) => sessionFromDoc(d.id, d.data()!));
+
+  @override
+  Future<String> join(String sessionId) async {
+    final uid = await ensureParticipant();
+    final ref = _sessions.doc(sessionId).collection('participants').doc(uid);
+    // Joining twice (e.g. reopening the link) is fine; the rules allow
+    // creating the document once only.
+    if (!(await ref.get()).exists) {
+      await ref.set({'joined_at': FieldValue.serverTimestamp()});
+    }
+    return uid;
+  }
+
+  @override
+  Future<void> submitResponse(String sessionId, Response response) async {
+    final sessionRef = _sessions.doc(sessionId);
+    final ref = sessionRef.collection('responses').doc(
+          responseDocId(
+            response.participantId,
+            response.questionId,
+            response.questionVersion,
+          ),
+        );
+    Future<void> explainRefusal() async {
+      final session = await sessionRef.get();
+      if (session.data()?['status'] == 'closed') {
+        throw SessionClosedException(sessionId);
+      }
+      if ((await ref.get()).exists) {
+        throw DuplicateAnswerException(response.questionId);
+      }
+    }
+
+    await explainRefusal();
+    try {
+      await ref.set(responseToJson(response));
+    } on FirebaseException catch (e) {
+      // Closed or answered in the meantime: the rules refused the write.
+      if (e.code == 'permission-denied') await explainRefusal();
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<Response>> watchResponses(String sessionId) =>
+      _sessions.doc(sessionId).collection('responses').snapshots().map(
+            (snap) => List.unmodifiable([
+              for (final d in snap.docs) responseFromJson(d.data()),
+            ]),
+          );
+
+  @override
+  Future<void> closeSession(String sessionId) => _sessions
+      .doc(sessionId)
+      .update({'status': 'closed', 'closed_at': FieldValue.serverTimestamp()});
+
+  @override
+  Future<void> releaseFeedback(String sessionId) =>
+      _sessions.doc(sessionId).update({'feedback_released': true});
+}
