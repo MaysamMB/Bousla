@@ -112,6 +112,8 @@ Status (24 Nov, student explanations): **implemented with guards and template fa
 - Full rehearsal on the presentation device and network, in Arabic and English.
 - Document limitations honestly.
 
+Status (24 Nov, first load): **loading screen added.** On the first visit the browser downloads the rendering engine (`canvaskit.wasm`, 5.5–6.8 MB on disk), the app (`main.dart.js`, 3.4 MB) and fonts (0.7 MB) before Flutter draws anything, so the page was white for several seconds on slow networks. `web/index.html` now shows, at once, a plain HTML/CSS screen (name, spinner, "Loading… the first visit can take a few seconds" in Arabic and English) that is removed on Flutter's `flutter-first-frame` event; page title and manifest name now "Bousla". Checked in Chromium with a throttled connection: the loading screen appeared after ~0.3 s and was removed when the join screen was drawn. Later visits load from the browser cache.
+
 ## If time runs short
 Cut from the bottom, not the middle: keep 2 → 3 → 4 → 5 working end to end before polishing 6 and 7. Minimum AI for the demo: level 1 review screen (with offline drafts if needed) + level 2 explanations with guards.
 

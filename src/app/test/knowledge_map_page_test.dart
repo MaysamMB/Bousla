@@ -1,6 +1,5 @@
 import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/feedback.dart';
-import 'package:bousla_app/data/models.dart';
 import 'package:bousla_app/features/student_web/feedback/feedback_screen.dart';
 import 'package:bousla_app/l10n/app_localizations.dart';
 import 'package:bousla_engine/bousla_engine.dart';

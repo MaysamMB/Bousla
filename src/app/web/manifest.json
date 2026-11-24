@@ -1,6 +1,6 @@
 {
-    "name": "bousla_app",
-    "short_name": "bousla_app",
+    "name": "Bousla · بوصلة",
+    "short_name": "Bousla",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
