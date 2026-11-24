@@ -11,8 +11,8 @@ import '../../../shared/widgets/language_switcher.dart';
 ///
 /// Already works with the in-memory repositories: creates a session from all
 /// approved questions of the first course, shows the join code and link, and
-/// live participation counts. To do: instructor sign-in, course and question
-/// selection, QR code (qr_flutter), live insights from the engine, release
+/// live participation counts. Links to the question review screen. To do:
+/// instructor sign-in, course and question selection, QR code (qr_flutter), live insights from the engine, release
 /// feedback.
 class CreateSessionScreen extends StatefulWidget {
   const CreateSessionScreen({super.key});
@@ -50,6 +50,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     setState(() => _session = session);
   }
 
+  /// Review screen; the number of approved questions may change there.
+  Future<void> _openReview() async {
+    await Navigator.of(context).pushNamed('/instructor/review');
+    if (mounted) setState(() => _content = _loadContent());
+  }
+
   String? _joinLink(String code) =>
       kIsWeb ? '${Uri.base.origin}/#/join/$code' : null;
 
@@ -79,14 +85,20 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               const SizedBox(height: 8),
               Text(l.instructorQuestionsAvailable(questions.length)),
               const SizedBox(height: 24),
-              if (session == null)
+              if (session == null) ...[
+                OutlinedButton.icon(
+                  onPressed: _openReview,
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: Text(l.instructorReviewQuestions),
+                ),
+                const SizedBox(height: 12),
                 FilledButton(
                   onPressed: questions.isEmpty
                       ? null
                       : () => _create(course, questions),
                   child: Text(l.instructorCreateSession),
-                )
-              else
+                ),
+              ] else
                 _LiveSessionPanel(
                   session: session,
                   joinLink: _joinLink(session.code),

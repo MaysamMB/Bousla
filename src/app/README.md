@@ -8,6 +8,7 @@ One Flutter project for both roles. See `docs/architecture.md`.
 | `/instructor` | instructor | create and run a session |
 | `/join` | student | type a join code |
 | `/join/<CODE>` | student | opened from a link or QR code |
+| `/instructor/review` | instructor | review AI drafts: approve, edit, reject (one, selected or all waiting), add own questions |
 
 The app currently runs on **in-memory repositories** (`lib/data/fake/`), so
 everyone can build screens before Firebase is connected. Swap them for the
@@ -29,7 +30,7 @@ flutter run -d chrome
 ```
 
 Commit the generated `web/`, `android/` and `.metadata`. Requires a recent
-Flutter (3.32 or newer) for the `l10n.yaml` settings used here.
+Flutter (3.38 or newer; the committed `pubspec.lock` needs Dart 3.10) for the `l10n.yaml` settings used here.
 
 > Status: the files in `lib/data/` and `test/data/` were analyzed and tested
 > with plain Dart. The screens, localization setup and `test/widget_smoke_test.dart`

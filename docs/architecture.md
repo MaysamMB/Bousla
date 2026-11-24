@@ -155,10 +155,14 @@ Validation (`validate_data.py`, mirrored later in Dart): unique IDs; non-empty `
 1. **Upload:** the instructor picks a PDF/text file in the instructor app. In the MVP the file stays on the instructor's device; it is sent directly to Gemini through Firebase AI Logic and is **not stored** (no Cloud Storage on Spark). Only a `materials` metadata document is saved.
 2. **AI drafting (AI level 1):** Gemini returns structured JSON: concepts, prerequisite links, bilingual questions with a proposed answer, and resource suggestions, each with its source location. Everything is saved as `pending_review`.
 3. **Automatic checks:** the same rules as `validate_data.py` run on the drafts. Failing drafts are flagged, not saved as approved.
-4. **Human review:** the instructor approves, edits or rejects each item in a review screen. Only `approved` content can be used in sessions or shown to students.
+4. **Human review:** the instructor approves, edits or rejects each item in a review screen (`/instructor/review`). Only `approved` content can be used in sessions or shown to students.
+   - Several waiting items can be selected and approved or rejected together, and everything waiting can be rejected at once. There is deliberately **no "approve all"**: every AI draft is seen before it is approved.
+   - Rejected items are kept with `status: "rejected"` and an optional `rejection_reason` (`incorrect`, `unclear`, `translation`, `duplicate`, `off_topic`, `other`), so a decision can be undone and counted.
+   - Changing an AI draft sets `edited: true`. Together with the rejection reasons this measures AI draft quality: approved as is / approved after editing / rejected, and why.
+   - The instructor can also write questions by hand (`source: "instructor"`). They pass the same automatic checks.
 5. **Use:** sessions reference approved question IDs and versions.
 
-**Versioning:** a question version that has been used in a session is never edited in place. Editing creates `version + 1`; responses store the version they answered, so old evidence still matches the question it was given for.
+**Versioning:** a question version that has been used in a session is never edited in place. Editing creates `version + 1`; responses store the version they answered, so old evidence still matches the question it was given for. In the MVP the rule is simpler and stricter: editing an **approved** question always creates a new version (it may have been used); pending and rejected questions are edited in place. Sessions load the exact versions they were created with (`ContentRepository.questionsForSession`).
 
 Uploading the instructor's own resources (links, videos, activities) follows steps 4–5 with `source: "instructor"`.
 
