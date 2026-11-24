@@ -480,5 +480,13 @@
   "studentMapOpen": "Show my knowledge map",
   "studentMapOpenHint": "How the concepts build on each other, and which to review first. You can save it to your phone.",
   "studentMapScreenTitle": "Knowledge map",
-  "instructorStartAnother": "Start a new session"
+  "instructorStartAnother": "Start a new session",
+  "instructorPastSessions": "Past sessions",
+  "instructorPastEmpty": "No sessions yet for this course. Sessions you create are listed here with their results.",
+  "instructorPastSessionTitle": "Session results",
+  "instructorSessionStatusOpen": "Open",
+  "instructorSessionStatusClosed": "Closed",
+  "instructorSessionStatusReleased": "Feedback published",
+  "instructorSessionFallbackTitle": "Session {code}",
+  "@instructorSessionFallbackTitle": {"placeholders": {"code": {"type": "String"}}}
 }

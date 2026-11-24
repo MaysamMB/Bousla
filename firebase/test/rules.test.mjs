@@ -151,6 +151,30 @@ describe('approved instructors', () => {
   });
 });
 
+describe('past sessions', () => {
+  test('the owner creates a titled session and lists their sessions of a course', async () => {
+    await assertSucceeds(setDoc(doc(instructor(), 'sessions', 'NEW234'), {
+      code: 'NEW234', course_id: COURSE, owner_id: 'teacher',
+      questions: [{ question_id: 'q_ok', version: 1 }], question_keys: ['q_ok_v1'],
+      status: 'open', feedback_released: false,
+      title: { ar: 'المفتاح الأساسي', en: 'Primary Key' },
+      created_at: serverTimestamp(),
+    }));
+    const list = (db, owner) => getDocs(query(collection(db, 'sessions'),
+      where('owner_id', '==', owner), where('course_id', '==', COURSE)));
+    const mine = await assertSucceeds(list(instructor(), 'teacher'));
+    if (mine.size !== 2) throw new Error('expected 2 sessions, got ' + mine.size);
+    await assertFails(list(otherInstructor(), 'teacher'));
+    await assertFails(list(student(), 'teacher'));
+  });
+
+  test('a title cannot be changed afterwards from the app', async () => {
+    await assertFails(updateDoc(doc(instructor(), 'sessions', CODE), {
+      title: { ar: 'x', en: 'x' },
+    }));
+  });
+});
+
 describe('resuming an open session', () => {
   test('the owner finds their open sessions of a course; others cannot', async () => {
     const q = (db, owner) => query(collection(db, 'sessions'),
