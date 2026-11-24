@@ -432,48 +432,11 @@
     "instructorInsightsStateInsufficient":  "Not enough evidence",
     "instructorInsightsStudents":  "Students",
     "instructorInsightsPrerequisiteTitle":  "Prerequisites worth reviewing",
-    "instructorInsightsStruggling":  "{struggling} students show possible difficulty in {concept}.",
-    "@instructorInsightsStruggling":  {
-                                          "placeholders":  {
-                                                               "struggling":  {
-                                                                                  "type":  "int"
-                                                                              },
-                                                               "concept":  {
-                                                                               "type":  "String"
-                                                                           }
-                                                           }
-                                      },
-    "instructorInsightsGap":  "{gap} of these students also show possible difficulty in {prerequisite}.",
-    "@instructorInsightsGap":  {
-                                   "placeholders":  {
-                                                        "gap":  {
-                                                                    "type":  "int"
-                                                                },
-                                                        "prerequisite":  {
-                                                                             "type":  "String"
-                                                                         }
-                                                    }
-                               },
-    "instructorInsightsPossibleCause":  "Difficulty in {prerequisite} may contribute to difficulty in {concept}.",
-    "@instructorInsightsPossibleCause":  {
-                                             "placeholders":  {
-                                                                  "prerequisite":  {
-                                                                                       "type":  "String"
-                                                                                   },
-                                                                  "concept":  {
-                                                                                  "type":  "String"
-                                                                              }
-                                                              }
-                                         },
-    "instructorInsightsRecommendation":  "Consider reviewing {prerequisite} with the class.",
-    "@instructorInsightsRecommendation":  {
-                                              "placeholders":  {
-                                                                   "prerequisite":  {
-                                                                                        "type":  "String"
-                                                                                    }
-                                                               }
-                                          },
     "instructorInsightsDisclaimer":  "These are estimates based on session answers, not definitive diagnoses.",
   "studentFeedbackTitle": "Your feedback",
-  "studentFeedbackNone": "There is no feedback for you in this session. Feedback goes to the phone and browser you answered from: open the link there."
+  "studentFeedbackNone": "There is no feedback for you in this session. Feedback goes to the phone and browser you answered from: open the link there.",
+  "instructorInsightsSignal": "{gap, plural, =1{1 of the {struggling} students with a possible difficulty in {concept} also shows one in {prerequisite}.} other{{gap} of the {struggling} students with a possible difficulty in {concept} also show one in {prerequisite}.}}",
+  "@instructorInsightsSignal": {"placeholders": {"gap": {"type": "int"}, "struggling": {"type": "int"}, "concept": {"type": "String"}, "prerequisite": {"type": "String"}}},
+  "instructorInsightsSignalAction": "{prerequisite} may be a contributing cause: consider reviewing it with the class.",
+  "@instructorInsightsSignalAction": {"placeholders": {"prerequisite": {"type": "String"}}}
 }

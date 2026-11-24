@@ -191,40 +191,20 @@ class _LiveInsightsPanelState
 
             const SizedBox(height: 12),
 
+            // Two lines per signal, readable on a projector: the numbers,
+            // then a cautious suggestion.
             for (final signal in signals) ...[
               _InsightBullet(
-                text: l.instructorInsightsStruggling(
-                  signal.participantsStrugglingWithConcept,
-                  names[signal.conceptId] ??
-                      signal.conceptId,
-                ),
-              ),
-
-              _InsightBullet(
-                text: l.instructorInsightsGap(
+                text: l.instructorInsightsSignal(
                   signal.participantsWithPossibleGap,
-                  names[signal.prerequisiteId] ??
-                      signal.prerequisiteId,
+                  signal.participantsStrugglingWithConcept,
+                  names[signal.conceptId] ?? signal.conceptId,
+                  names[signal.prerequisiteId] ?? signal.prerequisiteId,
+                ),
+                detail: l.instructorInsightsSignalAction(
+                  names[signal.prerequisiteId] ?? signal.prerequisiteId,
                 ),
               ),
-
-              _InsightBullet(
-                text: l.instructorInsightsPossibleCause(
-                  names[signal.prerequisiteId] ??
-                      signal.prerequisiteId,
-                  names[signal.conceptId] ??
-                      signal.conceptId,
-                ),
-              ),
-
-              _InsightBullet(
-                text:
-                    l.instructorInsightsRecommendation(
-                  names[signal.prerequisiteId] ??
-                      signal.prerequisiteId,
-                ),
-              ),
-
               const SizedBox(height: 12),
             ],
           ],
@@ -242,9 +222,12 @@ class _LiveInsightsPanelState
 }
 
 class _InsightBullet extends StatelessWidget {
-  const _InsightBullet({required this.text});
+  const _InsightBullet({required this.text, this.detail});
 
   final String text;
+
+  /// A second, lighter line under [text].
+  final String? detail;
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +243,18 @@ class _InsightBullet extends StatelessWidget {
             child: Icon(Icons.circle, size: 7),
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                if (detail case final d?) Text(d),
+              ],
+            ),
+          ),
         ],
       ),
     );
