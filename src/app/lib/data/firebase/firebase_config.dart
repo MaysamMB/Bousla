@@ -18,6 +18,7 @@ class FirebaseConfig {
     required this.authDomain,
     required this.useEmulator,
     required this.emulatorHost,
+    this.appCheckSiteKey = '',
   });
 
   factory FirebaseConfig.fromEnvironment() => const FirebaseConfig(
@@ -32,6 +33,7 @@ class FirebaseConfig {
           'FIREBASE_EMULATOR_HOST',
           defaultValue: 'localhost',
         ),
+        appCheckSiteKey: String.fromEnvironment('FIREBASE_APPCHECK_SITE_KEY'),
       );
 
   final String apiKey;
@@ -46,6 +48,10 @@ class FirebaseConfig {
 
   /// Emulator host. Use the computer's LAN address to test from phones.
   final String emulatorHost;
+
+  /// reCAPTCHA v3 *site* key for App Check (public; the secret key is only
+  /// entered in the Firebase console). Empty: App Check is not activated.
+  final String appCheckSiteKey;
 
   bool get isConfigured => projectId.isNotEmpty;
 }

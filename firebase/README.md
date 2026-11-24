@@ -120,6 +120,27 @@ cd build/web && python3 -m http.server 5000 --bind 0.0.0.0
    approve them in the review screen. Running it again refuses to overwrite
    review decisions unless you add `--force`.
 
+## App Check (protects the Gemini quota)
+
+The web settings in the app are public, so without App Check anyone could
+call Gemini on this project's quota. With App Check, only requests from our
+site (with a reCAPTCHA v3 token) are accepted.
+
+1. https://www.google.com/recaptcha/admin/create → type **Score based (v3)**,
+   domains `bousla-educathon.web.app`, `bousla-educathon.firebaseapp.com`,
+   `localhost` → copy the **site key** and the **secret key**.
+2. Firebase console → **App Check** → **Apps** → `bousla-web` → **reCAPTCHA**
+   → paste the **secret key** → Save. (The secret key goes nowhere else.)
+3. Put the **site key** in `src/app/firebase.env.json` as
+   `"FIREBASE_APPCHECK_SITE_KEY"`, then `.\bousla deploy`.
+4. Use the AI button once, then in **App Check → APIs → Firebase AI Logic**
+   check that requests show as verified, and press **Enforce** there.
+   Do not enforce Firestore or Authentication before the demo: they are
+   already protected by the security rules, and `tools/seed.mjs` (Node)
+   cannot send App Check tokens.
+
+The site also needs `www.google.com/recaptcha` at the venue.
+
 ## Data layout
 
 ```

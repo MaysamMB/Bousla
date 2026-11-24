@@ -28,6 +28,8 @@ check_env() {
       problems.push(`FIREBASE_API_KEY does not look like a Firebase key (starts with AIza, 39 characters; this one has ${[...key].length}).`);
     if (problems.length) { console.error(`Problems in ${file}:`); for (const p of problems) console.error(`  - ${p}`); process.exit(1); }
     console.log(`OK ${file} (project ${cfg.FIREBASE_PROJECT_ID})`);
+    if (!cfg.USE_FIREBASE_EMULATOR && !String(cfg.FIREBASE_APPCHECK_SITE_KEY ?? "").trim())
+      console.log("Note: FIREBASE_APPCHECK_SITE_KEY is empty, so App Check is off (see firebase/README.md).");
   ' "$file"
 }
 ensure_npm() { [ -d "$FB/node_modules" ] || run "$FB" npm install; }

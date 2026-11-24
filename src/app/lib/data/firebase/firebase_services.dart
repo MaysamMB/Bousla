@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -20,6 +21,14 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
       authDomain: config.authDomain.isEmpty ? null : config.authDomain,
     ),
   );
+  // App Check proves requests come from our web app, so nobody can use the
+  // project's Gemini quota with the (public) web settings. Not used with the
+  // emulators. Enforcement is switched on in the Firebase console.
+  if (!config.useEmulator && config.appCheckSiteKey.isNotEmpty) {
+    await FirebaseAppCheck.instance.activate(
+      providerWeb: ReCaptchaV3Provider(config.appCheckSiteKey),
+    );
+  }
   final auth = FirebaseAuth.instance;
   final db = FirebaseFirestore.instance;
   if (config.useEmulator) {
