@@ -479,5 +479,6 @@
   "studentFeedbackWaiting": "Your personal feedback will appear here when your instructor publishes it.",
   "studentMapOpen": "Show my knowledge map",
   "studentMapOpenHint": "How the concepts build on each other, and which to review first. You can save it to your phone.",
-  "studentMapScreenTitle": "Knowledge map"
+  "studentMapScreenTitle": "Knowledge map",
+  "instructorStartAnother": "Start a new session"
 }

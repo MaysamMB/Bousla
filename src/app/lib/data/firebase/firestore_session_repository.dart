@@ -69,6 +69,29 @@ class FirestoreSessionRepository implements SessionRepository {
   }
 
   @override
+  Future<Session?> latestOpenSession({
+    required String ownerId,
+    required String courseId,
+  }) async {
+    // Equality filters only (no index needed); the rules allow listing
+    // because the query is limited to the instructor's own sessions.
+    final snap = await _sessions
+        .where('owner_id', isEqualTo: ownerId)
+        .where('course_id', isEqualTo: courseId)
+        .where('status', isEqualTo: 'open')
+        .get();
+    if (snap.docs.isEmpty) return null;
+    DateTime created(Map<String, dynamic> d) => d['created_at'] is Timestamp
+        ? (d['created_at'] as Timestamp).toDate()
+        : DateTime.fromMillisecondsSinceEpoch(0);
+    var newest = snap.docs.first;
+    for (final d in snap.docs.skip(1)) {
+      if (created(d.data()).isAfter(created(newest.data()))) newest = d;
+    }
+    return sessionFromDoc(newest.id, newest.data());
+  }
+
+  @override
   Future<Session?> findByCode(String code) async {
     final normalized = normalizeJoinCode(code);
     if (!_validCode.hasMatch(normalized)) return null;

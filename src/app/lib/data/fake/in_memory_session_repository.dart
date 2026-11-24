@@ -58,6 +58,23 @@ class InMemorySessionRepository implements SessionRepository {
   }
 
   @override
+  Future<Session?> latestOpenSession({
+    required String ownerId,
+    required String courseId,
+  }) async {
+    // Insertion order is creation order.
+    Session? latest;
+    for (final s in _sessions.values) {
+      if (s.ownerId == ownerId &&
+          s.courseId == courseId &&
+          s.status == SessionStatus.open) {
+        latest = s;
+      }
+    }
+    return latest;
+  }
+
+  @override
   Future<Session?> findByCode(String code) async {
     final normalized = normalizeJoinCode(code);
     for (final s in _sessions.values) {

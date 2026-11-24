@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../../../app_services.dart';
@@ -44,8 +44,27 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final courses = await repo.listCourses();
     final course = chooseCourse(courses, services.selectedCourseId.value);
     if (course == null) return null;
+    // After a page reload, come back to the session that is still running
+    // (its students keep answering it) instead of showing "create" again.
+    final owner = services.auth.instructorId;
+    if (_session == null && owner != null) {
+      try {
+        _session = await services.sessions.latestOpenSession(
+          ownerId: owner,
+          courseId: course.id,
+        );
+      } catch (e) {
+        debugPrint('Bousla: could not look for an open session: $e');
+      }
+    }
     return (courses, course, await repo.listQuestions(course.id));
   }
+
+  /// After a session is closed: back to "create" for a new one.
+  void _startNew() => setState(() {
+    _session = null;
+    _content = _loadContent();
+  });
 
   Future<void> _create(Course course, List<QuestionView> questions) async {
     final services = ServicesScope.of(context);
@@ -135,6 +154,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 _LiveSessionPanel(
                   session: session,
                   joinLink: _joinLink(session.code),
+                  onNewSession: _startNew,
                 ),
             ],
           );
@@ -145,10 +165,17 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 }
 
 class _LiveSessionPanel extends StatelessWidget {
-  const _LiveSessionPanel({required this.session, required this.joinLink});
+  const _LiveSessionPanel({
+    required this.session,
+    required this.joinLink,
+    required this.onNewSession,
+  });
 
   final Session session;
   final String? joinLink;
+
+  /// Shown once the session is closed.
+  final VoidCallback onNewSession;
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +251,12 @@ class _LiveSessionPanel extends StatelessWidget {
                     icon: const Icon(Icons.send_outlined),
                     label: Text(l.instructorPublishFeedback),
                   ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: onNewSession,
+                  icon: const Icon(Icons.add),
+                  label: Text(l.instructorStartAnother),
+                ),
               ],
             );
           },
