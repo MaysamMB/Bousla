@@ -65,6 +65,8 @@ Deliverable: privacy-conscious live classroom view.
 - Simple knowledge map (concepts with status and prerequisite links; a styled list/tree is enough).
 Deliverable: student question-to-insight journey.
 
+Status (24 Nov, knowledge map): **widget implemented; not yet shown in a screen.** `lib/features/student_web/knowledge_map/`: `KnowledgeMapView(feedback:)` draws the session's concepts by level (foundations first, each concept after its deepest prerequisite, prerequisites outside the session ignored, cycles broken), with state icon + word + evidence ("1 of 3 correct"), "builds on …", and the engine's possible-gap hint in cautious words. Titled "your knowledge map for this session" (no longitudinal claim). "Save the map to my phone" renders it to a PNG on the device: the share sheet where the browser can share files (iPhone: Save Image), otherwise a download; nothing is uploaded. `FeedbackConcept` gained `prerequisites` and `FeedbackConcept.from(concept, mastery)`. Checks in the cloud environment: `flutter analyze` clean, `flutter test` 125/125 (10 new: levels, JSON, Arabic/English text, small phone at 130% text, PNG bytes, failed save), web build compiles. Not yet done: placing it in the feedback screen (Lina), saving on a real iPhone and Android phone.
+
 ## Phase 6 — AI level 1: content preparation (Days 4–5)
 - Instructor picks a PDF/text material → sent to Gemini through Firebase AI Logic (file not stored) → structured JSON drafts with source locations → saved as `pending_review` with a `materials` record.
 - Automatic checks (same rules as `validate_data.py`, ported to Dart).
@@ -94,9 +96,9 @@ Deliverable: grounded, guarded, measured AI explanations.
 Cut from the bottom, not the middle: keep 2 → 3 → 4 → 5 working end to end before polishing 6 and 7. Minimum AI for the demo: level 1 review screen (with offline drafts if needed) + level 2 explanations with guards.
 
 ## Staged after the competition (kept, not removed)
-- Persistent learning profiles via optional account linking (`architecture.md` §10).
+- Persistent learning profiles via optional account linking (`architecture.md` §10). Agreed design (24 Nov): the student may sign in to keep their history, but **answering stays anonymous to the instructor**: the session flow, rules and aggregated instructor views do not change. Signing in links the anonymous account to Google or a university email (`linkWithCredential`), keeping the same UID, so earlier answers made in that browser become part of the student's own profile for their personal analysis (progress across sessions, recurring possible gaps). Before building: consent text, a way to see and delete one's profile, and rules so only the student reads `profiles/{uid}`. Linking only covers sessions answered in the same browser before signing in.
 - Longitudinal progress across sessions.
-- Career pathways and skill-gap analysis (`data/careers/backend-developer.json`). A small static demo is possible if time allows.
+- Career pathways and skill-gap analysis. Needs real, sourced data mapping concepts to job skills (e.g. from job postings or a published framework); no figures may be invented for the demo. Note (24 Nov): `data/careers/backend-developer.json`, named here earlier, does not exist in the repository.
 - Multilingual free-text AI evaluation, only after a rubric, labeled AR/EN/mixed test set, abstention and consistency tests exist.
 - Storing uploaded files and file resources (Cloud Storage, Blaze plan).
 - Server-side scoring (Option B) for instant feedback.

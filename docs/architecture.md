@@ -274,7 +274,7 @@ AI never scores multiple-choice answers and never overrides engine results.
 ## 10. Identity
 
 1. **Session participation (MVP):** students join with Firebase Anonymous Authentication. The anonymous UID identifies a participant within a session only. It is tied to a browser, not a person, and must not be presented as a persistent student identity.
-2. **Optional persistent profile (staged):** a "Save my progress" action links the anonymous account to a real sign-in (university email link or Google) using Firebase account linking (`linkWithCredential`). The same UID is kept, so the session's data moves into the profile. Only then is longitudinal tracking claimed.
+2. **Optional persistent profile (staged):** a "Save my progress" action links the anonymous account to a real sign-in (university email link or Google) using Firebase account linking (`linkWithCredential`). The same UID is kept, so the session's data moves into the profile. Only then is longitudinal tracking claimed. Signing in does not de-anonymise answering: instructors still see aggregates only, and the profile is readable by the student alone.
 3. Optional nickname only; no real name required to join.
 4. The QR code / join link contains only the session code, never a personal token.
 
