@@ -237,6 +237,17 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Can a primary key be NULL?'), findsOneWidget);
+      // The new suggestions come first, under their own heading.
+      expect(find.text('New AI suggestions (1)'), findsOneWidget);
+      expect(find.textContaining('From «lecture03.pdf» · fake-model'),
+          findsOneWidget);
+      expect(find.text('Earlier drafts waiting for review'), findsOneWidget);
+      final newHeading = tester.getTopLeft(find.text('New AI suggestions (1)'));
+      final newDraft = tester.getTopLeft(find.text('Can a primary key be NULL?'));
+      final earlier =
+          tester.getTopLeft(find.text('Earlier drafts waiting for review'));
+      expect(newHeading.dy, lessThan(newDraft.dy));
+      expect(newDraft.dy, lessThan(earlier.dy));
       expect(find.text('From the material: page 4'), findsWidgets);
       // Still a draft: students cannot get it.
       final forStudents = await content.listQuestions(_course);

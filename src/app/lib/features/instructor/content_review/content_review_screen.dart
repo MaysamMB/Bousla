@@ -67,6 +67,11 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
   Future<_ReviewData>? _data;
   final _selected = <String>{};
 
+  /// The last AI suggestions made on this screen, shown first in "waiting"
+  /// until the screen is closed.
+  GenerationOutcome? _latest;
+  DateTime? _latestAt;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -157,9 +162,34 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
       ),
     );
     if (outcome == null || !mounted) return;
+    _latest = outcome;
+    _latestAt = DateTime.now();
     _reload();
     messenger.showSnackBar(
       SnackBar(content: Text(l.reviewAiDone(outcome.saved, outcome.dropped))),
+    );
+  }
+
+  /// Splits "waiting" into the latest AI suggestions and earlier drafts.
+  _NewSection? _newSection(BuildContext context, List<QuestionView> pending) {
+    final latest = _latest;
+    if (latest == null) return null;
+    final ids = {
+      for (final q in pending)
+        if (latest.savedIds.contains(q.id)) q.id,
+    };
+    if (ids.isEmpty) return null;
+    final l = AppLocalizations.of(context);
+    final time = TimeOfDay.fromDateTime(_latestAt!).format(context);
+    return _NewSection(
+      ids: ids,
+      title: l.reviewAiNewSection(ids.length),
+      subtitle: l.reviewAiNewSectionFrom(
+        latest.materialName,
+        latest.modelName,
+        time,
+      ),
+      othersTitle: l.reviewAiEarlierDrafts,
     );
   }
 
@@ -270,6 +300,7 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                         data: data,
                         onHideChanged: hide,
                         questions: pending,
+                        newSection: _newSection(context, pending),
                         header: pending.isEmpty
                             ? null
                             : Align(
@@ -424,6 +455,67 @@ class _StatsBanner extends StatelessWidget {
   }
 }
 
+/// The latest AI suggestions, listed first under their own heading.
+class _NewSection {
+  const _NewSection({
+    required this.ids,
+    required this.title,
+    required this.subtitle,
+    required this.othersTitle,
+  });
+
+  final Set<String> ids;
+  final String title;
+  final String subtitle;
+  final String othersTitle;
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({
+    required this.title,
+    this.subtitle,
+    this.highlighted = false,
+  });
+
+  final String title;
+  final String? subtitle;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtitle = this.subtitle;
+    return Container(
+      margin: const EdgeInsets.only(top: 12, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: highlighted
+          ? BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(12),
+            )
+          : null,
+      child: Row(
+        children: [
+          if (highlighted) ...[
+            Icon(Icons.auto_awesome, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleSmall),
+                if (subtitle != null)
+                  Text(subtitle, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _QuestionList extends StatelessWidget {
   const _QuestionList({
     required this.data,
@@ -431,9 +523,13 @@ class _QuestionList extends StatelessWidget {
     required this.actions,
     required this.onHideChanged,
     this.header,
+    this.newSection,
     this.isSelected,
     this.onSelected,
   });
+
+  /// When set, these questions come first under their own heading.
+  final _NewSection? newSection;
 
   final void Function(QuestionView, Language, bool) onHideChanged;
   final _ReviewData data;
@@ -449,23 +545,42 @@ class _QuestionList extends StatelessWidget {
     if (questions.isEmpty) return Center(child: Text(l.reviewEmpty));
     final onSelected = this.onSelected;
     final header = this.header;
+    final section = newSection;
+    final fresh = [
+      if (section != null)
+        for (final q in questions)
+          if (section.ids.contains(q.id)) q,
+    ];
+    final rest = [
+      for (final q in questions)
+        if (!fresh.contains(q)) q,
+    ];
+    Widget card(QuestionView q) => _QuestionCard(
+          question: q,
+          concepts: data.concepts,
+          correctOptionId: data.keyFor(q),
+          selected: isSelected?.call(q),
+          onSelected: onSelected == null
+              ? null
+              : (value) => onSelected(q, value),
+          onHideChanged: (language, hidden) =>
+              onHideChanged(q, language, hidden),
+          actions: actions(q),
+        );
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
         if (header != null) header,
-        for (final q in questions)
-          _QuestionCard(
-            question: q,
-            concepts: data.concepts,
-            correctOptionId: data.keyFor(q),
-            selected: isSelected?.call(q),
-            onSelected: onSelected == null
-                ? null
-                : (value) => onSelected(q, value),
-            onHideChanged: (language, hidden) =>
-                onHideChanged(q, language, hidden),
-            actions: actions(q),
+        if (section != null && fresh.isNotEmpty) ...[
+          _SectionHeading(
+            title: section.title,
+            subtitle: section.subtitle,
+            highlighted: true,
           ),
+          for (final q in fresh) card(q),
+          if (rest.isNotEmpty) _SectionHeading(title: section.othersTitle),
+        ],
+        for (final q in rest) card(q),
       ],
     );
   }
