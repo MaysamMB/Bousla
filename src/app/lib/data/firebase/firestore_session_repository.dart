@@ -42,6 +42,7 @@ class FirestoreSessionRepository implements SessionRepository {
     required String courseId,
     required String ownerId,
     required List<QuestionRef> questions,
+    LocalizedText? title,
   }) async {
     for (var attempt = 0; attempt < 10; attempt++) {
       final code = generateJoinCode(_random);
@@ -53,6 +54,10 @@ class FirestoreSessionRepository implements SessionRepository {
         questions: List.unmodifiable(questions),
         status: SessionStatus.open,
         feedbackReleased: false,
+        title: title,
+        // The stored time is the server's; this is for the screen until
+        // the session is read again.
+        createdAt: DateTime.now(),
       );
       final ref = _sessions.doc(created.id);
       final taken = await _db.runTransaction((tx) async {
@@ -66,6 +71,22 @@ class FirestoreSessionRepository implements SessionRepository {
       if (!taken) return created;
     }
     throw StateError('Could not find a free join code');
+  }
+
+  @override
+  Future<List<Session>> listSessions({
+    required String ownerId,
+    required String courseId,
+  }) async {
+    // Equality filters only (no index needed); allowed by the rules because
+    // the query is limited to the instructor's own sessions.
+    final snap = await _sessions
+        .where('owner_id', isEqualTo: ownerId)
+        .where('course_id', isEqualTo: courseId)
+        .get();
+    final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+    return [for (final d in snap.docs) sessionFromDoc(d.id, d.data())]
+      ..sort((a, b) => (b.createdAt ?? epoch).compareTo(a.createdAt ?? epoch));
   }
 
   @override

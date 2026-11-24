@@ -13,6 +13,14 @@ abstract interface class SessionRepository {
     required String courseId,
     required String ownerId,
     required List<QuestionRef> questions,
+    LocalizedText? title,
+  });
+
+  /// Instructor only: all sessions of [courseId] owned by [ownerId], newest
+  /// first (open and closed), for the past sessions list.
+  Future<List<Session>> listSessions({
+    required String ownerId,
+    required String courseId,
   });
 
   /// Instructor only: the most recently created session of [courseId] owned
