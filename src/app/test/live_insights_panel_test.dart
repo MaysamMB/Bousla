@@ -76,6 +76,13 @@ void main() {
     expect(find.textContaining('5 answered · 0% correct'), findsWidgets);
     expect(find.textContaining('hidden to protect privacy'), findsNothing);
     expect(find.textContaining('not definitive diagnoses'), findsOneWidget);
+    // Each prerequisite signal is two lines: the numbers, then a cautious
+    // suggestion.
+    final signals = find.textContaining(RegExp('also shows? one in'));
+    expect(
+      find.textContaining('may be a contributing cause'),
+      findsNWidgets(signals.evaluate().length),
+    );
   });
 
   testWidgets('4 students: everything hidden, no percentages', (

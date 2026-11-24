@@ -167,11 +167,9 @@
     "instructorInsightsStateInsufficient":  "دليل غير كافٍ",
     "instructorInsightsStudents":  "طلاب",
     "instructorInsightsPrerequisiteTitle":  "متطلبات سابقة تستحق المراجعة",
-    "instructorInsightsStruggling":  "{struggling} طلاب لديهم صعوبة محتملة في {concept}.",
-    "instructorInsightsGap":  "{gap} من هؤلاء الطلاب لديهم أيضاً صعوبة محتملة في {prerequisite}.",
-    "instructorInsightsPossibleCause":  "قد تكون الصعوبة في {prerequisite} أحد أسباب الصعوبة في {concept}.",
-    "instructorInsightsRecommendation":  "يُقترح مراجعة مفهوم {prerequisite} مع الصف.",
     "instructorInsightsDisclaimer":  "هذه تقديرات مبنية على إجابات الجلسة، وليست تشخيصاً قطعياً.",
   "studentFeedbackTitle": "ملاحظاتك",
-  "studentFeedbackNone": "لا توجد ملاحظات لك في هذه الجلسة. تصل الملاحظات إلى الهاتف والمتصفح الذي أجبت منه، فافتح الرابط من هناك."
+  "studentFeedbackNone": "لا توجد ملاحظات لك في هذه الجلسة. تصل الملاحظات إلى الهاتف والمتصفح الذي أجبت منه، فافتح الرابط من هناك.",
+  "instructorInsightsSignal": "{gap} من أصل {struggling} طلاب لديهم صعوبة محتملة في {concept} لديهم أيضاً صعوبة محتملة في {prerequisite}.",
+  "instructorInsightsSignalAction": "قد يكون {prerequisite} سبباً محتملاً، ويُقترح مراجعته مع الصف."
 }
