@@ -8,6 +8,7 @@ import 'firebase_auth_service.dart';
 import 'firebase_config.dart';
 import 'firestore_content_repository.dart';
 import 'firestore_session_repository.dart';
+import 'gemini_feedback_explainer.dart';
 import 'gemini_question_generator.dart';
 
 /// Connects to Firebase and returns services backed by Firestore.
@@ -49,5 +50,6 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
       ensureParticipant: authService.ensureParticipant,
     ),
     questionGenerator: GeminiQuestionGenerator(),
+    feedbackExplainer: GeminiFeedbackExplainer(),
   );
 }

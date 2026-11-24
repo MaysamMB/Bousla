@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'data/fake/in_memory_content_repository.dart';
+import 'data/ai/feedback_explainer.dart';
 import 'data/ai/question_generator.dart';
 import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
@@ -16,6 +17,7 @@ class AppServices {
     AuthService? auth,
     this.inMemory = false,
     this.questionGenerator,
+    this.feedbackExplainer,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
         locale = ValueNotifier(initialLocale);
@@ -42,6 +44,10 @@ class AppServices {
   /// AI level 1 (drafting questions from material). Null when not
   /// available, e.g. in the offline demo mode: the screen then hides it.
   final QuestionGenerator? questionGenerator;
+
+  /// AI level 2 (explanations in published feedback). Null when not
+  /// available: feedback is then published with template explanations.
+  final FeedbackExplainer? feedbackExplainer;
 
   /// Current UI language. Changing it rebuilds the app in that language and
   /// direction (RTL for Arabic, LTR for English).

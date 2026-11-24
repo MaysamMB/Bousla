@@ -136,46 +136,53 @@ class GeminiQuestionGenerator implements QuestionGenerator {
   Future<GenerateContentResponse> _generate(
     String name,
     List<Content> prompt,
-  ) async {
-    try {
-      return await _logged(name, prompt);
-    } on ServiceApiNotEnabled catch (e) {
-      throw QuestionGenerationException(
-        GenerationProblem.notEnabled,
-        e.message,
-      );
-    } on QuotaExceeded catch (e) {
-      // Seen live: "limit: 20 ... requests per day ... retry in 17h9m28s".
-      throw QuestionGenerationException(
-        RegExp('per day|PerDay', caseSensitive: false).hasMatch(e.message)
-            ? GenerationProblem.dailyQuota
-            : GenerationProblem.quota,
-        e.message,
-      );
-    } on TimeoutException {
-      throw const QuestionGenerationException(GenerationProblem.network);
-    } on FirebaseAIException catch (e) {
-      // Setup problems also arrive as generic server errors, e.g. right
-      // after AI Logic is enabled, while permissions propagate.
-      final setup = RegExp(
-        'PERMISSION_DENIED|has not been used|is disabled|serviceusage',
-        caseSensitive: false,
-      ).hasMatch(e.message);
-      // Temporary overload, as seen live: "Server Error [500] ... This model
-      // is currently experiencing high demand".
-      final busy = RegExp(
-        r'high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED|\[50[03]\]',
-        caseSensitive: false,
-      ).hasMatch(e.message);
-      throw QuestionGenerationException(
-        setup
-            ? GenerationProblem.notEnabled
-            : busy
-                ? GenerationProblem.busy
-                : GenerationProblem.unknown,
-        e.message,
-      );
-    }
+  ) =>
+      withGeminiErrors(() => _logged(name, prompt));
+}
+
+/// Runs one Gemini request and turns its errors into
+/// [QuestionGenerationException]s, which [callWithModelFallback] understands
+/// (busy, per-minute quota, daily quota, not enabled, network). Shared by
+/// question drafting (AI level 1) and feedback explanations (AI level 2).
+Future<T> withGeminiErrors<T>(Future<T> Function() request) async {
+  try {
+    return await request();
+  } on ServiceApiNotEnabled catch (e) {
+    throw QuestionGenerationException(
+      GenerationProblem.notEnabled,
+      e.message,
+    );
+  } on QuotaExceeded catch (e) {
+    // Seen live: "limit: 20 ... requests per day ... retry in 17h9m28s".
+    throw QuestionGenerationException(
+      RegExp('per day|PerDay', caseSensitive: false).hasMatch(e.message)
+          ? GenerationProblem.dailyQuota
+          : GenerationProblem.quota,
+      e.message,
+    );
+  } on TimeoutException {
+    throw const QuestionGenerationException(GenerationProblem.network);
+  } on FirebaseAIException catch (e) {
+    // Setup problems also arrive as generic server errors, e.g. right
+    // after AI Logic is enabled, while permissions propagate.
+    final setup = RegExp(
+      'PERMISSION_DENIED|has not been used|is disabled|serviceusage',
+      caseSensitive: false,
+    ).hasMatch(e.message);
+    // Temporary overload, as seen live: "Server Error [500] ... This model
+    // is currently experiencing high demand".
+    final busy = RegExp(
+      r'high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED|\[50[03]\]',
+      caseSensitive: false,
+    ).hasMatch(e.message);
+    throw QuestionGenerationException(
+      setup
+          ? GenerationProblem.notEnabled
+          : busy
+              ? GenerationProblem.busy
+              : GenerationProblem.unknown,
+      e.message,
+    );
   }
 }
 

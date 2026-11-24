@@ -1,6 +1,6 @@
 # Bousla — Architecture
 
-> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Not yet implemented: classroom insights screen, student feedback, QR code, AI levels 1 and 2. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
+> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Since then (24 Nov): QR code, AI level 1 question drafting, and student feedback with AI level 2 explanations (guards + template fallback; tested, not yet run against Gemini). Not yet implemented: classroom insights screen, knowledge map, the instructor teaching suggestion of AI level 2. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
 
 ## 1. Components
 
