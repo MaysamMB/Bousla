@@ -349,6 +349,29 @@ void main() {
       expect(week1.dy, lessThan(others.dy));
     });
 
+    testWidgets('an unknown problem keeps its raw text folded', (tester) async {
+      await open(
+        tester,
+        _FakeGenerator(
+          error: const QuestionGenerationException(
+            GenerationProblem.unknown,
+            'Server Error [418]: {"error": "teapot"}',
+          ),
+        ),
+      );
+      await tester.tap(find.text('Draft questions from material (AI)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Choose a file (PDF or text)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Draft questions'));
+      await tester.pumpAndSettle();
+      expect(find.text('Something went wrong. Please try again.'), findsOneWidget);
+      expect(find.textContaining('teapot'), findsNothing);
+      await tester.tap(find.text('Technical details'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('teapot'), findsOneWidget);
+    });
+
     testWidgets('a setup problem is explained in the dialog', (tester) async {
       await open(
         tester,
@@ -367,8 +390,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('AI is not enabled for this Firebase project'),
           findsOneWidget);
-      // The server's own reason is shown too, for diagnosis.
-      expect(find.textContaining('PERMISSION_DENIED'), findsOneWidget);
+      // A known problem: no raw server text in the dialog.
+      expect(find.textContaining('PERMISSION_DENIED'), findsNothing);
+      expect(find.text('Technical details'), findsNothing);
     });
   });
 }
