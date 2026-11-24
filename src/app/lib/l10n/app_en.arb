@@ -1,201 +1,479 @@
 {
-  "@@locale": "en",
-
-  "appTitle": "Bousla",
-  "appInMemoryBanner": "LOCAL DEMO",
-  "@appInMemoryBanner": { "description": "Corner banner in the offline demo mode (in-memory data, nothing saved). Keep it very short." },
-  "languageToggle": "العربية",
-  "@languageToggle": { "description": "Button that switches to the OTHER language, so it is written in that language." },
-
-  "homeTagline": "Know what you understand, and what to learn next.",
-  "homeInstructor": "I'm an instructor",
-  "homeJoin": "Join a session",
-
-  "instructorCreateSessionTitle": "New session",
-  "instructorQuestionsAvailable": "{count} approved questions will be used",
-  "@instructorQuestionsAvailable": { "placeholders": { "count": { "type": "int" } } },
-  "instructorCreateSession": "Create session",
-  "instructorJoinCode": "Join code: {code}",
-  "@instructorJoinCode": { "placeholders": { "code": { "type": "String" } } },
-  "instructorJoinLink": "Join link: {link}",
-  "@instructorJoinLink": { "placeholders": { "link": { "type": "String" } } },
-  "instructorLiveCounts": "Students who answered: {participants} · Answers: {responses}",
-  "@instructorLiveCounts": { "placeholders": { "participants": { "type": "int" }, "responses": { "type": "int" } } },
-  "instructorQrLabel": "QR code to join session {code}",
-  "@instructorQrLabel": {"placeholders": {"code": {"type": "String"}}},
-  "instructorQrFullScreen": "Show large for the class",
-  "instructorQrClose": "Close",
-  "instructorCloseSession": "Close session",
-  "instructorSessionClosed": "Session closed",
-
-  "studentJoinTitle": "Join a session",
-  "studentScanHint": "Or scan the QR code shown on the screen with your phone camera",
-  "studentEnterCode": "Join code",
-  "studentJoin": "Join",
-  "studentCodeNotFound": "No session found with this code.",
-  "studentSessionClosed": "This session is closed.",
-  "studentQuestionProgress": "Question {current} of {total}",
-  "@studentQuestionProgress": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
-  "studentSubmit": "Submit",
-  "studentAllDone": "Thank you! Your answers were submitted.",
-  "studentConnectionSlow": "The connection is slow. Check the internet and press again; your earlier answers are saved.",
-  "studentNoQuestions": "This session has no questions yet.",
-
-  "instructorReviewQuestions": "Review questions",
-  "reviewTitle": "Question review",
-  "reviewAiNotice": "AI drafts are only suggestions. Students see only the questions you approve.",
-  "reviewStats": "AI drafts: {total} · approved as is {asIs} · edited {edited} · rejected {rejected} · waiting {pending}",
-  "@reviewStats": { "placeholders": { "total": { "type": "int" }, "asIs": { "type": "int" }, "edited": { "type": "int" }, "rejected": { "type": "int" }, "pending": { "type": "int" } } },
-  "reviewTabPending": "Waiting ({count})",
-  "@reviewTabPending": { "placeholders": { "count": { "type": "int" } } },
-  "reviewTabApproved": "Approved ({count})",
-  "@reviewTabApproved": { "placeholders": { "count": { "type": "int" } } },
-  "reviewTabRejected": "Rejected ({count})",
-  "@reviewTabRejected": { "placeholders": { "count": { "type": "int" } } },
-  "reviewEmpty": "No questions here.",
-  "reviewApprove": "Approve",
-  "reviewEdit": "Edit",
-  "reviewReject": "Reject",
-  "reviewRestore": "Back to review",
-  "reviewApproveSelected": "Approve selected ({count})",
-  "@reviewApproveSelected": { "placeholders": { "count": { "type": "int" } } },
-  "reviewRejectSelected": "Reject selected ({count})",
-  "@reviewRejectSelected": { "placeholders": { "count": { "type": "int" } } },
-  "reviewRejectAllPending": "Reject all waiting",
-  "reviewAddQuestion": "Add question",
-  "reviewSourceAi": "AI draft",
-  "reviewSourceInstructor": "Written by the instructor",
-  "reviewSourceTeam": "Team content",
-  "reviewEdited": "Edited",
-  "reviewVersion": "Version {version}",
-  "@reviewVersion": { "placeholders": { "version": { "type": "int" } } },
-  "reviewSourceLocation": "From the material: {location}",
-  "@reviewSourceLocation": { "placeholders": { "location": { "type": "String" } } },
-  "reviewCorrectAnswer": "Correct answer",
-  "reviewRejectedBecause": "Reason: {reason}",
-  "@reviewRejectedBecause": { "placeholders": { "reason": { "type": "String" } } },
-  "reviewRejectDialogTitle": "Reject questions ({count})",
-  "@reviewRejectDialogTitle": { "placeholders": { "count": { "type": "int" } } },
-  "reviewRejectDialogHint": "Choosing a reason is optional. It helps measure the quality of AI drafts.",
-  "reviewRejectWithoutReason": "Reject without a reason",
-  "reviewCancel": "Cancel",
-  "reviewReasonIncorrect": "Wrong information",
-  "reviewReasonUnclear": "Unclear wording",
-  "reviewReasonTranslation": "Weak translation",
-  "reviewReasonDuplicate": "Duplicate",
-  "reviewReasonOffTopic": "Outside the material",
-  "reviewReasonOther": "Other",
-  "reviewEditorNewTitle": "New question",
-  "reviewEditorEditTitle": "Edit question",
-  "reviewEditorPromptAr": "Question (Arabic)",
-  "reviewEditorPromptEn": "Question (English)",
-  "reviewEditorConcept": "Concept",
-  "reviewEditorOption": "Option {label}",
-  "@reviewEditorOption": { "placeholders": { "label": { "type": "String" } } },
-  "reviewEditorOptionAr": "Arabic",
-  "reviewEditorOptionEn": "English",
-  "reviewEditorAddOption": "Add option",
-  "reviewEditorRemoveOption": "Remove option",
-  "reviewEditorSave": "Save",
-  "reviewEditorSaveApprove": "Save and approve",
-  "reviewEditorNewVersionNote": "This question is approved. Saving changes creates a new version; answers already given stay linked to the old one.",
-  "reviewProblemPromptArabicMissing": "Write the question in Arabic.",
-  "reviewProblemPromptEnglishMissing": "Write the question in English.",
-  "reviewProblemPromptArabicHasNoArabicLetters": "The Arabic question has no Arabic letters.",
-  "reviewProblemTooFewOptions": "Add at least two options.",
-  "reviewProblemOptionTextMissing": "Every option needs Arabic and English text.",
-  "reviewProblemDuplicateOptionIds": "Two options have the same ID.",
-  "reviewProblemCorrectOptionMissing": "Choose the correct answer.",
-  "reviewProblemConceptMissing": "Choose a concept.",
-  "reviewProblemUnknownConcept": "The concept is not approved yet.",
-
-  "reviewHideArabicOptions": "Hide Arabic answers from students",
-  "reviewHideEnglishOptions": "Hide English answers from students",
-  "reviewHideArabicOptionsAll": "Hide Arabic answers in all questions",
-  "reviewHideEnglishOptionsAll": "Hide English answers in all questions",
-  "reviewHiddenOptionsHint": "Answers are still required in both languages. A student using a hidden language sees the answers in the other one.",
-  "reviewProblemAllOptionLanguagesHidden": "Students must see the answers in at least one language.",
-
-  "authNotApprovedTitle": "Account waiting for approval",
-  "authNotApprovedBody": "Your account was created, but it is not an approved instructor yet. Send this ID to the project administrator, who adds it in the Firebase console, then press \"Check again\".",
-  "authCheckAgain": "Check again",
-  "authTitle": "Instructor sign-in",
-  "authEmail": "Email",
-  "authPassword": "Password",
-  "authSignIn": "Sign in",
-  "authRegister": "Create account",
-  "authSignOut": "Sign out",
-  "authFailed": "Sign-in failed. Check the email and password (at least 6 characters).",
-  "authErrorWrongCredentials": "Wrong email or password. First time here? Press \"Create account\".",
-  "authErrorEmailInUse": "An account with this email already exists. Press \"Sign in\" instead.",
-  "authErrorWeakPassword": "The password must be at least 6 characters.",
-  "authErrorInvalidEmail": "This email address is not valid.",
-  "authErrorNetwork": "No connection to the server. Check the internet and try again.",
-  "authErrorTooManyAttempts": "Too many attempts. Wait a few minutes and try again.",
-  "authErrorNotEnabled": "Email sign-in is not enabled for this Firebase project (Authentication → Sign-in method).",
-  "instructorCourseLabel": "Course",
-  "instructorNoCourse": "No course is linked to this account yet. Load the sample course with firebase/tools/seed.mjs (see firebase/README.md).",
-
-  "reviewAiGenerate": "Draft questions from material (AI)",
-  "reviewAiDialogTitle": "Draft questions from your material",
-  "reviewAiPrivacy": "The file is sent to Google Gemini (through Firebase) to suggest questions in Arabic and English. It is not stored. Do not upload files with personal data. Every suggested question stays a draft until you review it.",
-  "reviewAiPickFile": "Choose a file (PDF or text)",
-  "reviewAiFileChosen": "{name} · {sizeKb} KB",
-  "@reviewAiFileChosen": {"placeholders": {"name": {"type": "String"}, "sizeKb": {"type": "int"}}},
-  "reviewAiCount": "How many questions to suggest?",
-  "reviewAiStart": "Draft questions",
-  "reviewAiWorking": "Gemini is reading the material. This can take up to a minute.",
-  "reviewAiDone": "{saved} AI drafts are waiting for your review. {dropped} were dropped by the automatic checks.",
-  "@reviewAiDone": {"placeholders": {"saved": {"type": "int"}, "dropped": {"type": "int"}}},
-  "reviewAiNoConcepts": "There are no approved concepts in this course yet, so drafts could not be linked to any.",
-  "reviewAiNothingUsable": "No usable drafts: the material may not match the course concepts, or every draft failed the automatic checks. Try another file.",
-  "reviewAiErrorNotEnabled": "AI is not enabled for this Firebase project (Firebase console → AI Logic → Get started → Gemini Developer API).",
-  "reviewAiErrorQuota": "The free AI quota is used up for now. Try again in a few minutes.",
-  "reviewAiNewSection": "New AI suggestions ({count})",
-  "@reviewAiNewSection": {"placeholders": {"count": {"type": "int"}}},
-  "reviewAiNewSectionFrom": "From «{file}» · {model} · {time}",
-  "@reviewAiNewSectionFrom": {"placeholders": {"file": {"type": "String"}, "model": {"type": "String"}, "time": {"type": "String"}}},
-  "reviewAiGroupTitle": "AI suggestions ({count})",
-  "@reviewAiGroupTitle": {"placeholders": {"count": {"type": "int"}}},
-  "reviewAiOtherDrafts": "Other drafts waiting for review",
-  "reviewAiSummary": "You asked for {requested} · Gemini wrote {returned} · {saved} saved for your review",
-  "@reviewAiSummary": {"placeholders": {"requested": {"type": "int"}, "returned": {"type": "int"}, "saved": {"type": "int"}}},
-  "reviewAiDroppedReasons": "Dropped by the automatic checks: {reasons}",
-  "@reviewAiDroppedReasons": {"placeholders": {"reasons": {"type": "String"}}},
-  "reviewAiIssueUnknownConcept": "not about the course concepts",
-  "reviewAiIssueDuplicate": "duplicate",
-  "reviewAiIssueOptionsInPrompt": "options instead of a question",
-  "reviewAiIssueLanguage": "missing or wrong language",
-  "reviewAiIssueOptions": "problem with the options",
-  "reviewAiIssueOther": "other",
-  "reviewAiTechnicalDetails": "Technical details",
-  "reviewAiErrorDailyQuota": "Today's free Gemini limit is used up (the free tier allows only a few requests per day). It renews within 24 hours; existing drafts are not affected.",
-  "reviewAiErrorBusy": "Gemini is busy right now (a temporary load on Google's side; the app already retried and tried a second model). Try again in a minute.",
-  "reviewAiErrorTooLarge": "The file is too large (15 MB at most).",
-  "reviewAiErrorUnsupported": "Only PDF, .txt and .md files are supported.",
-  "reviewAiErrorEmpty": "Gemini returned no answer. Try again, or try another file.",
-  "reviewAiErrorNetwork": "No answer from Gemini in time. Check the connection and try again.",
-
-  "errorGeneric": "Something went wrong. Please try again.",
-  "studentMapTitle": "Your knowledge map for this session",
-  "studentMapNote": "Based only on your answers in this session. These are estimates, not a final judgement.",
-  "studentMapFoundations": "Foundations",
-  "studentMapLevel": "Level {level}",
-  "@studentMapLevel": {"placeholders": {"level": {"type": "int"}}},
-  "studentMapEvidence": "you got {correct} of {attempts} questions on it right",
-  "@studentMapEvidence": {"placeholders": {"correct": {"type": "int"}, "attempts": {"type": "int"}}},
-  "studentMapBuildsOn": "Builds on: {names}",
-  "@studentMapBuildsOn": {"placeholders": {"names": {"type": "String"}}},
-  "studentMapPossibleGap": "“{prerequisite}” may be a possible cause: worth reviewing first.",
-  "@studentMapPossibleGap": {"placeholders": {"prerequisite": {"type": "String"}}},
-  "studentMapStateDifficulty": "Possible difficulty",
-  "studentMapStateEmerging": "Emerging",
-  "studentMapStateMastery": "Demonstrated mastery",
-  "studentMapStateInsufficient": "Not enough evidence",
-  "studentMapEmpty": "No concepts in this session.",
-  "studentMapSave": "Save the map to my phone",
-  "studentMapSaved": "Map saved as an image.",
-  "studentMapSaveFailed": "Could not save the image. Take a screenshot instead.",
+    "@@locale":  "en",
+    "appTitle":  "Bousla",
+    "appInMemoryBanner":  "LOCAL DEMO",
+    "@appInMemoryBanner":  {
+                               "description":  "Corner banner in the offline demo mode (in-memory data, nothing saved). Keep it very short."
+                           },
+    "languageToggle":  "العربية",
+    "@languageToggle":  {
+                            "description":  "Button that switches to the OTHER language, so it is written in that language."
+                        },
+    "homeTagline":  "Know what you understand, and what to learn next.",
+    "homeInstructor":  "I\u0027m an instructor",
+    "homeJoin":  "Join a session",
+    "instructorCreateSessionTitle":  "New session",
+    "instructorQuestionsAvailable":  "{count} approved questions will be used",
+    "@instructorQuestionsAvailable":  {
+                                          "placeholders":  {
+                                                               "count":  {
+                                                                             "type":  "int"
+                                                                         }
+                                                           }
+                                      },
+    "instructorCreateSession":  "Create session",
+    "instructorJoinCode":  "Join code: {code}",
+    "@instructorJoinCode":  {
+                                "placeholders":  {
+                                                     "code":  {
+                                                                  "type":  "String"
+                                                              }
+                                                 }
+                            },
+    "instructorJoinLink":  "Join link: {link}",
+    "@instructorJoinLink":  {
+                                "placeholders":  {
+                                                     "link":  {
+                                                                  "type":  "String"
+                                                              }
+                                                 }
+                            },
+    "instructorLiveCounts":  "Students who answered: {participants} · Answers: {responses}",
+    "@instructorLiveCounts":  {
+                                  "placeholders":  {
+                                                       "participants":  {
+                                                                            "type":  "int"
+                                                                        },
+                                                       "responses":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                   }
+                              },
+    "instructorQrLabel":  "QR code to join session {code}",
+    "@instructorQrLabel":  {
+                               "placeholders":  {
+                                                    "code":  {
+                                                                 "type":  "String"
+                                                             }
+                                                }
+                           },
+    "instructorQrFullScreen":  "Show large for the class",
+    "instructorQrClose":  "Close",
+    "instructorCloseSession":  "Close session",
+    "instructorSessionClosed":  "Session closed",
+    "studentJoinTitle":  "Join a session",
+    "studentScanHint":  "Or scan the QR code shown on the screen with your phone camera",
+    "studentEnterCode":  "Join code",
+    "studentJoin":  "Join",
+    "studentCodeNotFound":  "No session found with this code.",
+    "studentSessionClosed":  "This session is closed.",
+    "studentQuestionProgress":  "Question {current} of {total}",
+    "@studentQuestionProgress":  {
+                                     "placeholders":  {
+                                                          "current":  {
+                                                                          "type":  "int"
+                                                                      },
+                                                          "total":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                      }
+                                 },
+    "studentSubmit":  "Submit",
+    "studentAllDone":  "Thank you! Your answers were submitted.",
+    "studentConnectionSlow":  "The connection is slow. Check the internet and press again; your earlier answers are saved.",
+    "studentNoQuestions":  "This session has no questions yet.",
+    "instructorReviewQuestions":  "Review questions",
+    "reviewTitle":  "Question review",
+    "reviewAiNotice":  "AI drafts are only suggestions. Students see only the questions you approve.",
+    "reviewStats":  "AI drafts: {total} · approved as is {asIs} · edited {edited} · rejected {rejected} · waiting {pending}",
+    "@reviewStats":  {
+                         "placeholders":  {
+                                              "total":  {
+                                                            "type":  "int"
+                                                        },
+                                              "asIs":  {
+                                                           "type":  "int"
+                                                       },
+                                              "edited":  {
+                                                             "type":  "int"
+                                                         },
+                                              "rejected":  {
+                                                               "type":  "int"
+                                                           },
+                                              "pending":  {
+                                                              "type":  "int"
+                                                          }
+                                          }
+                     },
+    "reviewTabPending":  "Waiting ({count})",
+    "@reviewTabPending":  {
+                              "placeholders":  {
+                                                   "count":  {
+                                                                 "type":  "int"
+                                                             }
+                                               }
+                          },
+    "reviewTabApproved":  "Approved ({count})",
+    "@reviewTabApproved":  {
+                               "placeholders":  {
+                                                    "count":  {
+                                                                  "type":  "int"
+                                                              }
+                                                }
+                           },
+    "reviewTabRejected":  "Rejected ({count})",
+    "@reviewTabRejected":  {
+                               "placeholders":  {
+                                                    "count":  {
+                                                                  "type":  "int"
+                                                              }
+                                                }
+                           },
+    "reviewEmpty":  "No questions here.",
+    "reviewApprove":  "Approve",
+    "reviewEdit":  "Edit",
+    "reviewReject":  "Reject",
+    "reviewRestore":  "Back to review",
+    "reviewApproveSelected":  "Approve selected ({count})",
+    "@reviewApproveSelected":  {
+                                   "placeholders":  {
+                                                        "count":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                    }
+                               },
+    "reviewRejectSelected":  "Reject selected ({count})",
+    "@reviewRejectSelected":  {
+                                  "placeholders":  {
+                                                       "count":  {
+                                                                     "type":  "int"
+                                                                 }
+                                                   }
+                              },
+    "reviewRejectAllPending":  "Reject all waiting",
+    "reviewAddQuestion":  "Add question",
+    "reviewSourceAi":  "AI draft",
+    "reviewSourceInstructor":  "Written by the instructor",
+    "reviewSourceTeam":  "Team content",
+    "reviewEdited":  "Edited",
+    "reviewVersion":  "Version {version}",
+    "@reviewVersion":  {
+                           "placeholders":  {
+                                                "version":  {
+                                                                "type":  "int"
+                                                            }
+                                            }
+                       },
+    "reviewSourceLocation":  "From the material: {location}",
+    "@reviewSourceLocation":  {
+                                  "placeholders":  {
+                                                       "location":  {
+                                                                        "type":  "String"
+                                                                    }
+                                                   }
+                              },
+    "reviewCorrectAnswer":  "Correct answer",
+    "reviewRejectedBecause":  "Reason: {reason}",
+    "@reviewRejectedBecause":  {
+                                   "placeholders":  {
+                                                        "reason":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                    }
+                               },
+    "reviewRejectDialogTitle":  "Reject questions ({count})",
+    "@reviewRejectDialogTitle":  {
+                                     "placeholders":  {
+                                                          "count":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                      }
+                                 },
+    "reviewRejectDialogHint":  "Choosing a reason is optional. It helps measure the quality of AI drafts.",
+    "reviewRejectWithoutReason":  "Reject without a reason",
+    "reviewCancel":  "Cancel",
+    "reviewReasonIncorrect":  "Wrong information",
+    "reviewReasonUnclear":  "Unclear wording",
+    "reviewReasonTranslation":  "Weak translation",
+    "reviewReasonDuplicate":  "Duplicate",
+    "reviewReasonOffTopic":  "Outside the material",
+    "reviewReasonOther":  "Other",
+    "reviewEditorNewTitle":  "New question",
+    "reviewEditorEditTitle":  "Edit question",
+    "reviewEditorPromptAr":  "Question (Arabic)",
+    "reviewEditorPromptEn":  "Question (English)",
+    "reviewEditorConcept":  "Concept",
+    "reviewEditorOption":  "Option {label}",
+    "@reviewEditorOption":  {
+                                "placeholders":  {
+                                                     "label":  {
+                                                                   "type":  "String"
+                                                               }
+                                                 }
+                            },
+    "reviewEditorOptionAr":  "Arabic",
+    "reviewEditorOptionEn":  "English",
+    "reviewEditorAddOption":  "Add option",
+    "reviewEditorRemoveOption":  "Remove option",
+    "reviewEditorSave":  "Save",
+    "reviewEditorSaveApprove":  "Save and approve",
+    "reviewEditorNewVersionNote":  "This question is approved. Saving changes creates a new version; answers already given stay linked to the old one.",
+    "reviewProblemPromptArabicMissing":  "Write the question in Arabic.",
+    "reviewProblemPromptEnglishMissing":  "Write the question in English.",
+    "reviewProblemPromptArabicHasNoArabicLetters":  "The Arabic question has no Arabic letters.",
+    "reviewProblemTooFewOptions":  "Add at least two options.",
+    "reviewProblemOptionTextMissing":  "Every option needs Arabic and English text.",
+    "reviewProblemDuplicateOptionIds":  "Two options have the same ID.",
+    "reviewProblemCorrectOptionMissing":  "Choose the correct answer.",
+    "reviewProblemConceptMissing":  "Choose a concept.",
+    "reviewProblemUnknownConcept":  "The concept is not approved yet.",
+    "reviewHideArabicOptions":  "Hide Arabic answers from students",
+    "reviewHideEnglishOptions":  "Hide English answers from students",
+    "reviewHideArabicOptionsAll":  "Hide Arabic answers in all questions",
+    "reviewHideEnglishOptionsAll":  "Hide English answers in all questions",
+    "reviewHiddenOptionsHint":  "Answers are still required in both languages. A student using a hidden language sees the answers in the other one.",
+    "reviewProblemAllOptionLanguagesHidden":  "Students must see the answers in at least one language.",
+    "authNotApprovedTitle":  "Account waiting for approval",
+    "authNotApprovedBody":  "Your account was created, but it is not an approved instructor yet. Send this ID to the project administrator, who adds it in the Firebase console, then press \"Check again\".",
+    "authCheckAgain":  "Check again",
+    "authTitle":  "Instructor sign-in",
+    "authEmail":  "Email",
+    "authPassword":  "Password",
+    "authSignIn":  "Sign in",
+    "authRegister":  "Create account",
+    "authSignOut":  "Sign out",
+    "authFailed":  "Sign-in failed. Check the email and password (at least 6 characters).",
+    "authErrorWrongCredentials":  "Wrong email or password. First time here? Press \"Create account\".",
+    "authErrorEmailInUse":  "An account with this email already exists. Press \"Sign in\" instead.",
+    "authErrorWeakPassword":  "The password must be at least 6 characters.",
+    "authErrorInvalidEmail":  "This email address is not valid.",
+    "authErrorNetwork":  "No connection to the server. Check the internet and try again.",
+    "authErrorTooManyAttempts":  "Too many attempts. Wait a few minutes and try again.",
+    "authErrorNotEnabled":  "Email sign-in is not enabled for this Firebase project (Authentication → Sign-in method).",
+    "instructorCourseLabel":  "Course",
+    "instructorNoCourse":  "No course is linked to this account yet. Load the sample course with firebase/tools/seed.mjs (see firebase/README.md).",
+    "reviewAiGenerate":  "Draft questions from material (AI)",
+    "reviewAiDialogTitle":  "Draft questions from your material",
+    "reviewAiPrivacy":  "The file is sent to Google Gemini (through Firebase) to suggest questions in Arabic and English. It is not stored. Do not upload files with personal data. Every suggested question stays a draft until you review it.",
+    "reviewAiPickFile":  "Choose a file (PDF or text)",
+    "reviewAiFileChosen":  "{name} · {sizeKb} KB",
+    "@reviewAiFileChosen":  {
+                                "placeholders":  {
+                                                     "name":  {
+                                                                  "type":  "String"
+                                                              },
+                                                     "sizeKb":  {
+                                                                    "type":  "int"
+                                                                }
+                                                 }
+                            },
+    "reviewAiCount":  "How many questions to suggest?",
+    "reviewAiStart":  "Draft questions",
+    "reviewAiWorking":  "Gemini is reading the material. This can take up to a minute.",
+    "reviewAiDone":  "{saved} AI drafts are waiting for your review. {dropped} were dropped by the automatic checks.",
+    "@reviewAiDone":  {
+                          "placeholders":  {
+                                               "saved":  {
+                                                             "type":  "int"
+                                                         },
+                                               "dropped":  {
+                                                               "type":  "int"
+                                                           }
+                                           }
+                      },
+    "reviewAiNoConcepts":  "There are no approved concepts in this course yet, so drafts could not be linked to any.",
+    "reviewAiNothingUsable":  "No usable drafts: the material may not match the course concepts, or every draft failed the automatic checks. Try another file.",
+    "reviewAiErrorNotEnabled":  "AI is not enabled for this Firebase project (Firebase console → AI Logic → Get started → Gemini Developer API).",
+    "reviewAiErrorQuota":  "The free AI quota is used up for now. Try again in a few minutes.",
+    "reviewAiNewSection":  "New AI suggestions ({count})",
+    "@reviewAiNewSection":  {
+                                "placeholders":  {
+                                                     "count":  {
+                                                                   "type":  "int"
+                                                               }
+                                                 }
+                            },
+    "reviewAiNewSectionFrom":  "From «{file}» · {model} · {time}",
+    "@reviewAiNewSectionFrom":  {
+                                    "placeholders":  {
+                                                         "file":  {
+                                                                      "type":  "String"
+                                                                  },
+                                                         "model":  {
+                                                                       "type":  "String"
+                                                                   },
+                                                         "time":  {
+                                                                      "type":  "String"
+                                                                  }
+                                                     }
+                                },
+    "reviewAiGroupTitle":  "AI suggestions ({count})",
+    "@reviewAiGroupTitle":  {
+                                "placeholders":  {
+                                                     "count":  {
+                                                                   "type":  "int"
+                                                               }
+                                                 }
+                            },
+    "reviewAiOtherDrafts":  "Other drafts waiting for review",
+    "reviewAiSummary":  "You asked for {requested} · Gemini wrote {returned} · {saved} saved for your review",
+    "@reviewAiSummary":  {
+                             "placeholders":  {
+                                                  "requested":  {
+                                                                    "type":  "int"
+                                                                },
+                                                  "returned":  {
+                                                                   "type":  "int"
+                                                               },
+                                                  "saved":  {
+                                                                "type":  "int"
+                                                            }
+                                              }
+                         },
+    "reviewAiDroppedReasons":  "Dropped by the automatic checks: {reasons}",
+    "@reviewAiDroppedReasons":  {
+                                    "placeholders":  {
+                                                         "reasons":  {
+                                                                         "type":  "String"
+                                                                     }
+                                                     }
+                                },
+    "reviewAiIssueUnknownConcept":  "not about the course concepts",
+    "reviewAiIssueDuplicate":  "duplicate",
+    "reviewAiIssueOptionsInPrompt":  "options instead of a question",
+    "reviewAiIssueLanguage":  "missing or wrong language",
+    "reviewAiIssueOptions":  "problem with the options",
+    "reviewAiIssueOther":  "other",
+    "reviewAiTechnicalDetails":  "Technical details",
+    "reviewAiErrorDailyQuota":  "Today\u0027s free Gemini limit is used up (the free tier allows only a few requests per day). It renews within 24 hours; existing drafts are not affected.",
+    "reviewAiErrorBusy":  "Gemini is busy right now (a temporary load on Google\u0027s side; the app already retried and tried a second model). Try again in a minute.",
+    "reviewAiErrorTooLarge":  "The file is too large (15 MB at most).",
+    "reviewAiErrorUnsupported":  "Only PDF, .txt and .md files are supported.",
+    "reviewAiErrorEmpty":  "Gemini returned no answer. Try again, or try another file.",
+    "reviewAiErrorNetwork":  "No answer from Gemini in time. Check the connection and try again.",
+    "errorGeneric":  "Something went wrong. Please try again.",
+    "studentMapTitle":  "Your knowledge map for this session",
+    "studentMapNote":  "Based only on your answers in this session. These are estimates, not a final judgement.",
+    "studentMapFoundations":  "Foundations",
+    "studentMapLevel":  "Level {level}",
+    "@studentMapLevel":  {
+                             "placeholders":  {
+                                                  "level":  {
+                                                                "type":  "int"
+                                                            }
+                                              }
+                         },
+    "studentMapEvidence":  "you got {correct} of {attempts} questions on it right",
+    "@studentMapEvidence":  {
+                                "placeholders":  {
+                                                     "correct":  {
+                                                                     "type":  "int"
+                                                                 },
+                                                     "attempts":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                 }
+                            },
+    "studentMapBuildsOn":  "Builds on: {names}",
+    "@studentMapBuildsOn":  {
+                                "placeholders":  {
+                                                     "names":  {
+                                                                   "type":  "String"
+                                                               }
+                                                 }
+                            },
+    "studentMapPossibleGap":  "“{prerequisite}” may be a possible cause: worth reviewing first.",
+    "@studentMapPossibleGap":  {
+                                   "placeholders":  {
+                                                        "prerequisite":  {
+                                                                             "type":  "String"
+                                                                         }
+                                                    }
+                               },
+    "studentMapStateDifficulty":  "Possible difficulty",
+    "studentMapStateEmerging":  "Emerging",
+    "studentMapStateMastery":  "Demonstrated mastery",
+    "studentMapStateInsufficient":  "Not enough evidence",
+    "studentMapEmpty":  "No concepts in this session.",
+    "studentMapSave":  "Save the map to my phone",
+    "studentMapSaved":  "Map saved as an image.",
+    "studentMapSaveFailed":  "Could not save the image. Take a screenshot instead.",
+    "instructorInsightsTitle":  "What the class understands",
+    "instructorInsightsEvidence":  "{respondents} answered · {percent}% correct",
+    "@instructorInsightsEvidence":  {
+                                        "placeholders":  {
+                                                             "respondents":  {
+                                                                                 "type":  "int"
+                                                                             },
+                                                             "percent":  {
+                                                                             "type":  "int"
+                                                                         }
+                                                         }
+                                    },
+    "instructorInsightsHidden":  "Fewer than {min} students answered: hidden to protect privacy",
+    "@instructorInsightsHidden":  {
+                                      "placeholders":  {
+                                                           "min":  {
+                                                                       "type":  "int"
+                                                                   }
+                                                       }
+                                  },
+    "instructorInsightsWaiting":  "The summary appears once at least {min} students have answered",
+    "@instructorInsightsWaiting":  {
+                                       "placeholders":  {
+                                                            "min":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                        }
+                                   },
+    "instructorInsightsStateDifficulty":  "Possible difficulty",
+    "instructorInsightsStateEmerging":  "Emerging",
+    "instructorInsightsStateMastery":  "Demonstrated mastery",
+    "instructorInsightsStateInsufficient":  "Not enough evidence",
+    "instructorInsightsStudents":  "Students",
+    "instructorInsightsPrerequisiteTitle":  "Prerequisites worth reviewing",
+    "instructorInsightsStruggling":  "{struggling} students show possible difficulty in {concept}.",
+    "@instructorInsightsStruggling":  {
+                                          "placeholders":  {
+                                                               "struggling":  {
+                                                                                  "type":  "int"
+                                                                              },
+                                                               "concept":  {
+                                                                               "type":  "String"
+                                                                           }
+                                                           }
+                                      },
+    "instructorInsightsGap":  "{gap} of these students also show possible difficulty in {prerequisite}.",
+    "@instructorInsightsGap":  {
+                                   "placeholders":  {
+                                                        "gap":  {
+                                                                    "type":  "int"
+                                                                },
+                                                        "prerequisite":  {
+                                                                             "type":  "String"
+                                                                         }
+                                                    }
+                               },
+    "instructorInsightsPossibleCause":  "Difficulty in {prerequisite} may contribute to difficulty in {concept}.",
+    "@instructorInsightsPossibleCause":  {
+                                             "placeholders":  {
+                                                                  "prerequisite":  {
+                                                                                       "type":  "String"
+                                                                                   },
+                                                                  "concept":  {
+                                                                                  "type":  "String"
+                                                                              }
+                                                              }
+                                         },
+    "instructorInsightsRecommendation":  "Consider reviewing {prerequisite} with the class.",
+    "@instructorInsightsRecommendation":  {
+                                              "placeholders":  {
+                                                                   "prerequisite":  {
+                                                                                        "type":  "String"
+                                                                                    }
+                                                               }
+                                          },
+    "instructorInsightsDisclaimer":  "These are estimates based on session answers, not definitive diagnoses.",
   "studentFeedbackTitle": "Your feedback",
   "studentFeedbackNone": "There is no feedback for you in this session. Feedback goes to the phone and browser you answered from: open the link there."
 }
