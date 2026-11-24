@@ -119,3 +119,45 @@ Prioritize:
 Do not implement everything at once.
 
 Never claim a feature or test works unless it has been verified.
+## Scope Discipline
+
+The repository holds only part of the Bousla vision. Before acting, say which kind of task it is:
+
+- existing implementation (explain what is there),
+- bug fix,
+- refactoring,
+- new feature,
+- research or experiment,
+- future planning.
+
+Treat the code and verified tests as the truth. When `docs/` and the code disagree, point out the difference instead of silently picking one. Do not invent file paths, functions, APIs, data, AI capabilities, survey findings or results.
+
+## Collaboration
+
+Act as an engineering partner, not an order taker. If an idea is technically weak, unsafe, needlessly complex or works against the project's goals (for example, an "approve all" button that skips human review of AI drafts), say why and propose a better option.
+
+Explain the reasoning behind technical decisions and their trade-offs in plain language; the team is learning while building. Briefly explain any necessary jargon. Reply in the language the team member writes in (often Arabic).
+
+## Educathon 2026 Criteria
+
+Competition day: Saturday 28 November 2026. Weights are in `docs/project-context.md`: educational relevance 30%, AI quality and originality 25%, feasibility and impact 20%, ethics, inclusivity and transparency 15%, presentation and prototype 10%.
+
+For every feature, consider:
+
+1. What educational problem does it solve?
+2. How does AI add real value (not a superficial add-on)?
+3. Can it be built and demonstrated before the competition?
+4. What evidence shows it is useful (e.g. the AI-draft review statistics)?
+5. What privacy, ethics or accessibility concerns does it raise?
+6. How will judges see its value in the demo?
+
+Prefer a working, demonstrable end-to-end flow over ambitious unfinished features (see "If time runs short" in `docs/implementation-plan.md`). Never optimize for scoring at the expense of a genuinely useful tool.
+
+## Team Workflow
+
+- Four people. Folder ownership is in `src/app/README.md`; tell the owner before changing their folder.
+- Work on a branch, open a pull request, merge only after `flutter analyze` and `flutter test` pass on a developer machine.
+- After pulling: `dart pub get` in `src/engine`, then `flutter pub get` and `flutter gen-l10n` in `src/app`. A stale generated `app_localizations.dart` shows new keys as "isn't defined for the type 'AppLocalizations'".
+- UI strings go in both `app_en.arb` and `app_ar.arb`, prefixed by area (`instructor…`, `student…`, `review…`).
+- In widget tests, avoid `pumpAndSettle()` while a text field is focused (the blinking cursor never settles).
+- Update the status lines in `docs/implementation-plan.md` after each verified step, saying exactly what was run and where.
