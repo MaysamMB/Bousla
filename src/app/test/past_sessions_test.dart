@@ -182,4 +182,64 @@ void main() {
         .title!;
     expect((stored.ar, stored.en), ('مراجعة المفاتيح', 'مراجعة المفاتيح'));
   });
+
+  testWidgets('an old session left open is closed from past sessions',
+      (tester) async {
+    tester.view.physicalSize = const Size(900, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final services = AppServices.inMemory(initialLocale: const Locale('en'));
+    final owner = services.auth.instructorId!;
+    final old = await services.sessions.createSession(
+      courseId: 'database_systems',
+      ownerId: owner,
+      questions: const [],
+      title: const LocalizedText(ar: 'قديمة', en: 'Forgotten session'),
+    );
+    await services.sessions.createSession(
+      courseId: 'database_systems',
+      ownerId: owner,
+      questions: const [],
+      title: const LocalizedText(ar: 'جديدة', en: 'Current session'),
+    );
+    await tester.pumpWidget(
+      ServicesScope(
+        services: services,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const CreateSessionScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Past sessions'));
+    await tester.pumpAndSettle();
+    expect(find.text('Open'), findsNWidgets(2));
+
+    await tester.tap(find.text('Forgotten session'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Close session'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('no longer be able to answer'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Close session'));
+    await tester.pumpAndSettle();
+    expect(find.text('Closed'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Close session'), findsNothing);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Open'), findsOneWidget);
+    expect(find.text('Closed'), findsOneWidget);
+    expect(
+      (await services.sessions.findByCode(old.code))!.status,
+      SessionStatus.closed,
+    );
+  });
 }

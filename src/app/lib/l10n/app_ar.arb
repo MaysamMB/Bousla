@@ -223,5 +223,6 @@
   "instructorRenameSession": "تعديل اسم الجلسة",
   "instructorTitleArabic": "العنوان بالعربية",
   "instructorTitleEnglish": "العنوان بالإنجليزية",
-  "instructorRenameSave": "حفظ"
+  "instructorRenameSave": "حفظ",
+  "instructorCloseConfirm": "لن يتمكن الطلاب من الإجابة في هذه الجلسة بعد الآن. تبقى إجاباتها ونتائجها محفوظة."
 }
