@@ -30,4 +30,6 @@ String draftProblemText(AppLocalizations l, DraftProblem problem) =>
       DraftProblem.correctOptionMissing => l.reviewProblemCorrectOptionMissing,
       DraftProblem.conceptMissing => l.reviewProblemConceptMissing,
       DraftProblem.unknownConcept => l.reviewProblemUnknownConcept,
+      DraftProblem.allOptionLanguagesHidden =>
+        l.reviewProblemAllOptionLanguagesHidden,
     };

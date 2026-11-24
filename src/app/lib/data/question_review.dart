@@ -43,6 +43,11 @@ List<DraftProblem> validateDraft(
   if (draft.correctOptionId == null || !ids.contains(draft.correctOptionId)) {
     problems.add(DraftProblem.correctOptionMissing);
   }
+  // Hiding a language only changes what students see; the text above is
+  // still required in both languages. Students must see at least one.
+  if (draft.hiddenOptionLanguages.containsAll(Language.values)) {
+    problems.add(DraftProblem.allOptionLanguagesHidden);
+  }
 
   if (draft.conceptIds.isEmpty) {
     problems.add(DraftProblem.conceptMissing);
@@ -65,6 +70,14 @@ String nextOptionId(Iterable<String> used) {
   }
   return 'o$n';
 }
+
+/// [current] after the instructor ticks or unticks "hide [language]".
+/// Hiding one language shows the other, so students always see one.
+Set<Language> toggleHiddenLanguage(
+  Set<Language> current,
+  Language language,
+  bool hidden,
+) => hidden ? {language} : (Set.of(current)..remove(language));
 
 /// What instructors decided about AI-drafted questions. Shown on the review
 /// screen and usable as evidence of AI draft quality.

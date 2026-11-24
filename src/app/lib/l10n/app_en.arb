@@ -101,5 +101,12 @@
   "reviewProblemConceptMissing": "Choose a concept.",
   "reviewProblemUnknownConcept": "The concept is not approved yet.",
 
+  "reviewHideArabicOptions": "Hide Arabic answers from students",
+  "reviewHideEnglishOptions": "Hide English answers from students",
+  "reviewHideArabicOptionsAll": "Hide Arabic answers in all questions",
+  "reviewHideEnglishOptionsAll": "Hide English answers in all questions",
+  "reviewHiddenOptionsHint": "Answers are still required in both languages. A student using a hidden language sees the answers in the other one.",
+  "reviewProblemAllOptionLanguagesHidden": "Students must see the answers in at least one language.",
+
   "errorGeneric": "Something went wrong. Please try again."
 }

@@ -127,6 +127,9 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
+                  // The instructor may hide the options in one language;
+                  // then they are shown in the other one, with its own
+                  // direction. The question text stays in the UI language.
                   for (final option in q.options)
                     Card(
                       color: option.id == _selected
@@ -138,7 +141,10 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                               ? Icons.check_circle
                               : Icons.circle_outlined,
                         ),
-                        title: Text(option.text.of(language)),
+                        title: _OptionText(
+                          option: option,
+                          language: q.optionLanguageFor(language),
+                        ),
                         onTap: _busy
                             ? null
                             : () => setState(() => _selected = option.id),
@@ -168,4 +174,23 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
       ),
     );
   }
+}
+
+class _OptionText extends StatelessWidget {
+  const _OptionText({required this.option, required this.language});
+
+  final OptionView option;
+  final Language language;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    option.text.of(language),
+    // Read in its own direction, but aligned with the rest of the screen.
+    textDirection: language == Language.ar
+        ? TextDirection.rtl
+        : TextDirection.ltr,
+    textAlign: Directionality.of(context) == TextDirection.rtl
+        ? TextAlign.right
+        : TextAlign.left,
+  );
 }

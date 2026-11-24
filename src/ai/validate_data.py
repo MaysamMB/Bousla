@@ -15,6 +15,8 @@ Checks (errors fail the run with exit code 1):
 - Every question has exactly one answer key that matches one of its options,
   and there are no keys for unknown questions.
 - Questions have an integer version >= 1.
+- The optional hidden_option_languages (answers not shown to students in that
+  language; the text is still required) lists "ar" or "en", never both.
 - Resources reference existing concepts, use an allowed type and language,
   and have a url (link/video), a storage_path (file) or a description
   (activity).
@@ -266,6 +268,11 @@ def validate_course(course_dir: Path) -> Report:
                 report.error(f"{where}.options['{oid}']: contains an answer field")
             _check_bilingual(opt.get("text"), f"{where}.options['{oid}'].text", report)
         option_ids_by_question[q["id"]] = opt_ids
+        hidden = q.get("hidden_option_languages", [])
+        if not isinstance(hidden, list) or any(h not in LANGUAGES for h in hidden):
+            report.error(f"{where}: hidden_option_languages must be a list of 'ar'/'en'")
+        elif set(hidden) == set(LANGUAGES):
+            report.error(f"{where}: hidden_option_languages cannot hide both languages")
         version = q.get("version")
         if isinstance(version, bool) or not isinstance(version, int) or version < 1:
             report.error(f"{where}: version must be an integer >= 1")

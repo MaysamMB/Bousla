@@ -336,4 +336,156 @@ void main() {
     expect(stats.reviewed, 2);
     expect(stats.rejectionReasons, {RejectionReason.translation: 1});
   });
+
+  group('hidden answer languages', () {
+    late InMemoryContentRepository repo;
+
+    setUp(() => repo = InMemoryContentRepository());
+
+    Future<QuestionView> latest(String id) async =>
+        _find(await repo.listQuestions(_course, approvedOnly: false), id);
+
+    test('toggleHiddenLanguage keeps at most one language hidden', () {
+      expect(toggleHiddenLanguage({}, Language.ar, true), {Language.ar});
+      expect(toggleHiddenLanguage({Language.ar}, Language.en, true), {
+        Language.en,
+      });
+      expect(toggleHiddenLanguage({Language.ar}, Language.ar, false), isEmpty);
+      expect(toggleHiddenLanguage({Language.ar}, Language.en, false), {
+        Language.ar,
+      });
+    });
+
+    test('a student using a hidden language sees the other one', () async {
+      await repo.setOptionLanguageHidden(
+        _course,
+        ['db_pk_001'],
+        Language.ar,
+        hidden: true,
+      );
+      final q = await latest('db_pk_001');
+      expect(q.optionLanguageFor(Language.ar), Language.en);
+      expect(q.optionLanguageFor(Language.en), Language.en);
+      final other = await latest('db_pk_002');
+      expect(other.optionLanguageFor(Language.ar), Language.ar);
+    });
+
+    test('hiding English shows Arabic again', () async {
+      await repo.setOptionLanguageHidden(
+        _course,
+        ['db_pk_001'],
+        Language.ar,
+        hidden: true,
+      );
+      await repo.setOptionLanguageHidden(
+        _course,
+        ['db_pk_001'],
+        Language.en,
+        hidden: true,
+      );
+      expect((await latest('db_pk_001')).hiddenOptionLanguages, {Language.en});
+    });
+
+    test('is not a content change: same version, not edited', () async {
+      await repo.setOptionLanguageHidden(
+        _course,
+        ['db_rm_001', 'db_pk_001'],
+        Language.ar,
+        hidden: true,
+      );
+      final draft = await latest('db_rm_001');
+      expect(draft.version, 1);
+      expect(draft.edited, isFalse);
+      expect(draft.hiddenOptionLanguages, {Language.ar});
+      expect((await latest('db_pk_001')).version, 1);
+    });
+
+    test('applies to the version a running session uses', () async {
+      final original = await latest('db_pk_001');
+      final draft = QuestionDraft.fromQuestion(original, 'a');
+      await repo.saveQuestion(
+        _course,
+        QuestionDraft(
+          id: draft.id,
+          conceptIds: draft.conceptIds,
+          prompt: draft.prompt,
+          options: draft.options,
+          correctOptionId: 'b',
+        ),
+      );
+      await repo.setOptionLanguageHidden(
+        _course,
+        ['db_pk_001'],
+        Language.ar,
+        hidden: true,
+      );
+      final v1 = await repo.questionsForSession(_course, const [
+        QuestionRef('db_pk_001', 1),
+      ]);
+      expect(v1.single.hiddenOptionLanguages, {Language.ar});
+    });
+
+    test('changing only the setting in the editor keeps the version', () async {
+      final original = await latest('db_pk_001');
+      final draft = QuestionDraft.fromQuestion(original, 'a');
+      final saved = await repo.saveQuestion(
+        _course,
+        QuestionDraft(
+          id: draft.id,
+          conceptIds: draft.conceptIds,
+          prompt: draft.prompt,
+          options: draft.options,
+          correctOptionId: draft.correctOptionId,
+          hiddenOptionLanguages: const {Language.en},
+        ),
+      );
+      expect(saved.version, 1);
+      expect(saved.hiddenOptionLanguages, {Language.en});
+    });
+
+    test('answers are still required in the hidden language', () {
+      final draft = QuestionDraft(
+        conceptIds: const ['primary_key'],
+        prompt: const LocalizedText(ar: 'سؤال؟', en: 'Question?'),
+        options: [_o('a', '', 'Yes'), _o('b', '', 'No')],
+        correctOptionId: 'a',
+        hiddenOptionLanguages: const {Language.ar},
+      );
+      expect(
+        validateDraft(draft, {'primary_key'}),
+        contains(DraftProblem.optionTextMissing),
+      );
+    });
+
+    test('both languages cannot be hidden', () {
+      final draft = QuestionDraft(
+        conceptIds: const ['primary_key'],
+        prompt: const LocalizedText(ar: 'سؤال؟', en: 'Question?'),
+        options: [_o('a', 'نعم', 'Yes'), _o('b', 'لا', 'No')],
+        correctOptionId: 'a',
+        hiddenOptionLanguages: const {Language.ar, Language.en},
+      );
+      expect(
+        validateDraft(draft, {'primary_key'}),
+        contains(DraftProblem.allOptionLanguagesHidden),
+      );
+    });
+
+    test('reads hidden_option_languages from JSON', () {
+      final q = QuestionView.fromJson({
+        'id': 'q',
+        'version': 1,
+        'concept_ids': ['primary_key'],
+        'prompt': {'ar': 'سؤال؟', 'en': 'Question?'},
+        'options': [
+          {
+            'id': 'a',
+            'text': {'ar': 'أ', 'en': 'A'},
+          },
+        ],
+        'hidden_option_languages': ['en'],
+      });
+      expect(q.hiddenOptionLanguages, {Language.en});
+    });
+  });
 }
