@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
 import 'join_qr.dart';
+import 'live_insights_panel.dart';
 
 /// Skeleton for the instructor flow (owner: instructor app).
 ///
@@ -189,6 +190,9 @@ class _LiveSessionPanel extends StatelessWidget {
             );
           },
         ),
+        // What the class understands, per concept (Yasmeen's panel).
+        const SizedBox(height: 24),
+        LiveInsightsPanel(session: session),
         const SizedBox(height: 24),
         StreamBuilder<Session>(
           stream: sessions.watchSession(session.id),

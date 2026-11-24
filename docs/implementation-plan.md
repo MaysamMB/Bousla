@@ -59,6 +59,8 @@ Earlier status (22 Nov): skeleton written, not yet compiled with Flutter. `src/a
 - Empty, small-group, duplicate and late-response states handled.
 Deliverable: privacy-conscious live classroom view.
 
+Status (24 Nov, live insights): **implemented by Yasmeen (`yasmeen-insights`), merged into `maysam-work` and connected to the session screen.** `features/instructor/sessions/live_insights.dart` (engine pipeline) and `live_insights_panel.dart`: per concept, respondents and pooled accuracy, a donut of the four states with counts and percentages, concepts under 5 respondents hidden with a lock, up to 3 prerequisite signals in cautious words, and a "not definitive diagnoses" note. Added on merge: the panel under the live counter, only concepts the session asks about (others showed as "hidden for privacy", the wrong reason), and 4 widget tests (5 students, 4 students, no answers, shown in the session screen). Checks: `flutter analyze` clean, `flutter test` 136/136 in the cloud environment; in Chromium on the Auth + Firestore emulators, 8 simulated students answered and the panel updated live (Foreign Key 19% correct, 6 of 8 possible difficulty; signal "5 of these students also show possible difficulty in Primary Key"). Not yet seen on the real project or the projector.
+
 ## Phase 5 — Student feedback, recommendations, knowledge map (Day 4)
 - Instructor releases feedback → per-student feedback documents.
 - Student sees mastery states with evidence, cautious wording for possible gaps, and next-step resources in their language.
