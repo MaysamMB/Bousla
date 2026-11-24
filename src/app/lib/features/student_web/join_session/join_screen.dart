@@ -8,6 +8,7 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
+import '../feedback/my_feedback_screen.dart';
 
 /// Student entry point (owner: student web portal).
 ///
@@ -35,7 +36,8 @@ class _JoinScreenState extends State<JoinScreen> {
 
   Future<void> _join() async {
     final l = AppLocalizations.of(context);
-    final sessions = ServicesScope.of(context).sessions;
+    final services = ServicesScope.of(context);
+    final sessions = services.sessions;
     final navigator = Navigator.of(context);
     setState(() {
       _busy = true;
@@ -51,7 +53,24 @@ class _JoinScreenState extends State<JoinScreen> {
         return;
       }
       if (session.status == SessionStatus.closed) {
-        setState(() => _error = l.studentSessionClosed);
+        if (!session.feedbackReleased) {
+          setState(() => _error = l.studentSessionClosed);
+          return;
+        }
+        // Coming back after the session: show this browser's feedback. The
+        // anonymous account is the one that answered (same browser), so no
+        // new participant is created.
+        final participantId = await services.auth
+            .ensureParticipant()
+            .timeout(AnsweringScreen.timeout);
+        await navigator.pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => MyFeedbackScreen(
+              session: session,
+              participantId: participantId,
+            ),
+          ),
+        );
         return;
       }
       final participantId =
