@@ -135,6 +135,7 @@
   "reviewAiIssueOptions": "مشكلة في الخيارات",
   "reviewAiIssueOther": "أخرى",
   "reviewAiTechnicalDetails": "تفاصيل تقنية",
+  "reviewAiErrorDailyQuota": "انتهت الحصة المجانية اليومية لـ Gemini (الخطة المجانية تسمح بعدد قليل من الطلبات في اليوم). تتجدد خلال 24 ساعة، والمسودات الموجودة لا تتأثر.",
   "reviewAiErrorBusy": "Gemini مشغول حالياً (ضغط مؤقت من جهة Google؛ أعاد التطبيق المحاولة وجرّب نموذجاً ثانياً). حاول بعد دقيقة.",
   "reviewAiErrorTooLarge": "الملف كبير جداً (15 ميغابايت كحد أقصى).",
   "reviewAiErrorUnsupported": "الملفات المدعومة فقط: PDF و ‎.txt و ‎.md.",
