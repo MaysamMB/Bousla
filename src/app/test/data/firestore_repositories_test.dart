@@ -277,6 +277,30 @@ void main() {
       );
     });
 
+    test('listSessions: titled sessions of the owner and course, newest first',
+        () async {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      final titled = await sessions.createSession(
+        courseId: _course,
+        ownerId: _teacher,
+        questions: const [QuestionRef('db_pk_001', 1)],
+        title: const LocalizedText(ar: 'المفتاح الأساسي', en: 'Primary Key'),
+      );
+      await sessions.closeSession(session.id);
+      final list =
+          await sessions.listSessions(ownerId: _teacher, courseId: _course);
+      expect([for (final s in list) s.id], [titled.id, session.id]);
+      expect(list.first.title?.ar, 'المفتاح الأساسي');
+      expect(list.first.createdAt, isNotNull);
+      expect(list.last.status, SessionStatus.closed);
+      expect(list.last.closedAt, isNotNull);
+      expect(list.last.title, isNull);
+      expect(
+        await sessions.listSessions(ownerId: 'other', courseId: _course),
+        isEmpty,
+      );
+    });
+
     test('latestOpenSession: newest open session of the owner and course',
         () async {
       expect(

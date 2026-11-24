@@ -7,7 +7,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
 import 'join_qr.dart';
+import '../../../data/session_title.dart';
 import 'live_insights_panel.dart';
+import 'past_sessions_screen.dart';
 import 'publish_feedback_dialog.dart';
 
 /// All courses, the chosen one, and its approved questions.
@@ -68,10 +70,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   Future<void> _create(Course course, List<QuestionView> questions) async {
     final services = ServicesScope.of(context);
+    // Named after its concepts, for the past sessions list.
+    final concepts = await services.content.listConcepts(course.id);
     final session = await services.sessions.createSession(
       courseId: course.id,
       ownerId: services.auth.instructorId!,
       questions: [for (final q in questions) QuestionRef(q.id, q.version)],
+      title: sessionTitleFor(questions, concepts),
     );
     if (!mounted) return;
     setState(() => _session = session);
@@ -98,6 +103,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       appBar: AppBar(
         title: Text(l.instructorCreateSessionTitle),
         actions: [
+          IconButton(
+            tooltip: l.instructorPastSessions,
+            icon: const Icon(Icons.history),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const PastSessionsScreen(),
+              ),
+            ),
+          ),
           if (ServicesScope.of(context).auth.requiresSignIn)
             IconButton(
               tooltip: l.authSignOut,
