@@ -55,3 +55,47 @@ class InMemoryAuthService implements AuthService {
   @override
   Future<String> ensureParticipant() async => 'participant';
 }
+
+/// Why an instructor could not sign in or create an account.
+enum AuthProblem {
+  /// Wrong password, or no account with this email. Firebase does not say
+  /// which (email enumeration protection), so the message covers both.
+  wrongCredentials,
+  emailInUse,
+  weakPassword,
+  invalidEmail,
+  network,
+  tooManyAttempts,
+
+  /// Email/password sign-in is not enabled in the Firebase console.
+  notEnabled,
+  unknown,
+}
+
+/// Thrown by [AuthService.signInInstructor] and
+/// [AuthService.registerInstructor].
+class AuthFailure implements Exception {
+  const AuthFailure(this.problem);
+
+  final AuthProblem problem;
+
+  @override
+  String toString() => 'AuthFailure($problem)';
+}
+
+/// Maps a Firebase Auth error code to an [AuthProblem].
+AuthProblem authProblemFromCode(String code) => switch (code) {
+      'invalid-credential' ||
+      'invalid-login-credentials' ||
+      'wrong-password' ||
+      'user-not-found' ||
+      'INVALID_LOGIN_CREDENTIALS' =>
+        AuthProblem.wrongCredentials,
+      'email-already-in-use' => AuthProblem.emailInUse,
+      'weak-password' => AuthProblem.weakPassword,
+      'invalid-email' || 'missing-email' => AuthProblem.invalidEmail,
+      'network-request-failed' => AuthProblem.network,
+      'too-many-requests' => AuthProblem.tooManyAttempts,
+      'operation-not-allowed' => AuthProblem.notEnabled,
+      _ => AuthProblem.unknown,
+    };

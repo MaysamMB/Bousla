@@ -98,6 +98,13 @@
   "authRegister": "إنشاء حساب",
   "authSignOut": "تسجيل الخروج",
   "authFailed": "تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور (6 أحرف على الأقل).",
+  "authErrorWrongCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة. أول مرة؟ اضغط \"إنشاء حساب\".",
+  "authErrorEmailInUse": "يوجد حساب بهذا البريد الإلكتروني. اضغط \"تسجيل الدخول\" بدلاً من ذلك.",
+  "authErrorWeakPassword": "يجب أن تكون كلمة المرور 6 أحرف على الأقل.",
+  "authErrorInvalidEmail": "عنوان البريد الإلكتروني غير صالح.",
+  "authErrorNetwork": "لا يوجد اتصال بالخادم. تحقّق من الإنترنت وحاول مرة أخرى.",
+  "authErrorTooManyAttempts": "محاولات كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى.",
+  "authErrorNotEnabled": "تسجيل الدخول بالبريد الإلكتروني غير مفعّل في مشروع Firebase (Authentication ← Sign-in method).",
   "instructorNoCourse": "لا يوجد مقرر مرتبط بهذا الحساب بعد. حمّل المقرر التجريبي باستخدام firebase/tools/seed.mjs (انظر firebase/README.md).",
 
   "errorGeneric": "حدث خطأ. حاول مرة أخرى."

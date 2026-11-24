@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app_services.dart';
+import '../../../data/repositories/auth_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 
@@ -38,7 +39,7 @@ class _SignInFormState extends State<_SignInForm> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   var _busy = false;
-  var _failed = false;
+  AuthProblem? _problem;
 
   @override
   void dispose() {
@@ -51,7 +52,7 @@ class _SignInFormState extends State<_SignInForm> {
     final auth = ServicesScope.of(context).auth;
     setState(() {
       _busy = true;
-      _failed = false;
+      _problem = null;
     });
     try {
       if (register) {
@@ -59,12 +60,26 @@ class _SignInFormState extends State<_SignInForm> {
       } else {
         await auth.signInInstructor(_email.text, _password.text);
       }
+    } on AuthFailure catch (e) {
+      if (mounted) setState(() => _problem = e.problem);
     } catch (_) {
-      if (mounted) setState(() => _failed = true);
+      if (mounted) setState(() => _problem = AuthProblem.unknown);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  static String _message(AppLocalizations l, AuthProblem problem) =>
+      switch (problem) {
+        AuthProblem.wrongCredentials => l.authErrorWrongCredentials,
+        AuthProblem.emailInUse => l.authErrorEmailInUse,
+        AuthProblem.weakPassword => l.authErrorWeakPassword,
+        AuthProblem.invalidEmail => l.authErrorInvalidEmail,
+        AuthProblem.network => l.authErrorNetwork,
+        AuthProblem.tooManyAttempts => l.authErrorTooManyAttempts,
+        AuthProblem.notEnabled => l.authErrorNotEnabled,
+        AuthProblem.unknown => l.authFailed,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +112,10 @@ class _SignInFormState extends State<_SignInForm> {
                 decoration: InputDecoration(labelText: l.authPassword),
                 onSubmitted: (_) => _submit(register: false),
               ),
-              if (_failed) ...[
+              if (_problem case final problem?) ...[
                 const SizedBox(height: 12),
                 Text(
-                  l.authFailed,
+                  _message(l, problem),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
