@@ -115,6 +115,13 @@
   "authRegister": "Create account",
   "authSignOut": "Sign out",
   "authFailed": "Sign-in failed. Check the email and password (at least 6 characters).",
+  "authErrorWrongCredentials": "Wrong email or password. First time here? Press \"Create account\".",
+  "authErrorEmailInUse": "An account with this email already exists. Press \"Sign in\" instead.",
+  "authErrorWeakPassword": "The password must be at least 6 characters.",
+  "authErrorInvalidEmail": "This email address is not valid.",
+  "authErrorNetwork": "No connection to the server. Check the internet and try again.",
+  "authErrorTooManyAttempts": "Too many attempts. Wait a few minutes and try again.",
+  "authErrorNotEnabled": "Email sign-in is not enabled for this Firebase project (Authentication → Sign-in method).",
   "instructorNoCourse": "No course is linked to this account yet. Load the sample course with firebase/tools/seed.mjs (see firebase/README.md).",
 
   "errorGeneric": "Something went wrong. Please try again."

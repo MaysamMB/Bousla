@@ -22,13 +22,28 @@ class FirebaseAuthService implements AuthService {
   Stream<String?> instructorChanges() =>
       _auth.authStateChanges().map(_instructorUid);
 
-  @override
-  Future<void> signInInstructor(String email, String password) =>
-      _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+  /// Turns Firebase errors into [AuthFailure]s the UI can explain.
+  static Future<void> _explain(Future<Object?> Function() call) async {
+    try {
+      await call();
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(authProblemFromCode(e.code));
+    }
+  }
 
   @override
-  Future<void> registerInstructor(String email, String password) => _auth
-      .createUserWithEmailAndPassword(email: email.trim(), password: password);
+  Future<void> signInInstructor(String email, String password) => _explain(
+        () => _auth.signInWithEmailAndPassword(
+            email: email.trim(), password: password),
+      );
+
+  @override
+  Future<void> registerInstructor(String email, String password) => _explain(
+        () => _auth.createUserWithEmailAndPassword(
+          email: email.trim(),
+          password: password,
+        ),
+      );
 
   @override
   Future<void> signOut() => _auth.signOut();
