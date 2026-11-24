@@ -69,6 +69,10 @@ class _GenerateFromMaterialDialogState
   var _busy = false;
   GenerationProblem? _problem;
 
+  /// The server's own message, shown under ours so a setup problem can be
+  /// diagnosed from a screenshot.
+  String? _detail;
+
   /// Every draft was dropped by the checks (nothing to review).
   var _nothingUsable = false;
 
@@ -97,6 +101,7 @@ class _GenerateFromMaterialDialogState
     setState(() {
       _busy = true;
       _problem = null;
+      _detail = null;
       _nothingUsable = false;
     });
     try {
@@ -124,9 +129,19 @@ class _GenerateFromMaterialDialogState
         ),
       );
     } on QuestionGenerationException catch (e) {
-      if (mounted) setState(() => _problem = e.problem);
-    } catch (_) {
-      if (mounted) setState(() => _problem = GenerationProblem.unknown);
+      if (mounted) {
+        setState(() {
+          _problem = e.problem;
+          _detail = e.detail;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _problem = GenerationProblem.unknown;
+          _detail = '$e';
+        });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -207,6 +222,14 @@ class _GenerateFromMaterialDialogState
                   problemText(l, problem),
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
+                if (_detail case final detail?)
+                  Text(
+                    detail.length > 300
+                        ? '${detail.substring(0, 300)}…'
+                        : detail,
+                    textDirection: TextDirection.ltr,
+                    style: theme.textTheme.bodySmall,
+                  ),
               ],
               if (_nothingUsable) ...[
                 const SizedBox(height: 12),

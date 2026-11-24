@@ -251,8 +251,10 @@ void main() {
       await open(
         tester,
         _FakeGenerator(
-          error:
-              const QuestionGenerationException(GenerationProblem.notEnabled),
+          error: const QuestionGenerationException(
+            GenerationProblem.notEnabled,
+            'PERMISSION_DENIED: Caller does not have required permission',
+          ),
         ),
       );
       await tester.tap(find.text('Draft questions from material (AI)'));
@@ -263,6 +265,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('AI is not enabled for this Firebase project'),
           findsOneWidget);
+      // The server's own reason is shown too, for diagnosis.
+      expect(find.textContaining('PERMISSION_DENIED'), findsOneWidget);
     });
   });
 }

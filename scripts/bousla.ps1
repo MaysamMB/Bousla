@@ -59,6 +59,9 @@ function Check-Env([string] $file) {
     exit 1
   }
   Write-Host "OK $file (project $($cfg.FIREBASE_PROJECT_ID))" -ForegroundColor Green
+  if (-not $cfg.USE_FIREBASE_EMULATOR -and [string]::IsNullOrWhiteSpace([string] $cfg.FIREBASE_APPCHECK_SITE_KEY)) {
+    Write-Host "Note: FIREBASE_APPCHECK_SITE_KEY is empty, so App Check is off (see firebase/README.md)." -ForegroundColor Yellow
+  }
 }
 
 function Ensure-Npm {
