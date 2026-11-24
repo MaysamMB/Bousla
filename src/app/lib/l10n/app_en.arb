@@ -2,6 +2,8 @@
   "@@locale": "en",
 
   "appTitle": "Bousla",
+  "appInMemoryBanner": "LOCAL DEMO",
+  "@appInMemoryBanner": { "description": "Corner banner in the offline demo mode (in-memory data, nothing saved). Keep it very short." },
   "languageToggle": "العربية",
   "@languageToggle": { "description": "Button that switches to the OTHER language, so it is written in that language." },
 

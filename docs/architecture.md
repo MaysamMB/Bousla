@@ -1,6 +1,6 @@
 # Bousla — Architecture
 
-> Status (22 Nov 2026): the Flutter application is **not implemented yet**. Implemented so far: a draft bilingual Database Systems dataset (`data/courses/database-systems`) with its validator (`src/ai/validate_data.py`), and the deterministic engine (`src/engine`), both with tests. This is the agreed target design; update it when the implementation differs.
+> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Not yet implemented: classroom insights screen, student feedback, QR code, AI levels 1 and 2. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
 
 ## 1. Components
 

@@ -13,6 +13,7 @@ class AppServices {
     required this.content,
     required this.sessions,
     AuthService? auth,
+    this.inMemory = false,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
         locale = ValueNotifier(initialLocale);
@@ -21,6 +22,7 @@ class AppServices {
       AppServices(
         content: InMemoryContentRepository(),
         sessions: InMemorySessionRepository(),
+        inMemory: true,
         initialLocale: initialLocale,
       );
 
@@ -29,6 +31,11 @@ class AppServices {
 
   /// Instructor sign-in and anonymous student participation.
   final AuthService auth;
+
+  /// True in the offline demo mode (built without Firebase settings): data
+  /// lives in this browser tab only and is lost on reload. The app shows a
+  /// corner banner so nobody mistakes it for the real deployment.
+  final bool inMemory;
 
   /// Current UI language. Changing it rebuilds the app in that language and
   /// direction (RTL for Arabic, LTR for English).

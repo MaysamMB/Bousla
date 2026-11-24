@@ -6,12 +6,13 @@ An AI-powered educational intelligence platform for Educathon 2026 (Hebron Unive
 - **Student web portal** (Flutter web): join by link or QR, answer in Arabic or English, get personal feedback and recommendations.
 - **Shared backend** (Firebase) and **shared educational engine** (pure Dart).
 
-## Status (22 Nov 2026)
+## Status (24 Nov 2026)
 
-- Draft bilingual Database Systems dataset (`data/courses/database-systems`), pending human review.
-- Data validator (`src/ai/validate_data.py`).
-- Deterministic educational engine (`src/engine`).
-- Flutter app skeleton (`src/app`): routes, Arabic/English, in-memory data, placeholder screens. Not yet connected to Firebase; see `src/app/README.md` for first-time setup.
+- Live at https://bousla-educathon.web.app (Firebase Spark: Auth, Firestore, Hosting). Instructor signs in, reviews questions, creates a session; students join by code or link from their phones and answer in Arabic or English; the instructor sees live counts. Verified from a real phone.
+- Security rules with emulator tests (`firebase/`), deterministic engine (`src/engine`), Flutter app (`src/app`).
+- Draft bilingual Database Systems dataset (`data/courses/database-systems`), pending team review; validator `src/ai/validate_data.py`.
+- Not done yet: classroom insights screen, student feedback, QR code, AI (question drafting and explanations). Details: `docs/implementation-plan.md`.
+- Commands (build, deploy, run, seed, tests): `.\bousla help` on Windows, `./scripts/bousla.sh help` elsewhere; see `firebase/README.md`. Without Firebase settings the app runs in an offline demo mode (in-memory data) and shows a "LOCAL DEMO" corner banner.
 
 ## Running the checks
 

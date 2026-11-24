@@ -2,6 +2,7 @@
   "@@locale": "ar",
 
   "appTitle": "بوصلة",
+  "appInMemoryBanner": "عرض محلي",
   "languageToggle": "English",
 
   "homeTagline": "اعرف ما فهمته، وما الذي تتعلمه بعد ذلك.",

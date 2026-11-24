@@ -49,3 +49,8 @@ app.*.map.json
 
 # Firebase project settings (see lib/data/firebase/firebase_config.dart)
 firebase.env.json
+# Any other local settings (e.g. firebase.env.lan.json for phones on the
+# emulator); only the example and the emulator file are shared.
+firebase.env.*.json
+!firebase.env.example.json
+!firebase.env.emulator.json
