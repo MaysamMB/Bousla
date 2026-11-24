@@ -11,13 +11,22 @@ typedef PickMaterial = Future<MaterialFile?> Function();
 
 /// What the dialog did, for the review screen's message.
 class GenerationOutcome {
-  const GenerationOutcome({required this.saved, required this.dropped});
+  const GenerationOutcome({
+    required this.savedIds,
+    required this.dropped,
+    required this.materialName,
+    required this.modelName,
+  });
 
-  /// Drafts saved as pending review.
-  final int saved;
+  /// IDs of the drafts saved as pending review.
+  final Set<String> savedIds;
 
   /// Drafts dropped by the automatic checks.
   final int dropped;
+  final String materialName;
+  final String modelName;
+
+  int get saved => savedIds.length;
 }
 
 Future<MaterialFile?> pickMaterialFile() async {
@@ -123,9 +132,11 @@ class _GenerateFromMaterialDialogState
       }
       navigator.pop(
         GenerationOutcome(
-          saved: saved.length,
+          savedIds: {for (final q in saved) q.id},
           dropped:
               result.dropped.length + result.accepted.length - saved.length,
+          materialName: _file!.name,
+          modelName: generator.modelName,
         ),
       );
     } on QuestionGenerationException catch (e) {

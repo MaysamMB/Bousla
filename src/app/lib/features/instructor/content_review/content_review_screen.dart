@@ -42,9 +42,13 @@ class _ReviewData {
     required this.concepts,
     required this.questions,
     required this.keys,
+    this.materials = const [],
   });
 
   final Course course;
+
+  /// Files AI drafts were suggested from, newest first.
+  final List<MaterialRecord> materials;
   final List<Concept> concepts;
 
   /// Latest version of every question, any status.
@@ -67,6 +71,10 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
   Future<_ReviewData>? _data;
   final _selected = <String>{};
 
+  /// The last AI suggestions made on this screen; their group is
+  /// highlighted as new.
+  GenerationOutcome? _latest;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -79,11 +87,13 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     final concepts = await repo.listConcepts(course.id);
     final questions = await repo.listQuestions(course.id, approvedOnly: false);
     final keys = await repo.answerKeys(course.id);
+    final materials = await repo.listMaterials(course.id);
     return _ReviewData(
       course: course,
       concepts: concepts,
       questions: questions,
       keys: keys,
+      materials: materials,
     );
   }
 
@@ -157,10 +167,48 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
       ),
     );
     if (outcome == null || !mounted) return;
+    _latest = outcome;
     _reload();
     messenger.showSnackBar(
       SnackBar(content: Text(l.reviewAiDone(outcome.saved, outcome.dropped))),
     );
+  }
+
+  /// Groups "waiting" by the file each AI draft was suggested from, newest
+  /// file first, then the other drafts. Null when there are no AI files.
+  _Grouping? _pendingGroups(
+    BuildContext context,
+    _ReviewData data,
+    List<QuestionView> pending,
+  ) {
+    final l = AppLocalizations.of(context);
+    final ml = MaterialLocalizations.of(context);
+    final groups = <_QuestionGroup>[];
+    for (final m in data.materials) {
+      final ids = {
+        for (final q in pending)
+          if (q.sourceMaterialId == m.id) q.id,
+      };
+      if (ids.isEmpty) continue;
+      final isNew = _latest?.savedIds.any(ids.contains) ?? false;
+      final at = m.createdAt;
+      final when = at == null
+          ? ''
+          : '${ml.formatShortDate(at)} '
+                '${TimeOfDay.fromDateTime(at).format(context)}';
+      groups.add(
+        _QuestionGroup(
+          ids: ids,
+          title: isNew
+              ? l.reviewAiNewSection(ids.length)
+              : l.reviewAiGroupTitle(ids.length),
+          subtitle: l.reviewAiNewSectionFrom(m.fileName, m.modelName, when),
+          highlighted: isNew,
+        ),
+      );
+    }
+    if (groups.isEmpty) return null;
+    return _Grouping(groups: groups, othersTitle: l.reviewAiOtherDrafts);
   }
 
   Future<void> _openEditor(_ReviewData data, [QuestionView? question]) async {
@@ -270,6 +318,7 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                         data: data,
                         onHideChanged: hide,
                         questions: pending,
+                        grouping: _pendingGroups(context, data, pending),
                         header: pending.isEmpty
                             ? null
                             : Align(
@@ -424,6 +473,78 @@ class _StatsBanner extends StatelessWidget {
   }
 }
 
+/// Questions shown together under one heading.
+class _QuestionGroup {
+  const _QuestionGroup({
+    required this.ids,
+    required this.title,
+    required this.subtitle,
+    this.highlighted = false,
+  });
+
+  final Set<String> ids;
+  final String title;
+  final String subtitle;
+
+  /// The group just suggested on this screen.
+  final bool highlighted;
+}
+
+class _Grouping {
+  const _Grouping({required this.groups, required this.othersTitle});
+
+  final List<_QuestionGroup> groups;
+
+  /// Heading for the questions in no group.
+  final String othersTitle;
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({
+    required this.title,
+    this.subtitle,
+    this.highlighted = false,
+  });
+
+  final String title;
+  final String? subtitle;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtitle = this.subtitle;
+    return Container(
+      margin: const EdgeInsets.only(top: 12, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: highlighted
+          ? BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(12),
+            )
+          : null,
+      child: Row(
+        children: [
+          if (highlighted) ...[
+            Icon(Icons.auto_awesome, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleSmall),
+                if (subtitle != null)
+                  Text(subtitle, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _QuestionList extends StatelessWidget {
   const _QuestionList({
     required this.data,
@@ -431,9 +552,13 @@ class _QuestionList extends StatelessWidget {
     required this.actions,
     required this.onHideChanged,
     this.header,
+    this.grouping,
     this.isSelected,
     this.onSelected,
   });
+
+  /// When set, grouped questions come first, each group under its heading.
+  final _Grouping? grouping;
 
   final void Function(QuestionView, Language, bool) onHideChanged;
   final _ReviewData data;
@@ -449,23 +574,43 @@ class _QuestionList extends StatelessWidget {
     if (questions.isEmpty) return Center(child: Text(l.reviewEmpty));
     final onSelected = this.onSelected;
     final header = this.header;
+    final grouping = this.grouping;
+    final grouped = {
+      for (final g in grouping?.groups ?? const <_QuestionGroup>[]) ...g.ids,
+    };
+    final rest = [
+      for (final q in questions)
+        if (!grouped.contains(q.id)) q,
+    ];
+    Widget card(QuestionView q) => _QuestionCard(
+          question: q,
+          concepts: data.concepts,
+          correctOptionId: data.keyFor(q),
+          selected: isSelected?.call(q),
+          onSelected: onSelected == null
+              ? null
+              : (value) => onSelected(q, value),
+          onHideChanged: (language, hidden) =>
+              onHideChanged(q, language, hidden),
+          actions: actions(q),
+        );
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
         if (header != null) header,
-        for (final q in questions)
-          _QuestionCard(
-            question: q,
-            concepts: data.concepts,
-            correctOptionId: data.keyFor(q),
-            selected: isSelected?.call(q),
-            onSelected: onSelected == null
-                ? null
-                : (value) => onSelected(q, value),
-            onHideChanged: (language, hidden) =>
-                onHideChanged(q, language, hidden),
-            actions: actions(q),
-          ),
+        if (grouping != null) ...[
+          for (final g in grouping.groups) ...[
+            _SectionHeading(
+              title: g.title,
+              subtitle: g.subtitle,
+              highlighted: g.highlighted,
+            ),
+            for (final q in questions)
+              if (g.ids.contains(q.id)) card(q),
+          ],
+          if (rest.isNotEmpty) _SectionHeading(title: grouping.othersTitle),
+        ],
+        for (final q in rest) card(q),
       ],
     );
   }

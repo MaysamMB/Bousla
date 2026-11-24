@@ -65,6 +65,7 @@ QuestionView buildQuestion({
   required bool edited,
   required String? sourceLocation,
   required RejectionReason? rejectionReason,
+  String? sourceMaterialId,
 }) =>
     QuestionView(
       question: Question(
@@ -87,6 +88,7 @@ QuestionView buildQuestion({
       edited: edited,
       rejectionReason: rejectionReason,
       sourceLocation: sourceLocation,
+      sourceMaterialId: sourceMaterialId,
       hiddenOptionLanguages: Set.unmodifiable(draft.hiddenOptionLanguages),
     );
 
@@ -118,10 +120,23 @@ Map<String, dynamic> questionToJson(
       'edited': q.edited,
       'rejection_reason': q.rejectionReason?.jsonValue,
       'source_location': q.sourceLocation,
+      if (q.sourceMaterialId != null) 'source_material_id': q.sourceMaterialId,
       'reviewed_by': reviewedBy,
     },
   };
 }
+
+MaterialRecord materialFromJson(String id, Map<String, dynamic> json) =>
+    MaterialRecord(
+      id: id,
+      fileName: json['file_name'] as String? ?? id,
+      modelName: json['generated_by'] as String? ?? '',
+      createdAt: json['created_at'] is Timestamp
+          ? (json['created_at'] as Timestamp).toDate()
+          : null,
+      draftsSaved: (json['drafts_saved'] as num?)?.toInt() ?? 0,
+      draftsDropped: (json['drafts_dropped'] as num?)?.toInt() ?? 0,
+    );
 
 Map<String, dynamic> answerKeyToJson(
   String questionId,

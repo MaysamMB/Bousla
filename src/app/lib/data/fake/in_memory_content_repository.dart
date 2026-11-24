@@ -133,6 +133,7 @@ class InMemoryContentRepository implements ContentRepository {
           existing.edited ||
           (changed && existing.source == ContentSource.aiDraft),
       sourceLocation: existing.sourceLocation,
+      sourceMaterialId: existing.sourceMaterialId,
       rejectionReason: newStatus == ReviewStatus.rejected
           ? existing.rejectionReason
           : null,
@@ -196,8 +197,12 @@ class InMemoryContentRepository implements ContentRepository {
   }
 
   /// Material records saved by [saveAiDrafts] (names and counts only).
-  final materials = <Map<String, Object?>>[];
+  final materials = <MaterialRecord>[];
   var _nextAiQuestion = 1;
+
+  @override
+  Future<List<MaterialRecord>> listMaterials(String courseId) async =>
+      courseId == _course.id ? materials.reversed.toList() : const [];
 
   @override
   Future<List<QuestionView>> saveAiDrafts(
@@ -212,6 +217,7 @@ class InMemoryContentRepository implements ContentRepository {
       for (final c in _concepts)
         if (c.status == ReviewStatus.approved) c.id,
     };
+    final materialId = 'mat_${materials.length + 1}';
     final saved = <QuestionView>[];
     var skipped = 0;
     for (final g in drafts) {
@@ -221,6 +227,7 @@ class InMemoryContentRepository implements ContentRepository {
         continue;
       }
       final q = _build(
+        sourceMaterialId: materialId,
         id: 'ai_q_${_nextAiQuestion++}',
         version: 1,
         draft: draft,
@@ -235,12 +242,16 @@ class InMemoryContentRepository implements ContentRepository {
       _setKey(q.id, 1, draft.correctOptionId!);
       saved.add(q);
     }
-    materials.add({
-      'file_name': materialName,
-      'generated_by': modelName,
-      'drafts_saved': saved.length,
-      'drafts_dropped': droppedByChecks + skipped,
-    });
+    materials.add(
+      MaterialRecord(
+        id: materialId,
+        fileName: materialName,
+        modelName: modelName,
+        createdAt: DateTime.now(),
+        draftsSaved: saved.length,
+        draftsDropped: droppedByChecks + skipped,
+      ),
+    );
     return saved;
   }
 
@@ -284,6 +295,7 @@ class InMemoryContentRepository implements ContentRepository {
     required String? sourceLocation,
     required RejectionReason? rejectionReason,
     required Set<Language> hiddenOptionLanguages,
+    String? sourceMaterialId,
   }) => QuestionView(
     question: Question(
       id: id,
@@ -307,6 +319,7 @@ class InMemoryContentRepository implements ContentRepository {
     edited: edited,
     rejectionReason: rejectionReason,
     sourceLocation: sourceLocation,
+    sourceMaterialId: sourceMaterialId,
     hiddenOptionLanguages: Set.unmodifiable(hiddenOptionLanguages),
   );
 }

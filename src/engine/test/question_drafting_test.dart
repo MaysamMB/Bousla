@@ -83,6 +83,79 @@ void main() {
       );
     });
 
+    test('options repeated in the question text are removed (live case)', () {
+      // From a real Gemini answer on 24 Nov.
+      const options = [
+        (
+          'تُعامل كعمليات منفصلة غير مرتبطة',
+          'Treated as separate unrelated operations'
+        ),
+        ('تُعامل كوحدة وفق خصائص ACID', 'Treated as a unit following ACID'),
+        (
+          'تُحفظ دائماً كملف أرشيف منطقي',
+          'Always saved as a logical archive file'
+        ),
+        (
+          'تُنفذ فقط عند إيقاف تشغيل التطبيق',
+          'Run only when the application stops'
+        ),
+      ];
+      final r = _parse({
+        'questions': [
+          _q(
+            promptAr:
+                'كيف يتم التعامل مع مجموعة العمليات التي تشكل (Transaction) '
+                'في نظام إدارة قواعد البيانات؟ أ) ${options[0].$1} '
+                'ب) ${options[1].$1} ج) ${options[2].$1} د) ${options[3].$1}',
+            promptEn:
+                'How is a group of operations forming a transaction handled '
+                'in a DBMS? a) ${options[0].$2} b) ${options[1].$2} '
+                'c) ${options[2].$2} d) ${options[3].$2}',
+            options: [
+              for (var i = 0; i < 4; i++)
+                {
+                  'id': 'o$i',
+                  'text_ar': options[i].$1,
+                  'text_en': options[i].$2
+                },
+            ],
+            correct: 'o1',
+          ),
+        ],
+      });
+      final q = r.accepted.single;
+      expect(
+        q.prompt.ar,
+        'كيف يتم التعامل مع مجموعة العمليات التي تشكل (Transaction) '
+        'في نظام إدارة قواعد البيانات؟',
+      );
+      expect(
+        q.prompt.en,
+        'How is a group of operations forming a transaction handled in a DBMS?',
+      );
+    });
+
+    test('a question that is only the list of options is dropped', () {
+      final r = _parse({
+        'questions': [
+          _q(
+            promptAr: 'يقبل التكرار، فريد ولا يقبل NULL',
+            promptEn: 'a) Allows duplicates b) Unique and not NULL',
+          ),
+        ],
+      });
+      expect(r.dropped, [DraftIssue.optionsInPrompt]);
+    });
+
+    test('one option word inside the question is left alone', () {
+      final q = _parse({
+        'questions': [
+          _q(promptEn: 'Is "Optional" a valid property of a primary key?'),
+        ],
+      }).accepted.single;
+      expect(q.prompt.en, 'Is "Optional" a valid property of a primary key?');
+    });
+
     test('code in options is allowed in both languages', () {
       final r = _parse({
         'questions': [
@@ -208,6 +281,7 @@ void main() {
       expect(text, contains('BOTH Arabic'));
       expect(text, contains('reviews, edits or rejects'));
       expect(text, contains('Vary the position of the correct answer'));
+      expect(text, contains('must not list the options'));
     });
   });
 

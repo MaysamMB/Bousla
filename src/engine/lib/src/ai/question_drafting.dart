@@ -78,6 +78,9 @@ enum DraftIssue {
 
   /// Same prompt as an earlier draft in the same answer.
   duplicate,
+
+  /// The question text was only a list of the options.
+  optionsInPrompt,
 }
 
 /// What the model returned, after the checks.
@@ -116,7 +119,7 @@ $conceptLines
    Skip material that fits none of them.
 3. Write every question and every option in BOTH Arabic (Modern Standard Arabic) and English, with the same meaning. In Arabic, a technical term may be followed by the English term in parentheses, for example: المفتاح الأساسي (Primary Key). Code, table and column names stay as they are in both languages.
 4. Give 4 options with exactly one correct answer. Wrong options must be plausible to a student who has not understood the idea, not silly. Do not use "all of the above" or "none of the above". Vary the position of the correct answer between questions.
-5. The question text must not reveal the answer.
+5. The question text must not reveal the answer, and must not list the options: put them only in "options".
 6. source_location says where in the material the question comes from, for example "page 4" or "section 2.1", so the instructor can check it quickly.
 7. difficulty is one of: basic, intermediate, advanced.
 
@@ -275,7 +278,19 @@ DraftParseResult parseQuestionDrafts(
     parsed.add((LocalizedText(ar: ar, en: en), isCorrect));
   }
   if (!hasCorrect) return (null, DraftIssue.correctOptionMissing);
-  parsed.shuffle(Random(_stableHash(promptEn)));
+
+  // Models sometimes repeat the options inside the question text
+  // ("...? a) ... b) ..."); students would then see them twice.
+  final cleanAr = _withoutListedOptions(promptAr, [
+    for (final o in parsed) o.$1.ar,
+  ]);
+  final cleanEn = _withoutListedOptions(promptEn, [
+    for (final o in parsed) o.$1.en,
+  ]);
+  if (cleanAr.isEmpty || cleanEn.isEmpty) {
+    return (null, DraftIssue.optionsInPrompt);
+  }
+  parsed.shuffle(Random(_stableHash(cleanEn)));
   final options = <GeneratedOption>[];
   late String correctId;
   for (var i = 0; i < parsed.length; i++) {
@@ -289,7 +304,7 @@ DraftParseResult parseQuestionDrafts(
   return (
     GeneratedQuestion(
       conceptIds: conceptIds,
-      prompt: LocalizedText(ar: promptAr, en: promptEn),
+      prompt: LocalizedText(ar: cleanAr, en: cleanEn),
       options: options,
       correctOptionId: correctId,
       sourceLocation: location == null || location.isEmpty ? null : location,
@@ -300,6 +315,23 @@ DraftParseResult parseQuestionDrafts(
     ),
     null,
   );
+}
+
+/// [prompt] without a trailing list of the options. Only when at least two
+/// option texts appear in it; the cut is made at the first one, before its
+/// marker such as "a)", "(b)", "1." or "أ)".
+String _withoutListedOptions(String prompt, List<String> options) {
+  final positions = [
+    for (final o in options)
+      if (o.trim().length >= 2) prompt.indexOf(o.trim()),
+  ].where((i) => i > 0).toList();
+  if (positions.length < 2) return prompt;
+  var cut = positions.reduce(min);
+  final marker = RegExp(
+    r'[\s(\[]*(?:[أابجدهـ]|[a-fA-F]|[1-6])\s*[).:\-]\s*$',
+  ).firstMatch(prompt.substring(0, cut));
+  if (marker != null) cut = marker.start;
+  return prompt.substring(0, cut).trim();
 }
 
 /// FNV-1a over the UTF-16 code units: the same on every platform and run

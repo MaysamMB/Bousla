@@ -82,6 +82,9 @@ abstract interface class ContentRepository {
     int droppedByChecks = 0,
   });
 
+  /// Instructor only. Materials questions were drafted from, newest first.
+  Future<List<MaterialRecord>> listMaterials(String courseId);
+
   Future<List<Resource>> listResources(
     String courseId, {
     bool approvedOnly = true,

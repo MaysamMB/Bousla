@@ -81,6 +81,7 @@ class QuestionView {
     this.edited = false,
     this.rejectionReason,
     this.sourceLocation,
+    this.sourceMaterialId,
     this.hiddenOptionLanguages = const {},
   });
 
@@ -99,6 +100,9 @@ class QuestionView {
 
   /// Where in the instructor's material an AI draft came from, e.g. "page 4".
   final String? sourceLocation;
+
+  /// The [MaterialRecord] an AI draft was suggested from, if any.
+  final String? sourceMaterialId;
 
   /// Languages in which the answer options are NOT shown to students
   /// (`hidden_option_languages`). The text still exists in both languages;
@@ -128,6 +132,7 @@ class QuestionView {
     edited: edited,
     rejectionReason: rejectionReason,
     sourceLocation: sourceLocation,
+    sourceMaterialId: sourceMaterialId,
     hiddenOptionLanguages: Set.unmodifiable(hidden),
   );
 
@@ -146,6 +151,7 @@ class QuestionView {
         edited: edited,
         rejectionReason: status == ReviewStatus.rejected ? reason : null,
         sourceLocation: sourceLocation,
+        sourceMaterialId: sourceMaterialId,
         hiddenOptionLanguages: hiddenOptionLanguages,
       );
 
@@ -169,9 +175,34 @@ class QuestionView {
         provenance['rejection_reason'] as String?,
       ),
       sourceLocation: provenance['source_location'] as String?,
+      sourceMaterialId: provenance['source_material_id'] as String?,
       hiddenOptionLanguages: _parseLanguages(json['hidden_option_languages']),
     );
   }
+}
+
+/// A file the instructor drafted questions from (AI level 1). Metadata only:
+/// the file itself is never stored.
+class MaterialRecord {
+  const MaterialRecord({
+    required this.id,
+    required this.fileName,
+    required this.modelName,
+    required this.createdAt,
+    this.draftsSaved = 0,
+    this.draftsDropped = 0,
+  });
+
+  final String id;
+  final String fileName;
+
+  /// The model that wrote the drafts.
+  final String modelName;
+
+  /// Null only for a moment after saving, before the server time is known.
+  final DateTime? createdAt;
+  final int draftsSaved;
+  final int draftsDropped;
 }
 
 /// What the instructor fills in when adding or editing a question.

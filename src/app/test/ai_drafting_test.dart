@@ -96,7 +96,7 @@ void main() {
           keys.where((k) => k.questionId == q.id).single.correctOptionId, 'b');
       expect((await repo.listQuestions(_course)).map((x) => x.id),
           isNot(contains(q.id)));
-      expect(repo.materials.single['drafts_dropped'], 2);
+      expect(repo.materials.single.draftsDropped, 2);
       // Counted in the AI draft statistics.
       final stats =
           aiReviewStats(await repo.listQuestions(_course, approvedOnly: false));
@@ -116,7 +116,7 @@ void main() {
         ],
       );
       expect(saved, hasLength(1));
-      expect(repo.materials.single['drafts_dropped'], 1);
+      expect(repo.materials.single.draftsDropped, 1);
     });
   });
 
@@ -160,9 +160,36 @@ void main() {
       expect(material['drafts_saved'], 1);
       expect(material['drafts_dropped'], 1);
       expect(material.containsKey('bytes'), isFalse);
-      // The instructor sees it in review; it reads back as an AI draft.
+      // The instructor sees it in review; it reads back as an AI draft,
+      // linked to its material, which is listed.
       final all = await repo.listQuestions(_course, approvedOnly: false);
-      expect(all.where((q) => q.id == id).single.source, ContentSource.aiDraft);
+      final back = all.where((q) => q.id == id).single;
+      expect(back.source, ContentSource.aiDraft);
+      expect(back.sourceMaterialId, provenance['source_material_id']);
+      final materials = await repo.listMaterials(_course);
+      expect(materials.single.id, back.sourceMaterialId);
+      expect(materials.single.fileName, 'lecture03.pdf');
+      expect(materials.single.modelName, 'fake-model');
+      // Editing the draft keeps the link to its material.
+      final key2 = await course
+          .collection('answer_keys')
+          .doc(questionDocId(id, 1))
+          .get();
+      final edited = await repo.saveQuestion(
+        _course,
+        QuestionDraft(
+          id: id,
+          conceptIds: back.conceptIds,
+          prompt: const LocalizedText(
+            ar: 'هل يمكن أن يكون المفتاح الأساسي NULL؟',
+            en: 'Can a primary key ever be NULL?',
+          ),
+          options: back.options,
+          correctOptionId: key2.data()!['correct_option_id'] as String,
+        ),
+      );
+      expect(edited.sourceMaterialId, back.sourceMaterialId);
+      expect(edited.edited, isTrue);
     });
   });
 
@@ -237,6 +264,18 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Can a primary key be NULL?'), findsOneWidget);
+      // The new suggestions come first, under their own heading.
+      expect(find.text('New AI suggestions (1)'), findsOneWidget);
+      expect(find.textContaining('From «lecture03.pdf» · fake-model'),
+          findsOneWidget);
+      expect(find.text('Other drafts waiting for review'), findsOneWidget);
+      final newHeading = tester.getTopLeft(find.text('New AI suggestions (1)'));
+      final newDraft =
+          tester.getTopLeft(find.text('Can a primary key be NULL?'));
+      final earlier =
+          tester.getTopLeft(find.text('Other drafts waiting for review'));
+      expect(newHeading.dy, lessThan(newDraft.dy));
+      expect(newDraft.dy, lessThan(earlier.dy));
       expect(find.text('From the material: page 4'), findsWidgets);
       // Still a draft: students cannot get it.
       final forStudents = await content.listQuestions(_course);
@@ -245,6 +284,64 @@ void main() {
               q.source == ContentSource.aiDraft &&
               q.prompt.en == 'Can a primary key be NULL?'),
           isFalse);
+    });
+
+    testWidgets('AI drafts stay grouped by file after the screen reopens', (
+      tester,
+    ) async {
+      final content = InMemoryContentRepository();
+      await content.saveAiDrafts(
+        _course,
+        materialName: 'week1.pdf',
+        modelName: 'model-a',
+        drafts: [_g('Is a primary key unique?')],
+      );
+      await content.saveAiDrafts(
+        _course,
+        materialName: 'week2.pdf',
+        modelName: 'model-b',
+        drafts: [
+          _g('Can a foreign key be NULL?', concepts: const ['foreign_key'])
+        ],
+      );
+      tester.view.physicalSize = const Size(1000, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ServicesScope(
+          services: AppServices(
+            content: content,
+            sessions: InMemorySessionRepository(),
+            questionGenerator: _FakeGenerator(),
+          ),
+          child: MaterialApp(
+            locale: const Locale('en'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            home: const ContentReviewScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Not "new" (made before this screen opened), but still grouped,
+      // newest file first, then the other drafts.
+      expect(find.text('New AI suggestions (1)'), findsNothing);
+      expect(find.text('AI suggestions (1)'), findsNWidgets(2));
+      final week2 =
+          tester.getTopLeft(find.textContaining('«week2.pdf» · model-b'));
+      final week1 =
+          tester.getTopLeft(find.textContaining('«week1.pdf» · model-a'));
+      final others =
+          tester.getTopLeft(find.text('Other drafts waiting for review'));
+      final q2 = tester.getTopLeft(find.text('Can a foreign key be NULL?'));
+      expect(week2.dy, lessThan(q2.dy));
+      expect(q2.dy, lessThan(week1.dy));
+      expect(week1.dy, lessThan(others.dy));
     });
 
     testWidgets('a setup problem is explained in the dialog', (tester) async {
