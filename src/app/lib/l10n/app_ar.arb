@@ -219,5 +219,9 @@
   "instructorSessionStatusOpen": "مفتوحة",
   "instructorSessionStatusClosed": "مغلقة",
   "instructorSessionStatusReleased": "نُشرت الملاحظات",
-  "instructorSessionFallbackTitle": "جلسة {code}"
+  "instructorSessionFallbackTitle": "جلسة {code}",
+  "instructorRenameSession": "تعديل اسم الجلسة",
+  "instructorTitleArabic": "العنوان بالعربية",
+  "instructorTitleEnglish": "العنوان بالإنجليزية",
+  "instructorRenameSave": "حفظ"
 }

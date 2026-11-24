@@ -167,6 +167,10 @@ class InMemorySessionRepository implements SessionRepository {
       );
 
   @override
+  Future<void> renameSession(String sessionId, LocalizedText title) async =>
+      _update(_require(sessionId).copyWith(title: title));
+
+  @override
   Future<void> releaseFeedback(String sessionId) async =>
       _update(_require(sessionId).copyWith(feedbackReleased: true));
 

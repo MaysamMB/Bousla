@@ -168,10 +168,24 @@ describe('past sessions', () => {
     await assertFails(list(student(), 'teacher'));
   });
 
-  test('a title cannot be changed afterwards from the app', async () => {
-    await assertFails(updateDoc(doc(instructor(), 'sessions', CODE), {
-      title: { ar: 'x', en: 'x' },
+  test('the owner renames a session; only a short {ar, en} title', async () => {
+    const ref = (db) => doc(db, 'sessions', CODE);
+    await assertSucceeds(updateDoc(ref(instructor()), {
+      title: { ar: 'مراجعة المفاتيح', en: 'Keys review' },
     }));
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 'x'.repeat(121), en: 'x' } }));
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 'x', en: 'x', note: 'y' } }));
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 1, en: 'x' } }));
+    await assertFails(updateDoc(ref(instructor()), { title: 'plain text' }));
+    // Renaming does not open the door to other fields.
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 'a', en: 'b' }, owner_id: 'teacher2' }));
+  });
+
+  test('nobody else renames it', async () => {
+    const t = { title: { ar: 'x', en: 'x' } };
+    await assertFails(updateDoc(doc(otherInstructor(), 'sessions', CODE), t));
+    await assertFails(updateDoc(doc(student(), 'sessions', CODE), t));
+    await assertFails(updateDoc(doc(nobody(), 'sessions', CODE), t));
   });
 });
 
