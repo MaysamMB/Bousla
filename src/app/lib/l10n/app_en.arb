@@ -476,5 +476,8 @@
   "studentFeedbackAiLabel": "AI-generated",
   "studentFeedbackAiNote": "Written by AI from the results above; it does not change them.",
   "studentFeedbackNotAvailable": "Your feedback is not available yet.",
-  "studentFeedbackWaiting": "Your personal feedback will appear here when your instructor publishes it."
+  "studentFeedbackWaiting": "Your personal feedback will appear here when your instructor publishes it.",
+  "studentMapOpen": "Show my knowledge map",
+  "studentMapOpenHint": "How the concepts build on each other, and which to review first. You can save it to your phone.",
+  "studentMapScreenTitle": "Knowledge map"
 }

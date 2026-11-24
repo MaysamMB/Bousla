@@ -8,7 +8,7 @@ import '../../../data/feedback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
-import '../knowledge_map/knowledge_map_view.dart';
+import '../knowledge_map/knowledge_map_screen.dart';
 
 /// A student's personal feedback for one session (owner: student web
 /// portal). Shows, in this order: concept states with their evidence,
@@ -230,10 +230,22 @@ class FeedbackView extends StatelessWidget {
               ),
             ],
 
-            // E. The same results as a map from foundations up, which the
-            // student can save to their phone as an image.
+            // E. More detail on another page: the same results as a map
+            // from foundations up, which the student can save as an image.
             const SizedBox(height: 24),
-            KnowledgeMapView(feedback: feedback),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.account_tree_outlined),
+                title: Text(l.studentMapOpen),
+                subtitle: Text(l.studentMapOpenHint),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => KnowledgeMapScreen(feedback: feedback),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
