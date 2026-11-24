@@ -488,5 +488,9 @@
   "instructorSessionStatusClosed": "Closed",
   "instructorSessionStatusReleased": "Feedback published",
   "instructorSessionFallbackTitle": "Session {code}",
-  "@instructorSessionFallbackTitle": {"placeholders": {"code": {"type": "String"}}}
+  "@instructorSessionFallbackTitle": {"placeholders": {"code": {"type": "String"}}},
+  "instructorRenameSession": "Rename session",
+  "instructorTitleArabic": "Title in Arabic",
+  "instructorTitleEnglish": "Title in English",
+  "instructorRenameSave": "Save"
 }

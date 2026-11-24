@@ -301,6 +301,16 @@ void main() {
       );
     });
 
+    test('renameSession stores the new title', () async {
+      await sessions.renameSession(
+        session.id,
+        const LocalizedText(ar: 'مراجعة', en: 'Review'),
+      );
+      final again = (await sessions.findByCode(session.code))!;
+      expect((again.title?.ar, again.title?.en), ('مراجعة', 'Review'));
+      expect(again.status, SessionStatus.open);
+    });
+
     test('latestOpenSession: newest open session of the owner and course',
         () async {
       expect(

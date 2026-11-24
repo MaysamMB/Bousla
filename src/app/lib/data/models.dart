@@ -325,6 +325,7 @@ class Session {
     SessionStatus? status,
     bool? feedbackReleased,
     DateTime? closedAt,
+    LocalizedText? title,
   }) => Session(
     id: id,
     code: code,
@@ -333,7 +334,7 @@ class Session {
     questions: questions,
     status: status ?? this.status,
     feedbackReleased: feedbackReleased ?? this.feedbackReleased,
-    title: title,
+    title: title ?? this.title,
     createdAt: createdAt,
     closedAt: closedAt ?? this.closedAt,
   );

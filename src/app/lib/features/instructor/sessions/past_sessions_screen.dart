@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app_services.dart';
 import '../../../data/models.dart';
+import '../../../data/repositories/session_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
@@ -86,7 +87,13 @@ class _PastSessionsScreenState extends State<PastSessionsScreen> {
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: sessions.length,
-                itemBuilder: (context, i) => _SessionTile(session: sessions[i]),
+                itemBuilder: (context, i) => _SessionTile(
+                  session: sessions[i],
+                  // A rename on the results page shows here too.
+                  onChanged: () => setState(() {
+                    _sessions = _load();
+                  }),
+                ),
               ),
             ),
           );
@@ -118,9 +125,10 @@ Widget sessionStatusChip(BuildContext context, Session s) {
 }
 
 class _SessionTile extends StatelessWidget {
-  const _SessionTile({required this.session});
+  const _SessionTile({required this.session, required this.onChanged});
 
   final Session session;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -142,11 +150,14 @@ class _SessionTile extends StatelessWidget {
           ),
         ),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => PastSessionScreen(session: session),
-          ),
-        ),
+        onTap: () async {
+          final renamed = await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(
+              builder: (_) => PastSessionScreen(session: session),
+            ),
+          );
+          if (renamed == true) onChanged();
+        },
       ),
     );
   }
@@ -155,60 +166,185 @@ class _SessionTile extends StatelessWidget {
 /// One past session: when, how many took part, and the class results
 /// (the live insights panel, which recomputes them from the stored answers;
 /// aggregated, small groups hidden).
-class PastSessionScreen extends StatelessWidget {
+class PastSessionScreen extends StatefulWidget {
   const PastSessionScreen({super.key, required this.session});
 
   final Session session;
+
+  @override
+  State<PastSessionScreen> createState() => _PastSessionScreenState();
+}
+
+class _PastSessionScreenState extends State<PastSessionScreen> {
+  late Session session = widget.session;
+  var _renamed = false;
+
+  Future<void> _rename() async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final title = await showDialog<LocalizedText>(
+      context: context,
+      builder: (_) => _RenameDialog(
+        initial: session.title ??
+            LocalizedText(
+              ar: l.instructorSessionFallbackTitle(session.code),
+              en: l.instructorSessionFallbackTitle(session.code),
+            ),
+      ),
+    );
+    if (title == null || !mounted) return;
+    try {
+      await ServicesScope.of(context).sessions.renameSession(session.id, title);
+      setState(() {
+        session = session.copyWith(title: title);
+        _renamed = true;
+      });
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l.errorGeneric)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final sessions = ServicesScope.of(context).sessions;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l.instructorPastSessionTitle),
-        actions: const [LanguageSwitcher()],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              Text(
-                sessionTitleText(context, session),
-                style: theme.textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 12,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(sessionWhen(context, session.createdAt)),
-                  Text(l.instructorJoinCode(_ltr(session.code))),
-                  sessionStatusChip(context, session),
-                ],
-              ),
-              const SizedBox(height: 8),
-              StreamBuilder<List<Response>>(
-                stream: sessions.watchResponses(session.id),
-                builder: (context, snapshot) {
-                  final responses = snapshot.data ?? const <Response>[];
-                  final participants =
-                      responses.map((r) => r.participantId).toSet().length;
-                  return Text(
-                    l.instructorLiveCounts(participants, responses.length),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              LiveInsightsPanel(session: session),
-            ],
+    // Back tells the list whether to reload.
+    return PopScope<bool>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop(_renamed);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l.instructorPastSessionTitle),
+          actions: const [LanguageSwitcher()],
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        sessionTitleText(context, session),
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: l.instructorRenameSession,
+                      icon: const Icon(Icons.edit_outlined),
+                      onPressed: _rename,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(sessionWhen(context, session.createdAt)),
+                    Text(l.instructorJoinCode(_ltr(session.code))),
+                    sessionStatusChip(context, session),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                StreamBuilder<List<Response>>(
+                  stream: sessions.watchResponses(session.id),
+                  builder: (context, snapshot) {
+                    final responses = snapshot.data ?? const <Response>[];
+                    final participants =
+                        responses.map((r) => r.participantId).toSet().length;
+                    return Text(
+                      l.instructorLiveCounts(participants, responses.length),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                LiveInsightsPanel(session: session),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Two fields, Arabic and English. If one is left empty, the other is used
+/// for both; both empty cannot be saved.
+class _RenameDialog extends StatefulWidget {
+  const _RenameDialog({required this.initial});
+
+  final LocalizedText initial;
+
+  @override
+  State<_RenameDialog> createState() => _RenameDialogState();
+}
+
+class _RenameDialogState extends State<_RenameDialog> {
+  late final _ar = TextEditingController(text: widget.initial.ar);
+  late final _en = TextEditingController(text: widget.initial.en);
+
+  @override
+  void dispose() {
+    _ar.dispose();
+    _en.dispose();
+    super.dispose();
+  }
+
+  LocalizedText? get _value {
+    final ar = _ar.text.trim();
+    final en = _en.text.trim();
+    if (ar.isEmpty && en.isEmpty) return null;
+    return LocalizedText(
+      ar: ar.isEmpty ? en : ar,
+      en: en.isEmpty ? ar : en,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l.instructorRenameSession),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _ar,
+              maxLength: maxSessionTitleLength,
+              textDirection: TextDirection.rtl,
+              decoration: InputDecoration(labelText: l.instructorTitleArabic),
+              onChanged: (_) => setState(() {}),
+            ),
+            TextField(
+              controller: _en,
+              maxLength: maxSessionTitleLength,
+              textDirection: TextDirection.ltr,
+              decoration: InputDecoration(labelText: l.instructorTitleEnglish),
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.reviewCancel),
+        ),
+        FilledButton(
+          onPressed:
+              _value == null ? null : () => Navigator.of(context).pop(_value),
+          child: Text(l.instructorRenameSave),
+        ),
+      ],
     );
   }
 }

@@ -206,6 +206,12 @@ class FirestoreSessionRepository implements SessionRepository {
       .update({'status': 'closed', 'closed_at': FieldValue.serverTimestamp()});
 
   @override
+  Future<void> renameSession(String sessionId, LocalizedText title) =>
+      _sessions.doc(sessionId).update({
+        'title': {'ar': title.ar, 'en': title.en},
+      });
+
+  @override
   Future<void> releaseFeedback(String sessionId) =>
       _sessions.doc(sessionId).update({'feedback_released': true});
 

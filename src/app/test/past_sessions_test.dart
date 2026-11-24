@@ -119,4 +119,67 @@ void main() {
     expect(find.text('Session results'), findsOneWidget);
     expect(find.text('What the class understands'), findsOneWidget);
   });
+
+  testWidgets('the instructor renames a session from its results',
+      (tester) async {
+    tester.view.physicalSize = const Size(900, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final services = AppServices.inMemory(initialLocale: const Locale('en'));
+    await services.sessions.createSession(
+      courseId: 'database_systems',
+      ownerId: services.auth.instructorId!,
+      questions: const [],
+      title: const LocalizedText(ar: 'قديم', en: 'Old title'),
+    );
+    await tester.pumpWidget(
+      ServicesScope(
+        services: services,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const CreateSessionScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Past sessions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Old title'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Rename session'));
+    await tester.pumpAndSettle();
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'مراجعة المفاتيح');
+    // English left empty: the Arabic title is used for both.
+    await tester.enterText(fields.at(1), '');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Save'));
+    // A text field was focused: pump a fixed time instead of settling.
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(find.text('مراجعة المفاتيح'), findsOneWidget);
+
+    await tester.pageBack();
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(find.text('Past sessions'), findsOneWidget);
+    expect(find.text('مراجعة المفاتيح'), findsOneWidget);
+    final stored = (await services.sessions.listSessions(
+      ownerId: services.auth.instructorId!,
+      courseId: 'database_systems',
+    ))
+        .single
+        .title!;
+    expect((stored.ar, stored.en), ('مراجعة المفاتيح', 'مراجعة المفاتيح'));
+  });
 }

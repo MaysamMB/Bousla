@@ -3,6 +3,9 @@ import 'package:bousla_engine/bousla_engine.dart';
 import '../feedback.dart';
 import '../models.dart';
 
+/// Longest session title per language (checked by the security rules too).
+const maxSessionTitleLength = 120;
+
 /// Sessions, participation and responses.
 ///
 /// Implementations: [InMemorySessionRepository] (development) and a Firestore
@@ -58,6 +61,10 @@ abstract interface class SessionRepository {
   Stream<List<Response>> watchResponses(String sessionId);
 
   Future<void> closeSession(String sessionId);
+
+  /// Instructor only: a new title (each language at most
+  /// [maxSessionTitleLength] characters, as the security rules require).
+  Future<void> renameSession(String sessionId, LocalizedText title);
 
   Future<void> releaseFeedback(String sessionId);
 
