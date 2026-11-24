@@ -20,6 +20,7 @@
 // instructor reviews them in the app at /instructor/review.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
+import { fileURLToPath } from 'node:url';
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -49,7 +50,8 @@ const option = (name, fallback) => {
 };
 
 const root = new URL('../../', import.meta.url);
-const envFile = option('--env', new URL('src/app/firebase.env.json', root).pathname);
+// fileURLToPath, not URL.pathname: on Windows pathname gives "/C:/...".
+const envFile = option('--env', fileURLToPath(new URL('src/app/firebase.env.json', root)));
 const folder = option('--course', 'database-systems');
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const data = (file) => readJson(new URL(`data/courses/${folder}/${file}`, root));
