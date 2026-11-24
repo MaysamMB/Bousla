@@ -242,4 +242,86 @@ void main() {
       SessionStatus.closed,
     );
   });
+
+  testWidgets('a closed session without feedback is published from its page',
+      (tester) async {
+    tester.view.physicalSize = const Size(900, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final services = AppServices.inMemory(initialLocale: const Locale('en'));
+    final questions =
+        await services.content.listQuestions('database_systems');
+    final session = await services.sessions.createSession(
+      courseId: 'database_systems',
+      ownerId: services.auth.instructorId!,
+      questions: [for (final q in questions) QuestionRef(q.id, q.version)],
+      title: const LocalizedText(ar: 'منتهية', en: 'Finished session'),
+    );
+    final students = <String>[];
+    for (var i = 0; i < 5; i++) {
+      final id = await services.sessions.join(session.id);
+      students.add(id);
+      for (final q in questions) {
+        await services.sessions.submitResponse(
+          session.id,
+          Response(
+            participantId: id,
+            questionId: q.id,
+            questionVersion: q.version,
+            selectedOptionId: q.options.first.id,
+            displayLanguage: Language.en,
+          ),
+        );
+      }
+    }
+    await services.sessions.closeSession(session.id);
+
+    await tester.pumpWidget(
+      ServicesScope(
+        services: services,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const CreateSessionScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Past sessions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Finished session'));
+    await tester.pumpAndSettle();
+    expect(find.text('Closed'), findsOneWidget);
+
+    await tester.tap(find.text('Publish feedback'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Publish'));
+    // Publishing awaits in-memory stream cancellations on the real event
+    // loop, which the fake clock does not run (as in student_feedback_test).
+    for (var i = 0; i < 20; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('Feedback published for 5 students.'), findsOneWidget);
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Feedback published'), findsOneWidget);
+    expect(find.text('Publish feedback'), findsNothing);
+    for (final id in students) {
+      expect(
+        await services.sessions.watchMyFeedback(session.id, id).first,
+        isNotNull,
+      );
+    }
+  });
 }

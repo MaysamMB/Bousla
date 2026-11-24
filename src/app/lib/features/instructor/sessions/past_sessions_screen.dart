@@ -9,6 +9,7 @@ import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
 import 'live_insights_panel.dart';
+import 'publish_feedback_dialog.dart';
 
 /// Keeps a code left-to-right inside an Arabic sentence (Unicode isolate),
 /// without turning the whole sentence around.
@@ -242,6 +243,17 @@ class _PastSessionScreenState extends State<PastSessionScreen> {
     }
   }
 
+  /// A closed session whose feedback was never published: publish it now
+  /// (the same dialog as on the session screen).
+  Future<void> _publish() async {
+    final result = await showPublishFeedbackDialog(context, session);
+    if (result == null || !mounted) return;
+    setState(() {
+      session = session.copyWith(feedbackReleased: true);
+      _changed = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -303,6 +315,15 @@ class _PastSessionScreenState extends State<PastSessionScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
+                if (session.status == SessionStatus.closed &&
+                    !session.feedbackReleased) ...[
+                  FilledButton.icon(
+                    onPressed: _publish,
+                    icon: const Icon(Icons.send_outlined),
+                    label: Text(l.instructorPublishFeedback),
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 if (session.status == SessionStatus.open) ...[
                   OutlinedButton.icon(
                     onPressed: _close,
