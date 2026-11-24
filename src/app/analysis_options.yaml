@@ -2,5 +2,9 @@
 #   flutter pub add --dev flutter_lints
 #   include: package:flutter_lints/flutter.yaml
 analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - web/**
   language:
     strict-casts: false
