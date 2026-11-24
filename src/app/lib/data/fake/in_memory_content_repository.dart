@@ -195,6 +195,55 @@ class InMemoryContentRepository implements ContentRepository {
     }
   }
 
+  /// Material records saved by [saveAiDrafts] (names and counts only).
+  final materials = <Map<String, Object?>>[];
+  var _nextAiQuestion = 1;
+
+  @override
+  Future<List<QuestionView>> saveAiDrafts(
+    String courseId, {
+    required String materialName,
+    required String modelName,
+    required List<GeneratedQuestion> drafts,
+    int droppedByChecks = 0,
+  }) async {
+    _checkCourse(courseId);
+    final approvedConcepts = {
+      for (final c in _concepts)
+        if (c.status == ReviewStatus.approved) c.id,
+    };
+    final saved = <QuestionView>[];
+    var skipped = 0;
+    for (final g in drafts) {
+      final draft = draftFromGenerated(g);
+      if (validateDraft(draft, approvedConcepts).isNotEmpty) {
+        skipped++;
+        continue;
+      }
+      final q = _build(
+        id: 'ai_q_${_nextAiQuestion++}',
+        version: 1,
+        draft: draft,
+        status: ReviewStatus.pendingReview,
+        source: ContentSource.aiDraft,
+        edited: false,
+        sourceLocation: g.sourceLocation,
+        rejectionReason: null,
+        hiddenOptionLanguages: const {},
+      );
+      _questions.add(q);
+      _setKey(q.id, 1, draft.correctOptionId!);
+      saved.add(q);
+    }
+    materials.add({
+      'file_name': materialName,
+      'generated_by': modelName,
+      'drafts_saved': saved.length,
+      'drafts_dropped': droppedByChecks + skipped,
+    });
+    return saved;
+  }
+
   @override
   Future<List<Resource>> listResources(
     String courseId, {

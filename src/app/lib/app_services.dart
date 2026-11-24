@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'data/fake/in_memory_content_repository.dart';
+import 'data/ai/question_generator.dart';
 import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
 import 'data/repositories/content_repository.dart';
@@ -14,6 +15,7 @@ class AppServices {
     required this.sessions,
     AuthService? auth,
     this.inMemory = false,
+    this.questionGenerator,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
         locale = ValueNotifier(initialLocale);
@@ -36,6 +38,10 @@ class AppServices {
   /// lives in this browser tab only and is lost on reload. The app shows a
   /// corner banner so nobody mistakes it for the real deployment.
   final bool inMemory;
+
+  /// AI level 1 (drafting questions from material). Null when not
+  /// available, e.g. in the offline demo mode: the screen then hides it.
+  final QuestionGenerator? questionGenerator;
 
   /// Current UI language. Changing it rebuilds the app in that language and
   /// direction (RTL for Arabic, LTR for English).

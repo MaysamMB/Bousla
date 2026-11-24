@@ -4,6 +4,7 @@
 /// evidence it was based on, and AI never changes these results.
 library;
 
+export 'src/ai/question_drafting.dart';
 export 'src/class_insights.dart';
 export 'src/learning_recommender.dart';
 export 'src/mastery_estimator.dart';

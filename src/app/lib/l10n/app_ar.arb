@@ -109,5 +109,23 @@
   "authErrorNotEnabled": "تسجيل الدخول بالبريد الإلكتروني غير مفعّل في مشروع Firebase (Authentication ← Sign-in method).",
   "instructorNoCourse": "لا يوجد مقرر مرتبط بهذا الحساب بعد. حمّل المقرر التجريبي باستخدام firebase/tools/seed.mjs (انظر firebase/README.md).",
 
+  "reviewAiGenerate": "اقتراح أسئلة من مادة (ذكاء اصطناعي)",
+  "reviewAiDialogTitle": "اقتراح أسئلة من مادتك",
+  "reviewAiPrivacy": "يُرسَل الملف إلى Google Gemini (عبر Firebase) لاقتراح أسئلة بالعربية والإنجليزية، ولا يُخزَّن. لا ترفع ملفات فيها بيانات شخصية. يبقى كل سؤال مقترح مسودة حتى تراجعه.",
+  "reviewAiPickFile": "اختر ملفاً (PDF أو نص)",
+  "reviewAiFileChosen": "{name} · {sizeKb} KB",
+  "reviewAiCount": "كم سؤالاً تريد أن يُقترَح؟",
+  "reviewAiStart": "اقترح الأسئلة",
+  "reviewAiWorking": "يقرأ Gemini المادة. قد يستغرق ذلك حتى دقيقة.",
+  "reviewAiDone": "{saved} مسودة من الذكاء الاصطناعي بانتظار مراجعتك. استُبعدت {dropped} بالفحوص التلقائية.",
+  "reviewAiNoConcepts": "لا توجد مفاهيم معتمدة في هذا المقرر بعد، فلا يمكن ربط المسودات بأي مفهوم.",
+  "reviewAiNothingUsable": "لا توجد مسودات صالحة: قد لا تطابق المادة مفاهيم المقرر، أو فشلت كل المسودات في الفحوص التلقائية. جرّب ملفاً آخر.",
+  "reviewAiErrorNotEnabled": "الذكاء الاصطناعي غير مفعّل لمشروع Firebase هذا (Firebase console ← AI Logic ← Get started ← Gemini Developer API).",
+  "reviewAiErrorQuota": "انتهت الحصة المجانية للذكاء الاصطناعي حالياً. حاول بعد دقائق.",
+  "reviewAiErrorTooLarge": "الملف كبير جداً (15 ميغابايت كحد أقصى).",
+  "reviewAiErrorUnsupported": "الملفات المدعومة فقط: PDF و ‎.txt و ‎.md.",
+  "reviewAiErrorEmpty": "لم يُرجع Gemini أي إجابة. حاول مرة أخرى أو جرّب ملفاً آخر.",
+  "reviewAiErrorNetwork": "لم يصل رد من Gemini في الوقت المحدد. تحقّق من الاتصال وحاول مرة أخرى.",
+
   "errorGeneric": "حدث خطأ. حاول مرة أخرى."
 }
