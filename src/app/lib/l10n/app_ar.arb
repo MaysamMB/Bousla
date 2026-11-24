@@ -155,7 +155,7 @@
   "studentMapNote": "مبنية فقط على إجاباتك في هذه الجلسة. هذه تقديرات وليست حكماً نهائياً.",
   "studentMapFoundations": "الأساسيات",
   "studentMapLevel": "المستوى {level}",
-  "studentMapEvidence": "{correct} صحيحة من {attempts}",
+  "studentMapEvidence": "أجبت صح على {correct} من {attempts} أسئلة عنه",
   "studentMapBuildsOn": "يعتمد على: {names}",
   "studentMapPossibleGap": "قد يكون «{prerequisite}» سبباً محتملاً، تستحسن مراجعته أولاً.",
   "studentMapStateDifficulty": "صعوبة محتملة",

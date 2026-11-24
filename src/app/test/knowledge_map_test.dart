@@ -151,7 +151,7 @@ void main() {
     expect(find.text('خريطتك المعرفية لهذه الجلسة'), findsOneWidget);
     expect(find.text('الأساسيات'), findsOneWidget);
     expect(find.text('المستوى 3'), findsOneWidget);
-    expect(find.text('صعوبة محتملة · 0 صحيحة من 2'), findsNWidgets(2));
+    expect(find.text('صعوبة محتملة · أجبت صح على 0 من 2 أسئلة عنه'), findsNWidgets(2));
     expect(find.text('يعتمد على: مفهوم pk'), findsOneWidget);
     expect(
       find.text('قد يكون «مفهوم pk» سبباً محتملاً، تستحسن مراجعته أولاً.'),

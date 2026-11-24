@@ -182,7 +182,7 @@
   "studentMapFoundations": "Foundations",
   "studentMapLevel": "Level {level}",
   "@studentMapLevel": {"placeholders": {"level": {"type": "int"}}},
-  "studentMapEvidence": "{correct} of {attempts} correct",
+  "studentMapEvidence": "you got {correct} of {attempts} questions on it right",
   "@studentMapEvidence": {"placeholders": {"correct": {"type": "int"}, "attempts": {"type": "int"}}},
   "studentMapBuildsOn": "Builds on: {names}",
   "@studentMapBuildsOn": {"placeholders": {"names": {"type": "String"}}},
