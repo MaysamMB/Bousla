@@ -9,6 +9,12 @@ import 'package:flutter_test/flutter_test.dart';
 // pumpAndSettle busy (see widget_smoke_test.dart).
 void main() {
   Future<AppServices> openReview(WidgetTester tester) async {
+    // A tall screen keeps both draft cards built: once a draft is selected,
+    // the bottom action bar takes space and the second card could leave the
+    // list's build area.
+    tester.view.physicalSize = const Size(1000, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final services = AppServices.inMemory(initialLocale: const Locale('en'));
     await tester.pumpWidget(BouslaApp(services: services));
     await tester.pumpAndSettle();
@@ -69,8 +75,7 @@ void main() {
     expect(boxes, findsNWidgets(2));
     await tester.tap(boxes.at(0));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(boxes.at(1));
-    await tester.pumpAndSettle();
+    expect(find.text('Reject selected (1)'), findsOneWidget);
     await tester.tap(boxes.at(1));
     await tester.pumpAndSettle();
 

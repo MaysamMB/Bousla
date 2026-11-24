@@ -51,7 +51,10 @@ Change someone else's folder only after telling them.
 ## Translations
 
 UI strings live in `lib/l10n/app_en.arb` (template) and `lib/l10n/app_ar.arb`.
-Every key must exist in both. Prefix keys with your area (`instructor…`,
+Every key must exist in both. After pulling a branch that adds keys, run
+`flutter gen-l10n` (or `flutter pub get`) before `flutter analyze` / `flutter test`;
+otherwise the generated `lib/l10n/app_localizations*.dart` is stale and the new
+keys show up as "isn't defined for the type 'AppLocalizations'". Prefix keys with your area (`instructor…`,
 `student…`, `review…`) and pull before adding keys; these two files are where
 merge conflicts will happen. Course content (questions, concepts) is not in ARB
 files; it comes bilingual from the data.
