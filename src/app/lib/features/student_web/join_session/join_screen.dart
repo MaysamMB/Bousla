@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../app_services.dart';
@@ -40,7 +42,9 @@ class _JoinScreenState extends State<JoinScreen> {
       _error = null;
     });
     try {
-      final session = await sessions.findByCode(normalizeJoinCode(_code.text));
+      final session = await sessions
+          .findByCode(normalizeJoinCode(_code.text))
+          .timeout(AnsweringScreen.timeout);
       if (!mounted) return;
       if (session == null) {
         setState(() => _error = l.studentCodeNotFound);
@@ -50,13 +54,16 @@ class _JoinScreenState extends State<JoinScreen> {
         setState(() => _error = l.studentSessionClosed);
         return;
       }
-      final participantId = await sessions.join(session.id);
+      final participantId =
+          await sessions.join(session.id).timeout(AnsweringScreen.timeout);
       await navigator.pushReplacement(
         MaterialPageRoute<void>(
           builder: (_) =>
               AnsweringScreen(session: session, participantId: participantId),
         ),
       );
+    } on TimeoutException {
+      if (mounted) setState(() => _error = l.studentConnectionSlow);
     } catch (_) {
       if (mounted) setState(() => _error = l.errorGeneric);
     } finally {

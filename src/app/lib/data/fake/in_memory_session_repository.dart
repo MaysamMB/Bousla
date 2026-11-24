@@ -101,6 +101,17 @@ class InMemorySessionRepository implements SessionRepository {
   }
 
   @override
+  Future<Set<QuestionRef>> answeredQuestions(
+    Session session,
+    String participantId,
+  ) async =>
+      {
+        for (final r in _responses[session.id] ?? const <Response>[])
+          if (r.participantId == participantId)
+            QuestionRef(r.questionId, r.questionVersion),
+      };
+
+  @override
   Stream<List<Response>> watchResponses(String sessionId) {
     _require(sessionId);
     final controller = _responseControllers.putIfAbsent(

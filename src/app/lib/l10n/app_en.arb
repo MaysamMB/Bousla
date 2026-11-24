@@ -17,7 +17,7 @@
   "@instructorJoinCode": { "placeholders": { "code": { "type": "String" } } },
   "instructorJoinLink": "Join link: {link}",
   "@instructorJoinLink": { "placeholders": { "link": { "type": "String" } } },
-  "instructorLiveCounts": "{participants} participants · {responses} answers",
+  "instructorLiveCounts": "Students who answered: {participants} · Answers: {responses}",
   "@instructorLiveCounts": { "placeholders": { "participants": { "type": "int" }, "responses": { "type": "int" } } },
   "instructorCloseSession": "Close session",
   "instructorSessionClosed": "Session closed",
@@ -31,6 +31,7 @@
   "@studentQuestionProgress": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
   "studentSubmit": "Submit",
   "studentAllDone": "Thank you! Your answers were submitted.",
+  "studentConnectionSlow": "The connection is slow. Check the internet and press again; your earlier answers are saved.",
   "studentNoQuestions": "This session has no questions yet.",
 
   "instructorReviewQuestions": "Review questions",

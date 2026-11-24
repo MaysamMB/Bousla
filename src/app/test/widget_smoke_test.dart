@@ -39,7 +39,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Create session'));
     await tester.pumpAndSettle();
-    expect(find.text('0 participants · 0 answers'), findsOneWidget);
+    expect(find.text('Students who answered: 0 · Answers: 0'), findsOneWidget);
 
     final code = tester
         .widgetList<SelectableText>(find.byType(SelectableText))
@@ -60,7 +60,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('1 participants · 1 answers'), findsOneWidget);
+    expect(find.text('Students who answered: 1 · Answers: 1'), findsOneWidget);
   });
 
   // Step markers (STEP n) show where this test stops if it ever hangs again.

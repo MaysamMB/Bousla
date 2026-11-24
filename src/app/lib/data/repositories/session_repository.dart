@@ -29,6 +29,14 @@ abstract interface class SessionRepository {
   /// question version.
   Future<void> submitResponse(String sessionId, Response response);
 
+  /// The question versions of [session] that this participant already
+  /// answered, so a student who reloads the page continues where they
+  /// stopped instead of starting again.
+  Future<Set<QuestionRef>> answeredQuestions(
+    Session session,
+    String participantId,
+  );
+
   /// Instructor only: live stream of all responses in a session.
   Stream<List<Response>> watchResponses(String sessionId);
 

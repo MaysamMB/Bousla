@@ -128,6 +128,23 @@ void main() {
       expect(error is DuplicateAnswerException, isTrue);
     });
 
+    test('answeredQuestions lists only this participant\'s answers', () async {
+      await repo.submitResponse(
+        session.id,
+        const Response(
+          participantId: 'p1',
+          questionId: 'db_pk_001',
+          questionVersion: 1,
+          selectedOptionId: 'a',
+          displayLanguage: Language.ar,
+        ),
+      );
+      expect(await repo.answeredQuestions(session, 'p1'), {
+        const QuestionRef('db_pk_001', 1),
+      });
+      expect(await repo.answeredQuestions(session, 'p2'), isEmpty);
+    });
+
     test('answers after closing are rejected', () async {
       await repo.closeSession(session.id);
       Object? error;
