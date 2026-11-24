@@ -4,13 +4,19 @@ import 'dart:convert';
 import 'package:bousla_engine/bousla_engine.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 
+import '../ai/model_retry.dart';
 import '../ai/question_generator.dart';
 
 /// [QuestionGenerator] on Gemini through Firebase AI Logic (Gemini Developer
 /// API, available on the Spark plan). No API key in the app: requests go
 /// through Firebase. The material is sent with the request and not stored.
 class GeminiQuestionGenerator implements QuestionGenerator {
-  GeminiQuestionGenerator({String? model}) : modelName = model ?? defaultModel;
+  GeminiQuestionGenerator({String? model, String? fallback})
+      : _models = [
+          model ?? defaultModel,
+          if ((fallback ?? fallbackModel).isNotEmpty) fallback ?? fallbackModel,
+        ],
+        _lastModel = model ?? defaultModel;
 
   /// Override at build time with --dart-define=GEMINI_MODEL=... if this model
   /// is not offered for the project (Firebase console → AI Logic).
@@ -19,10 +25,21 @@ class GeminiQuestionGenerator implements QuestionGenerator {
     defaultValue: 'gemini-3.5-flash-lite',
   );
 
+  /// Tried when [defaultModel] stays busy (temporary overload or quota).
+  /// --dart-define=GEMINI_FALLBACK_MODEL= (empty) turns it off.
+  static const fallbackModel = String.fromEnvironment(
+    'GEMINI_FALLBACK_MODEL',
+    defaultValue: 'gemini-2.5-flash',
+  );
+
   static const timeout = Duration(seconds: 120);
 
+  final List<String> _models;
+  String _lastModel;
+
+  /// The model that produced the last drafts (kept with them).
   @override
-  final String modelName;
+  String get modelName => _lastModel;
 
   @override
   Future<DraftParseResult> draftQuestions({
@@ -37,14 +54,6 @@ class GeminiQuestionGenerator implements QuestionGenerator {
       for (final c in concepts)
         if (c.status == ReviewStatus.approved) c,
     ];
-    final model = FirebaseAI.googleAI().generativeModel(
-      model: modelName,
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-        responseJsonSchema: questionDraftingJsonSchema(),
-        temperature: 0.4,
-      ),
-    );
     final instructions = buildQuestionDraftingInstructions(
       count: count,
       concepts: [
@@ -62,11 +71,46 @@ class GeminiQuestionGenerator implements QuestionGenerator {
         ),
     };
 
-    final GenerateContentResponse response;
+    final response = await callWithModelFallback(
+      models: _models,
+      isBusy: (e) =>
+          e is QuestionGenerationException &&
+          (e.problem == GenerationProblem.busy ||
+              e.problem == GenerationProblem.quota),
+      call: (name) async {
+        final r = await _generate(name, [
+          Content.multi([TextPart(instructions), materialPart]),
+        ]);
+        _lastModel = name;
+        return r;
+      },
+    );
+    final text = response.text;
+    if (text == null || text.trim().isEmpty) {
+      throw const QuestionGenerationException(GenerationProblem.emptyAnswer);
+    }
+    return parseQuestionDrafts(
+      text,
+      knownConceptIds: {for (final c in approved) c.id},
+      maxCount: count,
+    );
+  }
+
+  /// One request to one model; errors become [QuestionGenerationException].
+  Future<GenerateContentResponse> _generate(
+    String name,
+    List<Content> prompt,
+  ) async {
+    final model = FirebaseAI.googleAI().generativeModel(
+      model: name,
+      generationConfig: GenerationConfig(
+        responseMimeType: 'application/json',
+        responseJsonSchema: questionDraftingJsonSchema(),
+        temperature: 0.4,
+      ),
+    );
     try {
-      response = await model.generateContent([
-        Content.multi([TextPart(instructions), materialPart]),
-      ]).timeout(timeout);
+      return await model.generateContent(prompt).timeout(timeout);
     } on ServiceApiNotEnabled catch (e) {
       throw QuestionGenerationException(
         GenerationProblem.notEnabled,
@@ -83,19 +127,20 @@ class GeminiQuestionGenerator implements QuestionGenerator {
         'PERMISSION_DENIED|has not been used|is disabled|serviceusage',
         caseSensitive: false,
       ).hasMatch(e.message);
+      // Temporary overload, as seen live: "Server Error [500] ... This model
+      // is currently experiencing high demand".
+      final busy = RegExp(
+        r'high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED|\[50[03]\]',
+        caseSensitive: false,
+      ).hasMatch(e.message);
       throw QuestionGenerationException(
-        setup ? GenerationProblem.notEnabled : GenerationProblem.unknown,
+        setup
+            ? GenerationProblem.notEnabled
+            : busy
+                ? GenerationProblem.busy
+                : GenerationProblem.unknown,
         e.message,
       );
     }
-    final text = response.text;
-    if (text == null || text.trim().isEmpty) {
-      throw const QuestionGenerationException(GenerationProblem.emptyAnswer);
-    }
-    return parseQuestionDrafts(
-      text,
-      knownConceptIds: {for (final c in approved) c.id},
-      maxCount: count,
-    );
   }
 }
