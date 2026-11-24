@@ -177,7 +177,7 @@ class PastSessionScreen extends StatefulWidget {
 
 class _PastSessionScreenState extends State<PastSessionScreen> {
   late Session session = widget.session;
-  var _renamed = false;
+  var _changed = false;
 
   Future<void> _rename() async {
     final l = AppLocalizations.of(context);
@@ -197,7 +197,45 @@ class _PastSessionScreenState extends State<PastSessionScreen> {
       await ServicesScope.of(context).sessions.renameSession(session.id, title);
       setState(() {
         session = session.copyWith(title: title);
-        _renamed = true;
+        _changed = true;
+      });
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l.errorGeneric)));
+    }
+  }
+
+  /// An old session left open (e.g. after leaving the page) can be closed
+  /// here, so students can no longer answer it.
+  Future<void> _close() async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final sessions = ServicesScope.of(context).sessions;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.instructorCloseSession),
+        content: Text(l.instructorCloseConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l.reviewCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l.instructorCloseSession),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await sessions.closeSession(session.id);
+      setState(() {
+        session = session.copyWith(
+          status: SessionStatus.closed,
+          closedAt: DateTime.now(),
+        );
+        _changed = true;
       });
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l.errorGeneric)));
@@ -213,7 +251,7 @@ class _PastSessionScreenState extends State<PastSessionScreen> {
     return PopScope<bool>(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Navigator.of(context).pop(_renamed);
+        if (!didPop) Navigator.of(context).pop(_changed);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -265,6 +303,14 @@ class _PastSessionScreenState extends State<PastSessionScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
+                if (session.status == SessionStatus.open) ...[
+                  OutlinedButton.icon(
+                    onPressed: _close,
+                    icon: const Icon(Icons.lock_outline),
+                    label: Text(l.instructorCloseSession),
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 LiveInsightsPanel(session: session),
               ],
             ),
