@@ -277,7 +277,8 @@ void main() {
         ],
       );
       expect(text, contains('- primary_key: Primary Key / المفتاح الأساسي'));
-      expect(text, contains('up to 5'));
+      expect(text, contains('Write 5 multiple-choice questions'));
+      expect(text, contains('Several questions may cover the same concept'));
       expect(text, contains('BOTH Arabic'));
       expect(text, contains('reviews, edits or rejects'));
       expect(text, contains('Vary the position of the correct answer'));

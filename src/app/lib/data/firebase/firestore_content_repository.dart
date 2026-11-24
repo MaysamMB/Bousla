@@ -284,6 +284,8 @@ class FirestoreContentRepository implements ContentRepository {
     required String modelName,
     required List<GeneratedQuestion> drafts,
     int droppedByChecks = 0,
+    int requested = 0,
+    Map<String, int> droppedReasons = const {},
   }) async {
     final approvedConcepts = {
       for (final c in await listConcepts(courseId))
@@ -342,6 +344,11 @@ class FirestoreContentRepository implements ContentRepository {
       'status': 'ready_for_review',
       'drafts_saved': saved.length,
       'drafts_dropped': droppedByChecks + skipped,
+      'drafts_requested': requested,
+      'dropped_reasons': {
+        ...droppedReasons,
+        if (skipped > 0) 'app_checks': skipped,
+      },
       'created_at': FieldValue.serverTimestamp(),
     });
     await batch.commit();

@@ -191,6 +191,8 @@ class MaterialRecord {
     required this.createdAt,
     this.draftsSaved = 0,
     this.draftsDropped = 0,
+    this.draftsRequested = 0,
+    this.droppedReasons = const {},
   });
 
   final String id;
@@ -203,6 +205,13 @@ class MaterialRecord {
   final DateTime? createdAt;
   final int draftsSaved;
   final int draftsDropped;
+
+  /// How many questions the instructor asked for (0 if unknown).
+  final int draftsRequested;
+
+  /// Dropped drafts per reason (a `DraftIssue` name, or `app_checks`):
+  /// evidence of AI draft quality.
+  final Map<String, int> droppedReasons;
 }
 
 /// What the instructor fills in when adding or editing a question.

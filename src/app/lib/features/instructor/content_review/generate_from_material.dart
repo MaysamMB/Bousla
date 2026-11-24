@@ -16,7 +16,19 @@ class GenerationOutcome {
     required this.dropped,
     required this.materialName,
     required this.modelName,
+    this.requested = 0,
+    this.returned = 0,
+    this.droppedReasons = const {},
   });
+
+  /// How many questions the instructor asked for.
+  final int requested;
+
+  /// How many the model wrote (before the checks).
+  final int returned;
+
+  /// Dropped drafts per reason (DraftIssue name, or `app_checks`).
+  final Map<String, int> droppedReasons;
 
   /// IDs of the drafts saved as pending review.
   final Set<String> savedIds;
@@ -119,13 +131,20 @@ class _GenerateFromMaterialDialogState
         concepts: _approved,
         count: _count,
       );
+      final reasons = <String, int>{};
+      for (final issue in result.dropped) {
+        reasons[issue.name] = (reasons[issue.name] ?? 0) + 1;
+      }
       final saved = await services.content.saveAiDrafts(
         widget.courseId,
         materialName: _file!.name,
         modelName: generator.modelName,
         drafts: result.accepted,
         droppedByChecks: result.dropped.length,
+        requested: _count,
+        droppedReasons: reasons,
       );
+      final appSkipped = result.accepted.length - saved.length;
       if (saved.isEmpty) {
         if (mounted) setState(() => _nothingUsable = true);
         return;
@@ -137,6 +156,13 @@ class _GenerateFromMaterialDialogState
               result.dropped.length + result.accepted.length - saved.length,
           materialName: _file!.name,
           modelName: generator.modelName,
+          requested: _count,
+          returned: result.accepted.length +
+              result.dropped.where((i) => i != DraftIssue.invalidJson).length,
+          droppedReasons: {
+            ...reasons,
+            if (appSkipped > 0) 'app_checks': appSkipped,
+          },
         ),
       );
     } on QuestionGenerationException catch (e) {
@@ -266,4 +292,35 @@ class _GenerateFromMaterialDialogState
       ],
     );
   }
+}
+
+/// Short reason text for a dropped draft (a [DraftIssue] name or
+/// `app_checks`).
+String droppedReasonText(AppLocalizations l, String reason) => switch (reason) {
+      'unknownConcept' => l.reviewAiIssueUnknownConcept,
+      'duplicate' => l.reviewAiIssueDuplicate,
+      'optionsInPrompt' => l.reviewAiIssueOptionsInPrompt,
+      'promptArabicMissing' ||
+      'promptEnglishMissing' ||
+      'promptArabicHasNoArabicLetters' ||
+      'optionTextMissing' =>
+        l.reviewAiIssueLanguage,
+      'tooFewOptions' ||
+      'tooManyOptions' ||
+      'correctOptionMissing' =>
+        l.reviewAiIssueOptions,
+      _ => l.reviewAiIssueOther,
+    };
+
+/// "Asked 5 · Gemini wrote 3 · 2 saved · 1 dropped (duplicate)".
+String generationSummary(AppLocalizations l, GenerationOutcome o) {
+  final summary = l.reviewAiSummary(o.requested, o.returned, o.saved);
+  if (o.droppedReasons.isEmpty) return summary;
+  final byText = <String, int>{};
+  for (final e in o.droppedReasons.entries) {
+    final t = droppedReasonText(l, e.key);
+    byText[t] = (byText[t] ?? 0) + e.value;
+  }
+  final reasons = [for (final e in byText.entries) '${e.key} ${e.value}'];
+  return '$summary\n${l.reviewAiDroppedReasons(reasons.join(' · '))}';
 }

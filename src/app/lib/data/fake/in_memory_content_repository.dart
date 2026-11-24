@@ -211,6 +211,8 @@ class InMemoryContentRepository implements ContentRepository {
     required String modelName,
     required List<GeneratedQuestion> drafts,
     int droppedByChecks = 0,
+    int requested = 0,
+    Map<String, int> droppedReasons = const {},
   }) async {
     _checkCourse(courseId);
     final approvedConcepts = {
@@ -250,6 +252,11 @@ class InMemoryContentRepository implements ContentRepository {
         createdAt: DateTime.now(),
         draftsSaved: saved.length,
         draftsDropped: droppedByChecks + skipped,
+        draftsRequested: requested,
+        droppedReasons: {
+          ...droppedReasons,
+          if (skipped > 0) 'app_checks': skipped,
+        },
       ),
     );
     return saved;

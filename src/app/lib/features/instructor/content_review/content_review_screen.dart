@@ -170,7 +170,11 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     _latest = outcome;
     _reload();
     messenger.showSnackBar(
-      SnackBar(content: Text(l.reviewAiDone(outcome.saved, outcome.dropped))),
+      SnackBar(
+        content: Text(generationSummary(l, outcome)),
+        duration: const Duration(seconds: 12),
+        showCloseIcon: true,
+      ),
     );
   }
 
