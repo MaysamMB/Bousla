@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_services.dart';
 import 'features/home/home_screen.dart';
+import 'features/instructor/auth/instructor_gate.dart';
 import 'features/instructor/content_review/content_review_screen.dart';
 import 'features/instructor/sessions/create_session_screen.dart';
 import 'features/student_web/join_session/join_screen.dart';
@@ -56,8 +57,10 @@ class BouslaApp extends StatelessWidget {
   static Route<void> _route(RouteSettings settings) {
     final segments = Uri.parse(settings.name ?? '/').pathSegments;
     final Widget page = switch (segments) {
-      ['instructor', 'review'] => const ContentReviewScreen(),
-      ['instructor', ...] => const CreateSessionScreen(),
+      ['instructor', 'review'] => const InstructorGate(
+          child: ContentReviewScreen(),
+        ),
+      ['instructor', ...] => const InstructorGate(child: CreateSessionScreen()),
       ['join'] => const JoinScreen(),
       ['join', final code, ...] => JoinScreen(initialCode: code),
       _ => const HomeScreen(),

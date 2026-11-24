@@ -118,7 +118,7 @@ class InMemoryContentRepository implements ContentRepository {
       throw ArgumentError.value(draftId, 'draft.id', 'Unknown question');
     }
     final oldKey = _keyFor(existing.id, existing.version);
-    final changed = !_sameContent(existing, oldKey, draft);
+    final changed = !sameQuestionContent(existing, oldKey, draft);
     final newVersion = changed && existing.status == ReviewStatus.approved
         ? existing.version + 1
         : existing.version;
@@ -260,23 +260,4 @@ class InMemoryContentRepository implements ContentRepository {
     sourceLocation: sourceLocation,
     hiddenOptionLanguages: Set.unmodifiable(hiddenOptionLanguages),
   );
-
-  static bool _sameContent(QuestionView q, String? key, QuestionDraft d) {
-    bool sameText(LocalizedText a, LocalizedText b) =>
-        a.ar.trim() == b.ar.trim() && a.en.trim() == b.en.trim();
-    if (key != d.correctOptionId) return false;
-    if (!sameText(q.prompt, d.prompt)) return false;
-    if (q.conceptIds.length != d.conceptIds.length ||
-        !q.conceptIds.toSet().containsAll(d.conceptIds)) {
-      return false;
-    }
-    if (q.options.length != d.options.length) return false;
-    for (var i = 0; i < q.options.length; i++) {
-      if (q.options[i].id != d.options[i].id ||
-          !sameText(q.options[i].text, d.options[i].text)) {
-        return false;
-      }
-    }
-    return true;
-  }
 }

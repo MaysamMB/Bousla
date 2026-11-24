@@ -11,3 +11,8 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 src/app/lib/l10n/app_localizations*.dart
+
+# Firebase tools (firebase/)
+node_modules/
+.firebase/
+*-debug.log

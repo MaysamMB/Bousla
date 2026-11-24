@@ -10,9 +10,19 @@ One Flutter project for both roles. See `docs/architecture.md`.
 | `/join/<CODE>` | student | opened from a link or QR code |
 | `/instructor/review` | instructor | review AI drafts: approve, edit, reject (one, selected or all waiting), add own questions |
 
-The app currently runs on **in-memory repositories** (`lib/data/fake/`), so
-everyone can build screens before Firebase is connected. Swap them for the
-Firestore implementations in `lib/main.dart` only.
+The app runs on **Firebase** when built with project settings, and on
+**in-memory repositories** (`lib/data/fake/`, offline demo mode) otherwise:
+
+```bash
+flutter run -d chrome                                                  # in memory
+flutter run -d chrome --dart-define-from-file=firebase.env.emulator.json  # local emulators
+flutter run -d chrome --dart-define-from-file=firebase.env.json           # real project
+```
+
+`firebase.env.json` is git-ignored; copy `firebase.env.example.json`. Setup,
+emulators, seeding and deploy: `../../firebase/README.md`. Instructor routes
+are behind email/password sign-in (`InstructorGate`); students join
+anonymously.
 
 ## First-time setup (once, on the first machine)
 

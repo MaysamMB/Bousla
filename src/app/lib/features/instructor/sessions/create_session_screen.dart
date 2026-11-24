@@ -22,10 +22,8 @@ class CreateSessionScreen extends StatefulWidget {
 }
 
 class _CreateSessionScreenState extends State<CreateSessionScreen> {
-  // Replaced by the signed-in instructor's UID once auth exists.
-  static const _devInstructorId = 'dev-instructor';
-
-  Future<(Course, List<QuestionView>)>? _content;
+  /// Null when the signed-in instructor has no course yet.
+  Future<(Course, List<QuestionView>)?>? _content;
   Session? _session;
 
   @override
@@ -34,16 +32,18 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     _content ??= _loadContent();
   }
 
-  Future<(Course, List<QuestionView>)> _loadContent() async {
+  Future<(Course, List<QuestionView>)?> _loadContent() async {
     final repo = ServicesScope.of(context).content;
-    final course = (await repo.listCourses()).first;
+    final course = (await repo.listCourses()).firstOrNull;
+    if (course == null) return null;
     return (course, await repo.listQuestions(course.id));
   }
 
   Future<void> _create(Course course, List<QuestionView> questions) async {
-    final session = await ServicesScope.of(context).sessions.createSession(
+    final services = ServicesScope.of(context);
+    final session = await services.sessions.createSession(
       courseId: course.id,
-      ownerId: _devInstructorId,
+      ownerId: services.auth.instructorId!,
       questions: [for (final q in questions) QuestionRef(q.id, q.version)],
     );
     if (!mounted) return;
@@ -65,15 +65,32 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.instructorCreateSessionTitle),
-        actions: const [LanguageSwitcher()],
+        actions: [
+          if (ServicesScope.of(context).auth.requiresSignIn)
+            IconButton(
+              tooltip: l.authSignOut,
+              icon: const Icon(Icons.logout),
+              onPressed: () => ServicesScope.of(context).auth.signOut(),
+            ),
+          const LanguageSwitcher(),
+        ],
       ),
-      body: FutureBuilder<(Course, List<QuestionView>)>(
+      body: FutureBuilder<(Course, List<QuestionView>)?>(
         future: _content,
         builder: (context, snapshot) {
           if (snapshot.hasError) return Center(child: Text(l.errorGeneric));
-          if (!snapshot.hasData)
+          if (snapshot.connectionState != ConnectionState.done)
             return const Center(child: CircularProgressIndicator());
-          final (course, questions) = snapshot.data!;
+          final data = snapshot.data;
+          if (data == null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(l.instructorNoCourse, textAlign: TextAlign.center),
+              ),
+            );
+          }
+          final (course, questions) = data;
           final session = _session;
           return ListView(
             padding: const EdgeInsets.all(24),

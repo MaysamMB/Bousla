@@ -1,0 +1,166 @@
+rules_version = '2';
+
+// Bousla Firestore security rules. See docs/architecture.md §6.
+//
+// Roles:
+// - Instructor: signed in with email/password (not anonymous). Owns the
+//   courses and sessions whose owner_id is their UID.
+// - Student: signed in anonymously. The anonymous UID identifies a
+//   participant within a session only (architecture §10).
+//
+// Hiding things in the UI is not authorization: these rules are the access
+// control, and firebase/test/rules.test.mjs checks them on the emulator.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isInstructor() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function courseDoc(courseId) {
+      return get(/databases/$(database)/documents/courses/$(courseId));
+    }
+
+    function ownsCourse(courseId) {
+      return isInstructor()
+        && exists(/databases/$(database)/documents/courses/$(courseId))
+        && courseDoc(courseId).data.owner_id == request.auth.uid;
+    }
+
+    function sessionDoc(sessionId) {
+      return get(/databases/$(database)/documents/sessions/$(sessionId));
+    }
+
+    function ownsSession(sessionId) {
+      return isInstructor()
+        && sessionDoc(sessionId).data.owner_id == request.auth.uid;
+    }
+
+    function approved() {
+      return resource.data.provenance.status == 'approved';
+    }
+
+    // ---------------------------------------------------------------- courses
+    match /courses/{courseId} {
+      // Course names are not sensitive; students need them in a session.
+      allow get: if signedIn();
+      allow list: if isInstructor()
+        && resource.data.owner_id == request.auth.uid;
+      allow create: if isInstructor()
+        && request.resource.data.owner_id == request.auth.uid;
+      allow update: if ownsCourse(courseId)
+        && request.resource.data.owner_id == request.auth.uid;
+      allow delete: if ownsCourse(courseId);
+
+      // Concepts, questions (one document per version) and resources.
+      // Students may read approved items only, one at a time (no listing).
+      match /concepts/{itemId} {
+        allow get: if ownsCourse(courseId) || (signedIn() && approved());
+        allow list, write: if ownsCourse(courseId);
+      }
+      match /questions/{itemId} {
+        allow get: if ownsCourse(courseId) || (signedIn() && approved());
+        allow list, write: if ownsCourse(courseId);
+      }
+      match /resources/{itemId} {
+        allow get: if ownsCourse(courseId) || (signedIn() && approved());
+        allow list, write: if ownsCourse(courseId);
+      }
+
+      // Answer keys: course owner only. Never readable by students.
+      match /answer_keys/{keyId} {
+        allow read, write: if ownsCourse(courseId);
+      }
+
+      match /materials/{materialId} {
+        allow read, write: if ownsCourse(courseId);
+        match /sections/{sectionId} {
+          allow read, write: if ownsCourse(courseId);
+        }
+      }
+    }
+
+    // --------------------------------------------------------------- sessions
+    // The document ID is the join code. Anyone signed in who knows the code
+    // can read the session; nobody but the owner can list sessions, so codes
+    // cannot be enumerated.
+    match /sessions/{sessionId} {
+      allow get: if signedIn();
+      allow list: if isInstructor()
+        && resource.data.owner_id == request.auth.uid;
+      allow create: if isInstructor()
+        && request.resource.data.owner_id == request.auth.uid
+        && ownsCourse(request.resource.data.course_id)
+        && request.resource.data.status == 'open'
+        && request.resource.data.feedback_released == false;
+      // The owner can only close the session and release feedback.
+      allow update: if ownsSession(sessionId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'feedback_released', 'closed_at'])
+        && request.resource.data.status in ['open', 'closed'];
+      allow delete: if false;
+
+      match /participants/{uid} {
+        allow create: if signedIn() && request.auth.uid == uid
+          && sessionDoc(sessionId).data.status == 'open';
+        allow get: if signedIn() && request.auth.uid == uid;
+        allow read: if ownsSession(sessionId);
+        allow update, delete: if false;
+      }
+
+      // One document per participant per question version:
+      // {participantUid}_{questionId}_v{version}. Written once, only by that
+      // participant, only while the session is open, only for a question
+      // version that belongs to the session. Never updated or deleted, so a
+      // second answer is refused.
+      match /responses/{responseId} {
+        allow create: if signedIn()
+          && request.resource.data.participant_id == request.auth.uid
+          && responseId == request.auth.uid + '_'
+               + request.resource.data.question_id + '_v'
+               + string(request.resource.data.question_version)
+          && sessionDoc(sessionId).data.status == 'open'
+          && (request.resource.data.question_id + '_v'
+               + string(request.resource.data.question_version))
+             in sessionDoc(sessionId).data.question_keys
+          && request.resource.data.display_language in ['ar', 'en']
+          && request.resource.data.selected_option_id is string
+          && request.resource.data.keys().hasOnly([
+               'participant_id', 'question_id', 'question_version',
+               'selected_option_id', 'display_language', 'free_text',
+               'submitted_at'])
+          && request.resource.data.submitted_at == request.time;
+        // A student can check whether their own answer exists (decided by
+        // the document ID, so it also works for a missing document); the
+        // owner reads all.
+        allow get: if signedIn()
+          && responseId.matches('^' + request.auth.uid + '_.*');
+        allow read: if ownsSession(sessionId);
+        allow update, delete: if false;
+      }
+
+      // Engine output, written by the instructor app (Option A).
+      match /aggregates/{docId} {
+        allow read, write: if ownsSession(sessionId);
+      }
+
+      // Personal feedback: that student only, and only once released.
+      match /feedback/{uid} {
+        allow read: if ownsSession(sessionId)
+          || (signedIn() && request.auth.uid == uid
+              && sessionDoc(sessionId).data.feedback_released == true);
+        allow write: if ownsSession(sessionId);
+      }
+    }
+
+    // Persistent profiles (staged, after account linking).
+    match /profiles/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+  }
+}

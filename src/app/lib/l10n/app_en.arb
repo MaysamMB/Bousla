@@ -108,5 +108,14 @@
   "reviewHiddenOptionsHint": "Answers are still required in both languages. A student using a hidden language sees the answers in the other one.",
   "reviewProblemAllOptionLanguagesHidden": "Students must see the answers in at least one language.",
 
+  "authTitle": "Instructor sign-in",
+  "authEmail": "Email",
+  "authPassword": "Password",
+  "authSignIn": "Sign in",
+  "authRegister": "Create account",
+  "authSignOut": "Sign out",
+  "authFailed": "Sign-in failed. Check the email and password (at least 6 characters).",
+  "instructorNoCourse": "No course is linked to this account yet. Load the sample course with firebase/tools/seed.mjs (see firebase/README.md).",
+
   "errorGeneric": "Something went wrong. Please try again."
 }
