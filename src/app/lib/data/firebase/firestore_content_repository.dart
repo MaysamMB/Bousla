@@ -166,6 +166,7 @@ class FirestoreContentRepository implements ContentRepository {
       edited: existing.edited ||
           (changed && existing.source == ContentSource.aiDraft),
       sourceLocation: existing.sourceLocation,
+      sourceMaterialId: existing.sourceMaterialId,
       rejectionReason:
           newStatus == ReviewStatus.rejected ? existing.rejectionReason : null,
     );
@@ -311,6 +312,7 @@ class FirestoreContentRepository implements ContentRepository {
         edited: false,
         sourceLocation: g.sourceLocation,
         rejectionReason: null,
+        sourceMaterialId: materialId,
       );
       batch.set(
         questions.doc(questionDocId(id, 1)),
@@ -344,6 +346,19 @@ class FirestoreContentRepository implements ContentRepository {
     });
     await batch.commit();
     return saved;
+  }
+
+  @override
+  Future<List<MaterialRecord>> listMaterials(String courseId) async {
+    final snap = await _items(courseId, 'materials').get();
+    final list = [for (final d in snap.docs) materialFromJson(d.id, d.data())];
+    // Newest first; a record still waiting for its server time is newest.
+    list.sort((a, b) {
+      final at = a.createdAt, bt = b.createdAt;
+      if (at == null || bt == null) return at == null ? -1 : 1;
+      return bt.compareTo(at);
+    });
+    return list;
   }
 
   @override

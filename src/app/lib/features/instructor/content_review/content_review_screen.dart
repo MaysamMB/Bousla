@@ -42,9 +42,13 @@ class _ReviewData {
     required this.concepts,
     required this.questions,
     required this.keys,
+    this.materials = const [],
   });
 
   final Course course;
+
+  /// Files AI drafts were suggested from, newest first.
+  final List<MaterialRecord> materials;
   final List<Concept> concepts;
 
   /// Latest version of every question, any status.
@@ -67,10 +71,9 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
   Future<_ReviewData>? _data;
   final _selected = <String>{};
 
-  /// The last AI suggestions made on this screen, shown first in "waiting"
-  /// until the screen is closed.
+  /// The last AI suggestions made on this screen; their group is
+  /// highlighted as new.
   GenerationOutcome? _latest;
-  DateTime? _latestAt;
 
   @override
   void didChangeDependencies() {
@@ -84,11 +87,13 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     final concepts = await repo.listConcepts(course.id);
     final questions = await repo.listQuestions(course.id, approvedOnly: false);
     final keys = await repo.answerKeys(course.id);
+    final materials = await repo.listMaterials(course.id);
     return _ReviewData(
       course: course,
       concepts: concepts,
       questions: questions,
       keys: keys,
+      materials: materials,
     );
   }
 
@@ -163,34 +168,47 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     );
     if (outcome == null || !mounted) return;
     _latest = outcome;
-    _latestAt = DateTime.now();
     _reload();
     messenger.showSnackBar(
       SnackBar(content: Text(l.reviewAiDone(outcome.saved, outcome.dropped))),
     );
   }
 
-  /// Splits "waiting" into the latest AI suggestions and earlier drafts.
-  _NewSection? _newSection(BuildContext context, List<QuestionView> pending) {
-    final latest = _latest;
-    if (latest == null) return null;
-    final ids = {
-      for (final q in pending)
-        if (latest.savedIds.contains(q.id)) q.id,
-    };
-    if (ids.isEmpty) return null;
+  /// Groups "waiting" by the file each AI draft was suggested from, newest
+  /// file first, then the other drafts. Null when there are no AI files.
+  _Grouping? _pendingGroups(
+    BuildContext context,
+    _ReviewData data,
+    List<QuestionView> pending,
+  ) {
     final l = AppLocalizations.of(context);
-    final time = TimeOfDay.fromDateTime(_latestAt!).format(context);
-    return _NewSection(
-      ids: ids,
-      title: l.reviewAiNewSection(ids.length),
-      subtitle: l.reviewAiNewSectionFrom(
-        latest.materialName,
-        latest.modelName,
-        time,
-      ),
-      othersTitle: l.reviewAiEarlierDrafts,
-    );
+    final ml = MaterialLocalizations.of(context);
+    final groups = <_QuestionGroup>[];
+    for (final m in data.materials) {
+      final ids = {
+        for (final q in pending)
+          if (q.sourceMaterialId == m.id) q.id,
+      };
+      if (ids.isEmpty) continue;
+      final isNew = _latest?.savedIds.any(ids.contains) ?? false;
+      final at = m.createdAt;
+      final when = at == null
+          ? ''
+          : '${ml.formatShortDate(at)} '
+                '${TimeOfDay.fromDateTime(at).format(context)}';
+      groups.add(
+        _QuestionGroup(
+          ids: ids,
+          title: isNew
+              ? l.reviewAiNewSection(ids.length)
+              : l.reviewAiGroupTitle(ids.length),
+          subtitle: l.reviewAiNewSectionFrom(m.fileName, m.modelName, when),
+          highlighted: isNew,
+        ),
+      );
+    }
+    if (groups.isEmpty) return null;
+    return _Grouping(groups: groups, othersTitle: l.reviewAiOtherDrafts);
   }
 
   Future<void> _openEditor(_ReviewData data, [QuestionView? question]) async {
@@ -300,7 +318,7 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                         data: data,
                         onHideChanged: hide,
                         questions: pending,
-                        newSection: _newSection(context, pending),
+                        grouping: _pendingGroups(context, data, pending),
                         header: pending.isEmpty
                             ? null
                             : Align(
@@ -455,18 +473,29 @@ class _StatsBanner extends StatelessWidget {
   }
 }
 
-/// The latest AI suggestions, listed first under their own heading.
-class _NewSection {
-  const _NewSection({
+/// Questions shown together under one heading.
+class _QuestionGroup {
+  const _QuestionGroup({
     required this.ids,
     required this.title,
     required this.subtitle,
-    required this.othersTitle,
+    this.highlighted = false,
   });
 
   final Set<String> ids;
   final String title;
   final String subtitle;
+
+  /// The group just suggested on this screen.
+  final bool highlighted;
+}
+
+class _Grouping {
+  const _Grouping({required this.groups, required this.othersTitle});
+
+  final List<_QuestionGroup> groups;
+
+  /// Heading for the questions in no group.
   final String othersTitle;
 }
 
@@ -523,13 +552,13 @@ class _QuestionList extends StatelessWidget {
     required this.actions,
     required this.onHideChanged,
     this.header,
-    this.newSection,
+    this.grouping,
     this.isSelected,
     this.onSelected,
   });
 
-  /// When set, these questions come first under their own heading.
-  final _NewSection? newSection;
+  /// When set, grouped questions come first, each group under its heading.
+  final _Grouping? grouping;
 
   final void Function(QuestionView, Language, bool) onHideChanged;
   final _ReviewData data;
@@ -545,15 +574,13 @@ class _QuestionList extends StatelessWidget {
     if (questions.isEmpty) return Center(child: Text(l.reviewEmpty));
     final onSelected = this.onSelected;
     final header = this.header;
-    final section = newSection;
-    final fresh = [
-      if (section != null)
-        for (final q in questions)
-          if (section.ids.contains(q.id)) q,
-    ];
+    final grouping = this.grouping;
+    final grouped = {
+      for (final g in grouping?.groups ?? const <_QuestionGroup>[]) ...g.ids,
+    };
     final rest = [
       for (final q in questions)
-        if (!fresh.contains(q)) q,
+        if (!grouped.contains(q.id)) q,
     ];
     Widget card(QuestionView q) => _QuestionCard(
           question: q,
@@ -571,14 +598,17 @@ class _QuestionList extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
         if (header != null) header,
-        if (section != null && fresh.isNotEmpty) ...[
-          _SectionHeading(
-            title: section.title,
-            subtitle: section.subtitle,
-            highlighted: true,
-          ),
-          for (final q in fresh) card(q),
-          if (rest.isNotEmpty) _SectionHeading(title: section.othersTitle),
+        if (grouping != null) ...[
+          for (final g in grouping.groups) ...[
+            _SectionHeading(
+              title: g.title,
+              subtitle: g.subtitle,
+              highlighted: g.highlighted,
+            ),
+            for (final q in questions)
+              if (g.ids.contains(q.id)) card(q),
+          ],
+          if (rest.isNotEmpty) _SectionHeading(title: grouping.othersTitle),
         ],
         for (final q in rest) card(q),
       ],
