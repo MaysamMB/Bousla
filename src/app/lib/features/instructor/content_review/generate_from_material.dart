@@ -151,6 +151,7 @@ class _GenerateFromMaterialDialogState
       switch (p) {
         GenerationProblem.notEnabled => l.reviewAiErrorNotEnabled,
         GenerationProblem.quota => l.reviewAiErrorQuota,
+        GenerationProblem.busy => l.reviewAiErrorBusy,
         GenerationProblem.fileTooLarge => l.reviewAiErrorTooLarge,
         GenerationProblem.unsupportedFile => l.reviewAiErrorUnsupported,
         GenerationProblem.emptyAnswer => l.reviewAiErrorEmpty,

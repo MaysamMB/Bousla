@@ -35,6 +35,9 @@ enum GenerationProblem {
 
   /// The free quota is used up for now.
   quota,
+
+  /// The model is temporarily overloaded on Google's side.
+  busy,
   fileTooLarge,
   unsupportedFile,
 
