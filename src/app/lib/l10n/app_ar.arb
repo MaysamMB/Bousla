@@ -224,5 +224,7 @@
   "instructorTitleArabic": "العنوان بالعربية",
   "instructorTitleEnglish": "العنوان بالإنجليزية",
   "instructorRenameSave": "حفظ",
-  "instructorCloseConfirm": "لن يتمكن الطلاب من الإجابة في هذه الجلسة بعد الآن. تبقى إجاباتها ونتائجها محفوظة."
+  "instructorCloseConfirm": "لن يتمكن الطلاب من الإجابة في هذه الجلسة بعد الآن. تبقى إجاباتها ونتائجها محفوظة.",
+  "instructorOpenSessionFound": "لديك جلسة ما زالت مفتوحة",
+  "instructorContinueSession": "متابعة هذه الجلسة"
 }
