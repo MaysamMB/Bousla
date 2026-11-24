@@ -81,7 +81,11 @@ class GeminiQuestionGenerator implements QuestionGenerator {
       isBusy: (e) =>
           e is QuestionGenerationException &&
           (e.problem == GenerationProblem.busy ||
-              e.problem == GenerationProblem.quota),
+              e.problem == GenerationProblem.quota ||
+              e.problem == GenerationProblem.dailyQuota),
+      retryable: (e) =>
+          e is QuestionGenerationException &&
+          e.problem != GenerationProblem.dailyQuota,
       retryAfter: (e) => e is QuestionGenerationException
           ? retryDelayFrom(e.detail)
           : null,
@@ -141,7 +145,13 @@ class GeminiQuestionGenerator implements QuestionGenerator {
         e.message,
       );
     } on QuotaExceeded catch (e) {
-      throw QuestionGenerationException(GenerationProblem.quota, e.message);
+      // Seen live: "limit: 20 ... requests per day ... retry in 17h9m28s".
+      throw QuestionGenerationException(
+        RegExp('per day|PerDay', caseSensitive: false).hasMatch(e.message)
+            ? GenerationProblem.dailyQuota
+            : GenerationProblem.quota,
+        e.message,
+      );
     } on TimeoutException {
       throw const QuestionGenerationException(GenerationProblem.network);
     } on FirebaseAIException catch (e) {

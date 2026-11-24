@@ -160,6 +160,7 @@
   "reviewAiIssueOptions": "problem with the options",
   "reviewAiIssueOther": "other",
   "reviewAiTechnicalDetails": "Technical details",
+  "reviewAiErrorDailyQuota": "Today's free Gemini limit is used up (the free tier allows only a few requests per day). It renews within 24 hours; existing drafts are not affected.",
   "reviewAiErrorBusy": "Gemini is busy right now (a temporary load on Google's side; the app already retried and tried a second model). Try again in a minute.",
   "reviewAiErrorTooLarge": "The file is too large (15 MB at most).",
   "reviewAiErrorUnsupported": "Only PDF, .txt and .md files are supported.",

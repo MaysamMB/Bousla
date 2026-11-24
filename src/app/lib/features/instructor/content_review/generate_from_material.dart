@@ -189,6 +189,7 @@ class _GenerateFromMaterialDialogState
         GenerationProblem.notEnabled => l.reviewAiErrorNotEnabled,
         GenerationProblem.quota => l.reviewAiErrorQuota,
         GenerationProblem.busy => l.reviewAiErrorBusy,
+        GenerationProblem.dailyQuota => l.reviewAiErrorDailyQuota,
         GenerationProblem.fileTooLarge => l.reviewAiErrorTooLarge,
         GenerationProblem.unsupportedFile => l.reviewAiErrorUnsupported,
         GenerationProblem.emptyAnswer => l.reviewAiErrorEmpty,

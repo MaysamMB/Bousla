@@ -36,6 +36,10 @@ enum GenerationProblem {
   /// The free quota is used up for now.
   quota,
 
+  /// The free daily request limit of the model is used up (it renews
+  /// within 24 hours). Retrying the same model is pointless.
+  dailyQuota,
+
   /// The model is temporarily overloaded on Google's side.
   busy,
   fileTooLarge,
