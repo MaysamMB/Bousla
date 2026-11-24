@@ -40,14 +40,18 @@ case "$cmd" in
     check_env "$ENV_FILE"; ensure_npm
     run "$APP" flutter pub get
     run "$APP" flutter build web --no-web-resources-cdn --dart-define-from-file=firebase.env.json
+    echo "Reminder: the rules require approved instructors (Firestore -> instructors/{UID}). See firebase/README.md."
     run "$FB" npx firebase deploy --only hosting,firestore:rules
     echo "Done: https://bousla-educathon.web.app  (press Ctrl+Shift+R in the browser)" ;;
-  rules) ensure_npm; run "$FB" npx firebase deploy --only firestore:rules ;;
+  rules) echo "Reminder: the rules require approved instructors (Firestore -> instructors/{UID}). See firebase/README.md."; ensure_npm; run "$FB" npx firebase deploy --only firestore:rules ;;
   run) check_env "$ENV_FILE"; run "$APP" flutter run -d chrome --dart-define-from-file=firebase.env.json ;;
   demo) run "$APP" flutter run -d chrome ;;
   emulators) ensure_npm; run "$FB" npx firebase emulators:start --only auth,firestore --project demo-bousla ;;
   emulator-run) check_env "$EMU_FILE"; run "$APP" flutter run -d chrome --dart-define-from-file=firebase.env.emulator.json ;;
   seed) check_env "$ENV_FILE"; ensure_npm; run "$FB" node tools/seed.mjs --approve-concepts "$@" ;;
+  approve)
+    [ $# -ge 1 ] || fail "Usage: ./scripts/bousla.sh approve <EMAIL>  (emulators only; real project: Firebase console)"
+    ensure_npm; run "$FB" node tools/approve_instructor.mjs "$@" ;;
   simulate)
     [ $# -ge 1 ] || fail "Usage: ./scripts/bousla.sh simulate <JOIN CODE> [--students 6]"
     ensure_npm; run "$FB" node tools/simulate_students.mjs --code "$@" ;;
@@ -65,6 +69,7 @@ Bousla commands (macOS/Linux: ./scripts/bousla.sh <command>, Windows: .\bousla <
   rules         publish only the security rules
   emulators     local Firebase for testing (keep open)
   emulator-run  app in Chrome on the local emulators
+  approve EMAIL approve an instructor account (emulators only)
   simulate CODE simulated students answer session CODE (emulators only)
   test          flutter analyze + flutter test + rules tests
 HELP

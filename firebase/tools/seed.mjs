@@ -99,6 +99,17 @@ try {
 }
 console.log(`Signed in as ${email} on ${env.FIREBASE_PROJECT_ID}${env.USE_FIREBASE_EMULATOR ? ' (emulator)' : ''}`);
 
+// Only approved instructors can own a course (security rules). Say so
+// clearly instead of failing on the first write with "permission-denied".
+if (!(await getDoc(doc(db, 'instructors', user.uid))).exists()) {
+  console.error(`${email} is not an approved instructor yet (UID ${user.uid}).\n` +
+    (env.USE_FIREBASE_EMULATOR
+      ? `On the emulator: .\\bousla approve ${email}`
+      : 'Add it in the Firebase console: Firestore -> collection "instructors" -> ' +
+        `document ID ${user.uid} (see firebase/README.md, "Approved instructors").`));
+  process.exit(1);
+}
+
 const course = data('course.json');
 const concepts = data('concepts.json');
 const questions = data('questions.json');

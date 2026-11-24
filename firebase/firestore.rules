@@ -3,8 +3,10 @@ rules_version = '2';
 // Bousla Firestore security rules. See docs/architecture.md §6.
 //
 // Roles:
-// - Instructor: signed in with email/password (not anonymous). Owns the
-//   courses and sessions whose owner_id is their UID.
+// - Instructor: signed in with email/password (not anonymous) AND listed in
+//   instructors/{uid}. Owns the courses and sessions whose owner_id is their
+//   UID. The list is edited only in the Firebase console (no app can write
+//   it), so creating an account is not enough to become an instructor.
 // - Student: signed in anonymously. The anonymous UID identifies a
 //   participant within a session only (architecture §10).
 //
@@ -19,7 +21,8 @@ service cloud.firestore {
 
     function isInstructor() {
       return signedIn()
-        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && exists(/databases/$(database)/documents/instructors/$(request.auth.uid));
     }
 
     function courseDoc(courseId) {
@@ -43,6 +46,16 @@ service cloud.firestore {
 
     function approved() {
       return resource.data.provenance.status == 'approved';
+    }
+
+    // ------------------------------------------------------------ instructors
+    // Approved instructors, one document per UID. A signed-in user may check
+    // their own entry (the app shows "waiting for approval" otherwise).
+    // Nobody may list or write it from a client: entries are added in the
+    // Firebase console, where these rules do not apply.
+    match /instructors/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
     }
 
     // ---------------------------------------------------------------- courses

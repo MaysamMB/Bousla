@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../repositories/auth_service.dart';
@@ -5,9 +6,10 @@ import '../repositories/auth_service.dart';
 /// [AuthService] on Firebase Authentication: email/password for
 /// instructors, anonymous sign-in for students.
 class FirebaseAuthService implements AuthService {
-  FirebaseAuthService(this._auth);
+  FirebaseAuthService(this._auth, this._db);
 
   final FirebaseAuth _auth;
+  final FirebaseFirestore _db;
 
   static String? _instructorUid(User? user) =>
       user == null || user.isAnonymous ? null : user.uid;
@@ -47,6 +49,19 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<void> signOut() => _auth.signOut();
+
+  @override
+  Future<bool> isApprovedInstructor() async {
+    final uid = instructorId;
+    if (uid == null) return false;
+    // The rules let a user read only their own entry. Read from the server:
+    // a cached "missing" must not hide a fresh approval.
+    final doc = await _db
+        .collection('instructors')
+        .doc(uid)
+        .get(const GetOptions(source: Source.server));
+    return doc.exists;
+  }
 
   @override
   Future<String> ensureParticipant() async {

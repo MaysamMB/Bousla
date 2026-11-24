@@ -5,9 +5,13 @@ import '../../../data/repositories/auth_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 
-/// Shows [child] only to a signed-in instructor; otherwise an email and
-/// password form. In development (in-memory services) there is always an
-/// instructor, so [child] is shown directly.
+/// Shows [child] only to a signed-in, approved instructor; otherwise an
+/// email and password form, or a "waiting for approval" screen for an
+/// account not yet in the approved list. In development (in-memory
+/// services) there is always an instructor, so [child] is shown directly.
+///
+/// This screen only explains; the security rules are what refuse an
+/// unapproved account (firebase/firestore.rules, `isInstructor`).
 ///
 /// Students are never asked to sign in: they join anonymously.
 class InstructorGate extends StatelessWidget {
@@ -22,8 +26,95 @@ class InstructorGate extends StatelessWidget {
     return StreamBuilder<String?>(
       stream: auth.instructorChanges(),
       initialData: auth.instructorId,
-      builder: (context, snapshot) =>
-          snapshot.data == null ? const _SignInForm() : child,
+      builder: (context, snapshot) => switch (snapshot.data) {
+        null => const _SignInForm(),
+        // A new check for each account.
+        final uid => _ApprovalCheck(key: ValueKey(uid), uid: uid, child: child),
+      },
+    );
+  }
+}
+
+class _ApprovalCheck extends StatefulWidget {
+  const _ApprovalCheck({super.key, required this.uid, required this.child});
+
+  final String uid;
+  final Widget child;
+
+  @override
+  State<_ApprovalCheck> createState() => _ApprovalCheckState();
+}
+
+class _ApprovalCheckState extends State<_ApprovalCheck> {
+  Future<bool>? _approved;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _approved ??= ServicesScope.of(context).auth.isApprovedInstructor();
+  }
+
+  void _checkAgain() => setState(() {
+    _approved = ServicesScope.of(context).auth.isApprovedInstructor();
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _approved,
+      builder: (context, snapshot) {
+        if (snapshot.data == true) return widget.child;
+        final l = AppLocalizations.of(context);
+        final auth = ServicesScope.of(context).auth;
+        final waiting = snapshot.connectionState != ConnectionState.done;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l.authTitle),
+            actions: const [LanguageSwitcher()],
+          ),
+          body: Center(
+            child: waiting
+                ? const CircularProgressIndicator()
+                : ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: ListView(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.all(24),
+                      children: [
+                        if (snapshot.hasError)
+                          Text(l.authErrorNetwork)
+                        else ...[
+                          Text(
+                            l.authNotApprovedTitle,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(l.authNotApprovedBody),
+                          const SizedBox(height: 12),
+                          // The ID the admin adds in the Firebase console.
+                          SelectableText(
+                            widget.uid,
+                            textDirection: TextDirection.ltr,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        FilledButton(
+                          onPressed: _checkAgain,
+                          child: Text(l.authCheckAgain),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: auth.signOut,
+                          child: Text(l.authSignOut),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        );
+      },
     );
   }
 }

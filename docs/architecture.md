@@ -189,6 +189,7 @@ One document per participant per question:
 
 | Path | Written by | Read by |
 |---|---|---|
+| `instructors/{uid}` | **nobody from an app**: added in the Firebase console | that user only (to show "waiting for approval"). An "instructor" in every rule below is an email/password account listed here |
 | `courses/{courseId}` | course owner | owner; students in a session of this course (public fields) |
 | `courses/{courseId}/materials/{materialId}` + `sections/{sectionId}` | owner | owner |
 | `courses/{courseId}/concepts`, `questions`, `resources` | owner (drafts and approvals) | owner: all; students: **only `approved` items** |
