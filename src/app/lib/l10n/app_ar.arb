@@ -84,5 +84,12 @@
   "reviewProblemConceptMissing": "اختر المفهوم.",
   "reviewProblemUnknownConcept": "المفهوم غير معتمد بعد.",
 
+  "reviewHideArabicOptions": "إخفاء الإجابات بالعربي عن الطالب",
+  "reviewHideEnglishOptions": "إخفاء الإجابات بالإنجليزي عن الطالب",
+  "reviewHideArabicOptionsAll": "إخفاء الإجابات بالعربي في كل الأسئلة",
+  "reviewHideEnglishOptionsAll": "إخفاء الإجابات بالإنجليزي في كل الأسئلة",
+  "reviewHiddenOptionsHint": "الإجابات مطلوبة باللغتين دائماً. الطالب الذي يستخدم لغة مخفية يرى الإجابات باللغة الأخرى.",
+  "reviewProblemAllOptionLanguagesHidden": "يجب أن يرى الطالب الإجابات بلغة واحدة على الأقل.",
+
   "errorGeneric": "حدث خطأ. حاول مرة أخرى."
 }

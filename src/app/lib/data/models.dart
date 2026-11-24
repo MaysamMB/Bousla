@@ -60,6 +60,16 @@ enum RejectionReason {
   }
 }
 
+/// The other one of Arabic and English.
+Language otherLanguage(Language language) =>
+    language == Language.ar ? Language.en : Language.ar;
+
+Set<Language> _parseLanguages(Object? json) => {
+  if (json is List)
+    for (final value in json)
+      if (value == 'ar' || value == 'en') Language.parse(value as String),
+};
+
 /// A question with its bilingual text and review information. Holds no
 /// answer; keys are separate [AnswerKey]s that only the instructor can read.
 class QuestionView {
@@ -71,6 +81,7 @@ class QuestionView {
     this.edited = false,
     this.rejectionReason,
     this.sourceLocation,
+    this.hiddenOptionLanguages = const {},
   });
 
   /// Engine model (IDs, version, concept mapping, review status).
@@ -89,10 +100,36 @@ class QuestionView {
   /// Where in the instructor's material an AI draft came from, e.g. "page 4".
   final String? sourceLocation;
 
+  /// Languages in which the answer options are NOT shown to students
+  /// (`hidden_option_languages`). The text still exists in both languages;
+  /// a student using a hidden language sees the options in the other one,
+  /// e.g. technical terms kept in English for an Arabic interface. At most
+  /// one language can be hidden.
+  final Set<Language> hiddenOptionLanguages;
+
+  /// The language to show the options in for a student whose interface is
+  /// in [uiLanguage].
+  Language optionLanguageFor(Language uiLanguage) =>
+      hiddenOptionLanguages.contains(uiLanguage) &&
+          !hiddenOptionLanguages.contains(otherLanguage(uiLanguage))
+      ? otherLanguage(uiLanguage)
+      : uiLanguage;
+
   String get id => question.id;
   int get version => question.version;
   ReviewStatus get status => question.status;
   List<String> get conceptIds => question.conceptIds;
+
+  QuestionView withHiddenOptionLanguages(Set<Language> hidden) => QuestionView(
+    question: question,
+    prompt: prompt,
+    options: options,
+    source: source,
+    edited: edited,
+    rejectionReason: rejectionReason,
+    sourceLocation: sourceLocation,
+    hiddenOptionLanguages: Set.unmodifiable(hidden),
+  );
 
   QuestionView withStatus(ReviewStatus status, {RejectionReason? reason}) =>
       QuestionView(
@@ -109,6 +146,7 @@ class QuestionView {
         edited: edited,
         rejectionReason: status == ReviewStatus.rejected ? reason : null,
         sourceLocation: sourceLocation,
+        hiddenOptionLanguages: hiddenOptionLanguages,
       );
 
   factory QuestionView.fromJson(Map<String, dynamic> json) {
@@ -131,6 +169,7 @@ class QuestionView {
         provenance['rejection_reason'] as String?,
       ),
       sourceLocation: provenance['source_location'] as String?,
+      hiddenOptionLanguages: _parseLanguages(json['hidden_option_languages']),
     );
   }
 }
@@ -143,6 +182,7 @@ class QuestionDraft {
     required this.prompt,
     required this.options,
     required this.correctOptionId,
+    this.hiddenOptionLanguages = const {},
   });
 
   /// Null for a new question; the repository assigns the ID.
@@ -152,6 +192,10 @@ class QuestionDraft {
   final List<OptionView> options;
   final String? correctOptionId;
 
+  /// See [QuestionView.hiddenOptionLanguages]. Both languages must still
+  /// have text.
+  final Set<Language> hiddenOptionLanguages;
+
   factory QuestionDraft.fromQuestion(QuestionView q, String? correctOptionId) =>
       QuestionDraft(
         id: q.id,
@@ -159,6 +203,7 @@ class QuestionDraft {
         prompt: q.prompt,
         options: List.of(q.options),
         correctOptionId: correctOptionId,
+        hiddenOptionLanguages: Set.of(q.hiddenOptionLanguages),
       );
 }
 
@@ -184,6 +229,7 @@ enum DraftProblem {
   correctOptionMissing,
   conceptMissing,
   unknownConcept,
+  allOptionLanguagesHidden,
 }
 
 /// Points to one version of one question used in a session.

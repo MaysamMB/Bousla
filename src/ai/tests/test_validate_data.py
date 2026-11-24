@@ -186,6 +186,27 @@ class ValidateDataTests(unittest.TestCase):
         ds["questions.json"][0]["provenance"]["rejection_reason"] = "unclear"
         self.assertErrorContains(self.run_on(ds), "only allowed on rejected")
 
+    def test_hiding_one_option_language_passes(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["ar"]
+        self.assertEqual(self.run_on(ds).errors, [])
+
+    def test_cannot_hide_both_option_languages(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["ar", "en"]
+        self.assertErrorContains(self.run_on(ds), "cannot hide both")
+
+    def test_unknown_hidden_option_language(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["fr"]
+        self.assertErrorContains(self.run_on(ds), "hidden_option_languages")
+
+    def test_hidden_option_language_still_needs_text(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["hidden_option_languages"] = ["ar"]
+        ds["questions.json"][0]["options"][0]["text"]["ar"] = ""
+        self.assertTrue(self.run_on(ds).errors)
+
     def test_resource_unknown_concept(self):
         ds = minimal_dataset()
         ds["resources.json"][0]["concept_ids"] = ["nope"]

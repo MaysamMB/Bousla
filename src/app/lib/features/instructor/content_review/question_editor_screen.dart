@@ -7,6 +7,7 @@ import '../../../data/question_review.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import 'hide_language_toggle.dart';
 import 'review_texts.dart';
 
 /// Add a question by hand ([question] is null) or edit an existing one,
@@ -56,6 +57,10 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   String? _conceptId;
   late final List<String> _otherConcepts;
   String? _correct;
+
+  /// Languages whose answers students do not see; the text is still
+  /// required in both.
+  late Set<Language> _hidden;
   var _problems = <DraftProblem>[];
   var _busy = false;
 
@@ -77,6 +82,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     _conceptId = first != null && known.contains(first) ? first : null;
     _otherConcepts = q == null ? [] : q.conceptIds.skip(1).toList();
     _correct = widget.correctOptionId;
+    _hidden = Set.of(q?.hiddenOptionLanguages ?? const <Language>{});
   }
 
   @override
@@ -101,6 +107,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         ),
     ],
     correctOptionId: _correct,
+    hiddenOptionLanguages: _hidden,
   );
 
   void _addOption() => setState(
@@ -209,6 +216,22 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                     ),
                 ],
                 onChanged: (value) => setState(() => _conceptId = value),
+              ),
+              const SizedBox(height: 12),
+              HideLanguageToggles(
+                arabic: _hidden.contains(Language.ar),
+                english: _hidden.contains(Language.en),
+                onChanged: (language, hidden) => setState(
+                  () => _hidden = toggleHiddenLanguage(
+                    _hidden,
+                    language,
+                    hidden,
+                  ),
+                ),
+              ),
+              Text(
+                l.reviewHiddenOptionsHint,
+                style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
               for (var i = 0; i < _options.length; i++)

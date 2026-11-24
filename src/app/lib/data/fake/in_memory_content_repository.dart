@@ -106,6 +106,7 @@ class InMemoryContentRepository implements ContentRepository {
         edited: false,
         sourceLocation: null,
         rejectionReason: null,
+        hiddenOptionLanguages: draft.hiddenOptionLanguages,
       );
       _questions.add(created);
       _setKey(created.id, 1, draft.correctOptionId!);
@@ -135,6 +136,7 @@ class InMemoryContentRepository implements ContentRepository {
       rejectionReason: newStatus == ReviewStatus.rejected
           ? existing.rejectionReason
           : null,
+      hiddenOptionLanguages: draft.hiddenOptionLanguages,
     );
     final index = _questions.indexWhere(
       (q) => q.id == existing.id && q.version == existing.version,
@@ -144,8 +146,37 @@ class InMemoryContentRepository implements ContentRepository {
     } else {
       _questions.insert(index + 1, saved); // old version stays for sessions
     }
+    // A display setting, not content: applies to every version.
+    _applyHidden({saved.id}, saved.hiddenOptionLanguages);
     _setKey(saved.id, saved.version, draft.correctOptionId!);
     return saved;
+  }
+
+  @override
+  Future<void> setOptionLanguageHidden(
+    String courseId,
+    Iterable<String> questionIds,
+    Language language, {
+    required bool hidden,
+  }) async {
+    if (courseId != _course.id) return;
+    final ids = questionIds.toSet();
+    for (var i = 0; i < _questions.length; i++) {
+      final q = _questions[i];
+      if (ids.contains(q.id)) {
+        _questions[i] = q.withHiddenOptionLanguages(
+          toggleHiddenLanguage(q.hiddenOptionLanguages, language, hidden),
+        );
+      }
+    }
+  }
+
+  void _applyHidden(Set<String> ids, Set<Language> hidden) {
+    for (var i = 0; i < _questions.length; i++) {
+      if (ids.contains(_questions[i].id)) {
+        _questions[i] = _questions[i].withHiddenOptionLanguages(hidden);
+      }
+    }
   }
 
   @override
@@ -203,6 +234,7 @@ class InMemoryContentRepository implements ContentRepository {
     required bool edited,
     required String? sourceLocation,
     required RejectionReason? rejectionReason,
+    required Set<Language> hiddenOptionLanguages,
   }) => QuestionView(
     question: Question(
       id: id,
@@ -226,6 +258,7 @@ class InMemoryContentRepository implements ContentRepository {
     edited: edited,
     rejectionReason: rejectionReason,
     sourceLocation: sourceLocation,
+    hiddenOptionLanguages: Set.unmodifiable(hiddenOptionLanguages),
   );
 
   static bool _sameContent(QuestionView q, String? key, QuestionDraft d) {

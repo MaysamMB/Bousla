@@ -46,6 +46,18 @@ abstract interface class ContentRepository {
     ReviewStatus? status,
   });
 
+  /// Instructor only. Hides (or shows again) the answer options in
+  /// [language] for students, for one or many questions, all versions.
+  /// Hiding one language shows the other, so students always see one. Not a
+  /// content change: no new version, not marked edited. Unknown IDs are
+  /// ignored.
+  Future<void> setOptionLanguageHidden(
+    String courseId,
+    Iterable<String> questionIds,
+    Language language, {
+    required bool hidden,
+  });
+
   /// Instructor only. Approves, rejects or restores (back to pending) one or
   /// many questions, all versions. [reason] is kept only when rejecting.
   /// Unknown IDs are ignored.

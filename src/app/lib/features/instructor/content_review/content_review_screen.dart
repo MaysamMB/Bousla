@@ -7,6 +7,7 @@ import '../../../data/question_review.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import 'hide_language_toggle.dart';
 import 'question_editor_screen.dart';
 import 'review_texts.dart';
 
@@ -19,6 +20,8 @@ import 'review_texts.dart';
 /// - Rejected: edit or take back to review. Rejected questions are kept, not
 ///   deleted, so decisions can be undone and counted.
 /// - Add a question by hand.
+/// - Hide the answers in Arabic or in English from students, per question
+///   or for all questions at once (the text is still required in both).
 ///
 /// There is deliberately no "approve all" button: every AI draft is seen by
 /// the instructor before it is approved.
@@ -80,10 +83,33 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     );
   }
 
-  void _reload() => setState(() {
-    _selected.clear();
+  void _reload({bool keepSelection = false}) => setState(() {
+    if (!keepSelection) _selected.clear();
     _data = _load();
   });
+
+  Future<void> _setHidden(
+    String courseId,
+    List<String> ids,
+    Language language,
+    bool hidden,
+  ) async {
+    if (ids.isEmpty) return;
+    await ServicesScope.of(
+      context,
+    ).content.setOptionLanguageHidden(courseId, ids, language, hidden: hidden);
+    if (mounted) _reload(keepSelection: true);
+  }
+
+  /// True if hidden in every question, false if in none, null if mixed.
+  static bool? _hiddenInAll(List<QuestionView> questions, Language language) {
+    if (questions.isEmpty) return false;
+    final count = questions
+        .where((q) => q.hiddenOptionLanguages.contains(language))
+        .length;
+    if (count == 0) return false;
+    return count == questions.length ? true : null;
+  }
 
   Future<void> _setStatus(
     String courseId,
@@ -152,6 +178,8 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
             .where((q) => _selected.contains(q.id))
             .map((q) => q.id)
             .toList();
+        void hide(QuestionView q, Language language, bool hidden) =>
+            _setHidden(courseId, [q.id], language, hidden);
 
         return DefaultTabController(
           length: 3,
@@ -171,11 +199,40 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
             body: Column(
               children: [
                 _StatsBanner(stats: aiReviewStats(data.questions)),
+                // Applies to every question of the course, in all tabs.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      HideLanguageToggles(
+                        forAllQuestions: true,
+                        arabic: _hiddenInAll(data.questions, Language.ar),
+                        english: _hiddenInAll(data.questions, Language.en),
+                        onChanged: (language, hidden) => _setHidden(
+                          courseId,
+                          [for (final q in data.questions) q.id],
+                          language,
+                          hidden,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          l.reviewHiddenOptionsHint,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 16),
                 Expanded(
                   child: TabBarView(
                     children: [
                       _QuestionList(
                         data: data,
+                        onHideChanged: hide,
                         questions: pending,
                         header: pending.isEmpty
                             ? null
@@ -214,6 +271,7 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                       ),
                       _QuestionList(
                         data: data,
+                        onHideChanged: hide,
                         questions: approved,
                         actions: (q) => [
                           TextButton(
@@ -230,6 +288,7 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                       ),
                       _QuestionList(
                         data: data,
+                        onHideChanged: hide,
                         questions: rejected,
                         actions: (q) => [
                           OutlinedButton(
@@ -334,11 +393,13 @@ class _QuestionList extends StatelessWidget {
     required this.data,
     required this.questions,
     required this.actions,
+    required this.onHideChanged,
     this.header,
     this.isSelected,
     this.onSelected,
   });
 
+  final void Function(QuestionView, Language, bool) onHideChanged;
   final _ReviewData data;
   final List<QuestionView> questions;
   final List<Widget> Function(QuestionView) actions;
@@ -365,6 +426,8 @@ class _QuestionList extends StatelessWidget {
             onSelected: onSelected == null
                 ? null
                 : (value) => onSelected(q, value),
+            onHideChanged: (language, hidden) =>
+                onHideChanged(q, language, hidden),
             actions: actions(q),
           ),
       ],
@@ -378,10 +441,12 @@ class _QuestionCard extends StatelessWidget {
     required this.concepts,
     required this.correctOptionId,
     required this.actions,
+    required this.onHideChanged,
     this.selected,
     this.onSelected,
   });
 
+  final void Function(Language language, bool hidden) onHideChanged;
   final QuestionView question;
   final List<Concept> concepts;
   final String? correctOptionId;
@@ -414,6 +479,7 @@ class _QuestionCard extends StatelessWidget {
               children: [
                 if (onSelected != null)
                   Checkbox(
+                    key: ValueKey('select-${question.id}'),
                     value: selected ?? false,
                     onChanged: (value) => onSelected(value ?? false),
                   ),
@@ -444,7 +510,12 @@ class _QuestionCard extends StatelessWidget {
                           : null,
                     ),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(option.text.of(language))),
+                    // As students using this interface language see it.
+                    Expanded(
+                      child: Text(
+                        option.text.of(question.optionLanguageFor(language)),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -473,6 +544,11 @@ class _QuestionCard extends StatelessWidget {
                 style: theme.textTheme.bodySmall,
               ),
             ],
+            HideLanguageToggles(
+              arabic: question.hiddenOptionLanguages.contains(Language.ar),
+              english: question.hiddenOptionLanguages.contains(Language.en),
+              onChanged: onHideChanged,
+            ),
             const SizedBox(height: 8),
             Wrap(
               alignment: WrapAlignment.end,
