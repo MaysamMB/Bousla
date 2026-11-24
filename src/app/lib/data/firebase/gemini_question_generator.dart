@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:bousla_engine/bousla_engine.dart';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 
 import '../ai/model_retry.dart';
 import '../ai/question_generator.dart';
@@ -20,16 +21,20 @@ class GeminiQuestionGenerator implements QuestionGenerator {
 
   /// Override at build time with --dart-define=GEMINI_MODEL=... if this model
   /// is not offered for the project (Firebase console → AI Logic).
+  ///
+  /// gemini-3.8-flash: the model Google's own error message pointed to on
+  /// 24 Nov, when gemini-2.5-flash answered "no longer available to new
+  /// users" and gemini-3.5-flash-lite kept answering "high demand".
   static const defaultModel = String.fromEnvironment(
     'GEMINI_MODEL',
-    defaultValue: 'gemini-3.5-flash-lite',
+    defaultValue: 'gemini-3.8-flash',
   );
 
   /// Tried when [defaultModel] stays busy (temporary overload or quota).
   /// --dart-define=GEMINI_FALLBACK_MODEL= (empty) turns it off.
   static const fallbackModel = String.fromEnvironment(
     'GEMINI_FALLBACK_MODEL',
-    defaultValue: 'gemini-2.5-flash',
+    defaultValue: 'gemini-3.5-flash-lite',
   );
 
   static const timeout = Duration(seconds: 120);
@@ -96,8 +101,8 @@ class GeminiQuestionGenerator implements QuestionGenerator {
     );
   }
 
-  /// One request to one model; errors become [QuestionGenerationException].
-  Future<GenerateContentResponse> _generate(
+  /// One request to one model, logged to the browser console.
+  Future<GenerateContentResponse> _logged(
     String name,
     List<Content> prompt,
   ) async {
@@ -110,7 +115,23 @@ class GeminiQuestionGenerator implements QuestionGenerator {
       ),
     );
     try {
-      return await model.generateContent(prompt).timeout(timeout);
+      final response = await model.generateContent(prompt).timeout(timeout);
+      debugPrint('Bousla AI: $name answered');
+      return response;
+    } on Object catch (e) {
+      // Browser console (F12) only: which model failed and why, so a
+      // repeated "busy" can be diagnosed without showing raw errors.
+      debugPrint('Bousla AI: $name failed: $e');
+      rethrow;
+    }
+  }
+
+  Future<GenerateContentResponse> _generate(
+    String name,
+    List<Content> prompt,
+  ) async {
+    try {
+      return await _logged(name, prompt);
     } on ServiceApiNotEnabled catch (e) {
       throw QuestionGenerationException(
         GenerationProblem.notEnabled,

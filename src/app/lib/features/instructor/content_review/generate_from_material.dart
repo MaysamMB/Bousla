@@ -260,13 +260,25 @@ class _GenerateFromMaterialDialogState
                   problemText(l, problem),
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
-                if (_detail case final detail?)
-                  Text(
-                    detail.length > 300
-                        ? '${detail.substring(0, 300)}…'
-                        : detail,
-                    textDirection: TextDirection.ltr,
-                    style: theme.textTheme.bodySmall,
+                // Known problems have a clear message; the server's raw
+                // text is only offered, folded, for unknown ones.
+                if (_detail case final detail?
+                    when problem == GenerationProblem.unknown)
+                  ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    title: Text(
+                      l.reviewAiTechnicalDetails,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    children: [
+                      Text(
+                        detail.length > 300
+                            ? '${detail.substring(0, 300)}…'
+                            : detail,
+                        textDirection: TextDirection.ltr,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
                   ),
               ],
               if (_nothingUsable) ...[

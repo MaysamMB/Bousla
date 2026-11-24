@@ -134,6 +134,7 @@
   "reviewAiIssueLanguage": "لغة ناقصة أو خاطئة",
   "reviewAiIssueOptions": "مشكلة في الخيارات",
   "reviewAiIssueOther": "أخرى",
+  "reviewAiTechnicalDetails": "تفاصيل تقنية",
   "reviewAiErrorBusy": "Gemini مشغول حالياً (ضغط مؤقت من جهة Google؛ أعاد التطبيق المحاولة وجرّب نموذجاً ثانياً). حاول بعد دقيقة.",
   "reviewAiErrorTooLarge": "الملف كبير جداً (15 ميغابايت كحد أقصى).",
   "reviewAiErrorUnsupported": "الملفات المدعومة فقط: PDF و ‎.txt و ‎.md.",
