@@ -25,25 +25,31 @@ import 'model_json.dart';
 
 // ---------------------------------------------------------------- profiles
 
-/// One concept in a profile: its name and the engine's state. Counts are
-/// left out on purpose, so that students with the same states share one
-/// explanation; the screen shows the counts next to the explanation.
+/// One concept in a profile: its name, the engine's state and the counts
+/// behind it. Two students are merged only when all of these match, so
+/// different evidence is never given the same explanation.
 class ProfileConcept {
   const ProfileConcept({
     required this.id,
     required this.name,
     required this.state,
+    this.attempts = 0,
+    this.correct = 0,
   });
 
   final String id;
   final LocalizedText name;
   final MasteryState state;
+  final int attempts;
+  final int correct;
 
   Map<String, Object?> toJson() => {
         'concept_id': id,
         'name_ar': name.ar,
         'name_en': name.en,
         'state': state.name,
+        'attempts': attempts,
+        'correct': correct,
       };
 }
 
@@ -104,8 +110,9 @@ class ProfileRecommendation {
       };
 }
 
-/// What one student's explanation may be based on. Holds no name, no UID
-/// and no answers: only the engine's results and approved resources.
+/// What one student's explanation may be based on. Holds no name, no UID,
+/// no answers and no answer keys: only the engine's results (states and the
+/// attempt/correct counts behind them) and approved resources.
 class ExplanationProfile {
   const ExplanationProfile({
     this.id = '',
@@ -192,6 +199,8 @@ ExplanationProfile buildExplanationProfile({
           id: id,
           name: byId[id]!.name,
           state: masteries[id]!.state,
+          attempts: masteries[id]!.evidence.attempts,
+          correct: masteries[id]!.evidence.correct,
         ),
     ],
     hints: hints,
@@ -267,7 +276,7 @@ You help a university instructor give each student a short, kind explanation of 
 
 Each profile is the anonymous result of one or more students. For EVERY profile, write one explanation in Modern Standard Arabic (text_ar) and the same explanation in English (text_en). Rules:
 1. 2 to 4 short sentences, at most $maxExplanationLength characters in each language.
-2. Mention only the concepts and resources listed in that profile, by the names given. Do not mention other topics, IDs, numbers of answers or scores.
+2. Mention only the concepts and resources listed in that profile, by the names given. Do not mention other topics or IDs. Do not write numbers or scores: the screen already shows the counts next to your text.
 3. The states mean: insufficientEvidence = not enough evidence yet; possibleDifficulty = may need review; emerging = understanding still forming; demonstratedMastery = showed good understanding. A prerequisite hint is only a possibility: "reviewing X first may help", never a certainty.
 4. Be encouraging and careful. Never say the student has a gap, failed, is weak, does not understand, or anything definitive or judgmental. Use "may", "could help", "not enough evidence yet".
 5. Do not write any link, URL or website. You may name a resource by its title.
