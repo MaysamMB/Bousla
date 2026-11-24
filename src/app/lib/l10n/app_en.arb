@@ -176,4 +176,70 @@
   "reviewAiErrorNetwork": "No answer from Gemini in time. Check the connection and try again.",
 
   "errorGeneric": "Something went wrong. Please try again."
+
+,
+  "instructorInsightsTitle": "What the class understands",
+
+  "instructorInsightsEvidence": "{respondents} answered · {percent}% correct",
+  "@instructorInsightsEvidence": {
+    "placeholders": {
+      "respondents": {"type": "int"},
+      "percent": {"type": "int"}
+    }
+  },
+
+  "instructorInsightsHidden": "Fewer than {min} students answered: hidden to protect privacy",
+  "@instructorInsightsHidden": {
+    "placeholders": {
+      "min": {"type": "int"}
+    }
+  },
+
+  "instructorInsightsWaiting": "The summary appears once at least {min} students have answered",
+  "@instructorInsightsWaiting": {
+    "placeholders": {
+      "min": {"type": "int"}
+    }
+  },
+
+  "instructorInsightsStateDifficulty": "Possible difficulty",
+  "instructorInsightsStateEmerging": "Emerging",
+  "instructorInsightsStateMastery": "Demonstrated mastery",
+  "instructorInsightsStateInsufficient": "Not enough evidence",
+
+  "instructorInsightsStudents": "Students",
+  "instructorInsightsPrerequisiteTitle": "Prerequisites worth reviewing",
+
+  "instructorInsightsStruggling": "{struggling} students show possible difficulty in {concept}.",
+  "@instructorInsightsStruggling": {
+    "placeholders": {
+      "struggling": {"type": "int"},
+      "concept": {"type": "String"}
+    }
+  },
+
+  "instructorInsightsGap": "{gap} of these students also show possible difficulty in {prerequisite}.",
+  "@instructorInsightsGap": {
+    "placeholders": {
+      "gap": {"type": "int"},
+      "prerequisite": {"type": "String"}
+    }
+  },
+
+  "instructorInsightsPossibleCause": "Difficulty in {prerequisite} may contribute to difficulty in {concept}.",
+  "@instructorInsightsPossibleCause": {
+    "placeholders": {
+      "prerequisite": {"type": "String"},
+      "concept": {"type": "String"}
+    }
+  },
+
+  "instructorInsightsRecommendation": "Consider reviewing {prerequisite} with the class.",
+  "@instructorInsightsRecommendation": {
+    "placeholders": {
+      "prerequisite": {"type": "String"}
+    }
+  },
+
+  "instructorInsightsDisclaimer": "These are estimates based on session answers, not definitive diagnoses."
 }
