@@ -15,6 +15,14 @@ abstract interface class SessionRepository {
     required List<QuestionRef> questions,
   });
 
+  /// Instructor only: the most recently created session of [courseId] owned
+  /// by [ownerId] that is still open, or null. Lets the session screen come
+  /// back to a running session after a page reload instead of losing it.
+  Future<Session?> latestOpenSession({
+    required String ownerId,
+    required String courseId,
+  });
+
   /// Finds a session by its join code (case-insensitive). Null if none.
   Future<Session?> findByCode(String code);
 

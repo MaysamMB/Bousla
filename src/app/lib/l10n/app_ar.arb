@@ -211,5 +211,6 @@
   "studentFeedbackWaiting": "ستظهر ملاحظاتك الشخصية هنا عندما ينشرها المدرّس.",
   "studentMapOpen": "عرض خريطتي المعرفية",
   "studentMapOpenHint": "كيف تُبنى المفاهيم على بعضها، وبأيّها تبدأ المراجعة. يمكنك حفظها على هاتفك.",
-  "studentMapScreenTitle": "الخريطة المعرفية"
+  "studentMapScreenTitle": "الخريطة المعرفية",
+  "instructorStartAnother": "بدء جلسة جديدة"
 }

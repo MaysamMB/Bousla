@@ -277,6 +277,40 @@ void main() {
       );
     });
 
+    test('latestOpenSession: newest open session of the owner and course',
+        () async {
+      expect(
+        (await sessions.latestOpenSession(ownerId: _teacher, courseId: _course))
+            ?.id,
+        session.id,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      final second = await sessions.createSession(
+        courseId: _course,
+        ownerId: _teacher,
+        questions: const [QuestionRef('db_pk_001', 1)],
+      );
+      expect(
+        (await sessions.latestOpenSession(ownerId: _teacher, courseId: _course))
+            ?.id,
+        second.id,
+      );
+      await sessions.closeSession(second.id);
+      expect(
+        (await sessions.latestOpenSession(ownerId: _teacher, courseId: _course))
+            ?.id,
+        session.id,
+      );
+      expect(
+        await sessions.latestOpenSession(ownerId: 'other', courseId: _course),
+        isNull,
+      );
+      expect(
+        await sessions.latestOpenSession(ownerId: _teacher, courseId: 'x'),
+        isNull,
+      );
+    });
+
     Response answer(String participant,
             {String q = 'db_pk_001', Language lang = Language.ar}) =>
         Response(

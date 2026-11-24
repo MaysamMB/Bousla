@@ -151,6 +151,18 @@ describe('approved instructors', () => {
   });
 });
 
+describe('resuming an open session', () => {
+  test('the owner finds their open sessions of a course; others cannot', async () => {
+    const q = (db, owner) => query(collection(db, 'sessions'),
+      where('owner_id', '==', owner), where('course_id', '==', COURSE),
+      where('status', '==', 'open'));
+    const mine = await assertSucceeds(getDocs(q(instructor(), 'teacher')));
+    if (mine.docs.map((d) => d.id).join() !== CODE) throw new Error('expected ' + CODE);
+    await assertFails(getDocs(q(otherInstructor(), 'teacher')));
+    await assertFails(getDocs(q(student(), 'teacher')));
+  });
+});
+
 describe('course content', () => {
   test('signed-out users read nothing', async () => {
     await assertFails(getDoc(doc(nobody(), 'courses', COURSE)));
