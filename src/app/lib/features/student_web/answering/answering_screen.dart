@@ -39,16 +39,11 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
     _questions ??= _load();
   }
 
-  /// Approved questions of this session, in the session's order.
-  Future<List<QuestionView>> _load() async {
-    final all = await ServicesScope.of(context).content
-        .listQuestions(widget.session.courseId);
-    final byRef = {for (final q in all) QuestionRef(q.id, q.version): q};
-    return [
-      for (final ref in widget.session.questions)
-        if (byRef[ref] != null) byRef[ref]!,
-    ];
-  }
+  /// Approved questions of this session, in the session's order. Uses the
+  /// exact versions the session was created with, so an instructor editing a
+  /// question during the session does not change it for students.
+  Future<List<QuestionView>> _load() => ServicesScope.of(context).content
+      .questionsForSession(widget.session.courseId, widget.session.questions);
 
   Future<void> _submit(QuestionView q) async {
     final l = AppLocalizations.of(context);

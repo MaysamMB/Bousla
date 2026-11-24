@@ -164,6 +164,28 @@ class ValidateDataTests(unittest.TestCase):
         ds["concepts.json"][0]["provenance"]["status"] = "done"
         self.assertErrorContains(self.run_on(ds), "provenance.status")
 
+    def test_edited_flag_must_be_boolean(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"]["edited"] = "yes"
+        self.assertErrorContains(self.run_on(ds), "provenance.edited")
+
+    def test_rejected_item_with_reason_passes(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"].update(
+            {"source": "ai_draft", "status": "rejected", "edited": True, "rejection_reason": "off_topic"}
+        )
+        self.assertEqual(self.run_on(ds).errors, [])
+
+    def test_unknown_rejection_reason(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"].update({"status": "rejected", "rejection_reason": "boring"})
+        self.assertErrorContains(self.run_on(ds), "rejection_reason")
+
+    def test_rejection_reason_only_on_rejected_items(self):
+        ds = minimal_dataset()
+        ds["questions.json"][0]["provenance"]["rejection_reason"] = "unclear"
+        self.assertErrorContains(self.run_on(ds), "only allowed on rejected")
+
     def test_resource_unknown_concept(self):
         ds = minimal_dataset()
         ds["resources.json"][0]["concept_ids"] = ["nope"]

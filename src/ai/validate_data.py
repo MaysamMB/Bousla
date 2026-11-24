@@ -19,7 +19,9 @@ Checks (errors fail the run with exit code 1):
   and have a url (link/video), a storage_path (file) or a description
   (activity).
 - Provenance source and status are allowed values; a source_material_id
-  refers to an entry in the optional materials.json.
+  refers to an entry in the optional materials.json; the optional "edited"
+  flag is a boolean; an optional "rejection_reason" is an allowed value and
+  only appears on rejected items.
 - course.json has an owner_id field (null allowed in seed files).
 
 Warnings (reported, do not fail):
@@ -43,6 +45,7 @@ LANGUAGES = ("ar", "en")
 ALLOWED_STATUS = {"pending_review", "approved", "rejected"}
 ALLOWED_SOURCE = {"ai_draft", "instructor", "team"}
 ALLOWED_MATERIAL_STATUS = {"processing", "ready_for_review", "failed"}
+ALLOWED_REJECTION_REASONS = {"incorrect", "unclear", "translation", "duplicate", "off_topic", "other"}
 RESOURCE_TYPES = {"activity", "link", "video", "file"}
 RESOURCE_LANGUAGES = {"ar", "en", "both"}
 MIN_QUESTIONS_PER_CONCEPT = 2
@@ -102,7 +105,15 @@ def _check_provenance(item: dict, where: str, report: Report, material_ids: set[
     material = prov.get("source_material_id")
     if material is not None and material not in material_ids:
         report.error(f"{where}: unknown source_material_id '{material}'")
+    if "edited" in prov and not isinstance(prov["edited"], bool):
+        report.error(f"{where}: provenance.edited must be true or false")
     status = prov.get("status")
+    reason = prov.get("rejection_reason")
+    if reason is not None:
+        if reason not in ALLOWED_REJECTION_REASONS:
+            report.error(f"{where}: provenance.rejection_reason '{reason}' not in {sorted(ALLOWED_REJECTION_REASONS)}")
+        elif status != "rejected":
+            report.error(f"{where}: provenance.rejection_reason is only allowed on rejected items")
     if status not in ALLOWED_STATUS:
         report.error(f"{where}: provenance.status '{status}' not in {sorted(ALLOWED_STATUS)}")
         return False

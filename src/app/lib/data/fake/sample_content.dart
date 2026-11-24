@@ -1,6 +1,8 @@
 // Small bilingual sample used by the in-memory repositories during
-// development. Taken from data/courses/database-systems and marked approved
-// here only so screens have something to show. Not used in production.
+// development. Taken from data/courses/database-systems. Most items are marked
+// approved here only so screens have something to show; the db_rm_* questions
+// keep their real status (AI draft, pending review) for the review screen.
+// Not used in production.
 
 const sampleCourse = {
   'id': 'database_systems',
@@ -8,6 +10,7 @@ const sampleCourse = {
 };
 
 const _approved = {'source': 'team', 'status': 'approved'};
+const _aiDraft = {'source': 'ai_draft', 'status': 'pending_review'};
 
 const sampleConcepts = [
   {
@@ -144,6 +147,62 @@ const sampleQuestions = [
     ],
     'provenance': _approved,
   },
+  {
+    'id': 'db_rm_001',
+    'version': 1,
+    'concept_ids': ['relational_model'],
+    'prompt': {
+      'ar': 'في النموذج العلائقي، ماذا يُسمّى الجدول؟',
+      'en': 'In the relational model, what is a table called?',
+    },
+    'options': [
+      {
+        'id': 'a',
+        'text': {'ar': 'سمة (Attribute)', 'en': 'An attribute'},
+      },
+      {
+        'id': 'b',
+        'text': {'ar': 'مجال (Domain)', 'en': 'A domain'},
+      },
+      {
+        'id': 'c',
+        'text': {'ar': 'صف (Tuple)', 'en': 'A tuple'},
+      },
+      {
+        'id': 'd',
+        'text': {'ar': 'علاقة (Relation)', 'en': 'A relation'},
+      },
+    ],
+    'provenance': _aiDraft,
+  },
+  {
+    'id': 'db_rm_002',
+    'version': 1,
+    'concept_ids': ['relational_model'],
+    'prompt': {
+      'ar': 'ماذا يمثّل كل صف (Tuple) في العلاقة؟',
+      'en': 'What does each row (tuple) in a relation represent?',
+    },
+    'options': [
+      {
+        'id': 'a',
+        'text': {'ar': 'سجلاً واحداً لكيان معيّن', 'en': 'A single record of one entity'},
+      },
+      {
+        'id': 'b',
+        'text': {'ar': 'قيداً على الجدول', 'en': 'A constraint on the table'},
+      },
+      {
+        'id': 'c',
+        'text': {'ar': 'قاعدة البيانات كاملة', 'en': 'The whole database'},
+      },
+      {
+        'id': 'd',
+        'text': {'ar': 'نوع بيانات العمود', 'en': 'The data type of a column'},
+      },
+    ],
+    'provenance': _aiDraft,
+  },
 ];
 
 const sampleAnswerKeys = {
@@ -151,6 +210,8 @@ const sampleAnswerKeys = {
   'db_pk_002': {'correct_option_id': 'b'},
   'db_fk_001': {'correct_option_id': 'c'},
   'db_fk_002': {'correct_option_id': 'a'},
+  'db_rm_001': {'correct_option_id': 'd'},
+  'db_rm_002': {'correct_option_id': 'a'},
 };
 
 const sampleResources = [
