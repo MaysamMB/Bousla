@@ -29,6 +29,7 @@
   "instructorSessionClosed": "Session closed",
 
   "studentJoinTitle": "Join a session",
+  "studentScanHint": "Or scan the QR code shown on the screen with your phone camera",
   "studentEnterCode": "Join code",
   "studentJoin": "Join",
   "studentCodeNotFound": "No session found with this code.",

@@ -22,6 +22,7 @@
   "instructorSessionClosed": "تم إغلاق الجلسة",
 
   "studentJoinTitle": "الانضمام إلى جلسة",
+  "studentScanHint": "أو امسح رمز QR المعروض على الشاشة بكاميرا هاتفك",
   "studentEnterCode": "رمز الانضمام",
   "studentJoin": "انضمام",
   "studentCodeNotFound": "لا توجد جلسة بهذا الرمز.",
