@@ -53,8 +53,20 @@ abstract interface class ProfileRepository {
   /// Records the student's consent and creates the profile.
   Future<void> create(String uid, {int consentVersion = profileConsentVersion});
 
-  /// Adds [session] with the student's own released [feedback].
-  Future<void> saveSession(String uid, Session session, StudentFeedback feedback);
+  /// Adds [session] with the student's own released [feedback]. With
+  /// [handoverId], the feedback is this browser's from before it signed in
+  /// to an existing profile ([createHandover]).
+  Future<void> saveSession(
+    String uid,
+    Session session,
+    StudentFeedback feedback, {
+    String? handoverId,
+  });
+
+  /// Written by this browser while still anonymous ([fromUid]), before it
+  /// signs in to a Google account that already has a profile: lets that
+  /// profile add [sessionId] for 10 minutes. Returns the handover's id.
+  Future<String> createHandover(String sessionId, String fromUid);
 
   /// The saved sessions, oldest first.
   Future<List<SavedSession>> sessions(String uid);
@@ -80,9 +92,27 @@ class InMemoryProfileRepository implements ProfileRepository {
     _consent[uid] = consentVersion;
   }
 
+  /// Handovers written in this tab: id -> session id.
+  final handovers = <String, String>{};
+
   @override
-  Future<void> saveSession(String uid, Session session, StudentFeedback feedback) async {
+  Future<String> createHandover(String sessionId, String fromUid) async {
+    final id = 'handover-${handovers.length + 1}';
+    handovers[id] = sessionId;
+    return id;
+  }
+
+  @override
+  Future<void> saveSession(
+    String uid,
+    Session session,
+    StudentFeedback feedback, {
+    String? handoverId,
+  }) async {
     if (!_consent.containsKey(uid)) throw StateError('no profile');
+    if (handoverId != null && handovers[handoverId] != session.id) {
+      throw StateError('no handover for this session');
+    }
     (_sessions[uid] ??= {})[session.id] = savedSessionFrom(session, feedback,
         addedAt: DateTime.now());
   }

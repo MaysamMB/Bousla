@@ -43,6 +43,12 @@ abstract interface class AuthService {
   /// same UID, so the sessions answered in this browser can go into their
   /// own profile. Throws [StudentLinkFailure].
   Future<StudentAccount> linkStudentAccount();
+
+  /// After [StudentLinkProblem.accountInUse]: signs in to that Google
+  /// account, which already has a profile from another browser. This
+  /// browser then uses that account (its anonymous UID is left behind), so
+  /// write a profile handover first. Throws [StudentLinkFailure].
+  Future<StudentAccount> switchToLinkedStudentAccount();
 }
 
 /// A student's linked account. [label] is what to show them (their email).
@@ -62,7 +68,8 @@ enum StudentLinkProblem {
   popupBlocked,
 
   /// This Google account is already linked to another Bousla profile (from
-  /// another browser), so this browser's sessions cannot join it.
+  /// another browser): sign in to it with
+  /// [AuthService.switchToLinkedStudentAccount] and hand the session over.
   accountInUse,
 
   /// Google sign-in is not enabled in the Firebase console.
@@ -134,10 +141,26 @@ class InMemoryAuthService implements AuthService {
   @override
   StudentAccount? get studentAccount => _student;
 
+  /// Tests: the Google account already has a profile under this UID (from
+  /// "another browser"), so linking fails with
+  /// [StudentLinkProblem.accountInUse].
+  String? existingStudentUid;
+
   @override
-  Future<StudentAccount> linkStudentAccount() async =>
-      _student = const StudentAccount(
-        uid: 'participant',
+  Future<StudentAccount> linkStudentAccount() async {
+    if (existingStudentUid != null) {
+      throw const StudentLinkFailure(StudentLinkProblem.accountInUse);
+    }
+    return _student = const StudentAccount(
+      uid: 'participant',
+      label: 'student@example.com',
+    );
+  }
+
+  @override
+  Future<StudentAccount> switchToLinkedStudentAccount() async =>
+      _student = StudentAccount(
+        uid: existingStudentUid ?? 'participant',
         label: 'student@example.com',
       );
 }

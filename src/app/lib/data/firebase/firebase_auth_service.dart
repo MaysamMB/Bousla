@@ -90,6 +90,33 @@ class FirebaseAuthService implements AuthService {
       // and feedback stay this student's.
       await user.linkWithPopup(GoogleAuthProvider());
     } on FirebaseAuthException catch (e) {
+      // Already linked elsewhere: keep Google's answer, so switching to
+      // that account needs no second window.
+      _pendingGoogle = e.credential;
+      throw StudentLinkFailure(studentLinkProblemFromCode(e.code), e.code);
+    }
+    return studentAccount ??
+        (throw const StudentLinkFailure(StudentLinkProblem.unknown));
+  }
+
+  AuthCredential? _pendingGoogle;
+
+  @override
+  Future<StudentAccount> switchToLinkedStudentAccount() async {
+    final pending = _pendingGoogle;
+    _pendingGoogle = null;
+    try {
+      if (pending != null) {
+        try {
+          await _auth.signInWithCredential(pending);
+        } on FirebaseAuthException {
+          // Expired or not reusable: ask Google again.
+          await _auth.signInWithPopup(GoogleAuthProvider());
+        }
+      } else {
+        await _auth.signInWithPopup(GoogleAuthProvider());
+      }
+    } on FirebaseAuthException catch (e) {
       throw StudentLinkFailure(studentLinkProblemFromCode(e.code), e.code);
     }
     return studentAccount ??

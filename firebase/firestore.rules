@@ -193,6 +193,34 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
+    // A student whose Google account already has a profile from another
+    // browser: before signing in to it, this browser (still anonymous)
+    // writes a handover for the session it has feedback in. The id is
+    // random and known only to this browser. The profile can then add that
+    // session for 10 minutes. Nobody reads handovers; only these rules do.
+    match /profile_handovers/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys()
+             .hasOnly(['session_id', 'from_uid', 'created_at'])
+        && request.resource.data.from_uid == request.auth.uid
+        && request.resource.data.created_at == request.time
+        && request.resource.data.session_id is string
+        && sessionDoc(request.resource.data.session_id).data.feedback_released == true
+        && exists(/databases/$(database)/documents/sessions/$(request.resource.data.session_id)/feedback/$(request.auth.uid));
+    }
+
+    function handoverDoc(id) {
+      return get(/databases/$(database)/documents/profile_handovers/$(id));
+    }
+
+    function handoverAllows(code, id) {
+      return id is string && id.size() > 0
+        && exists(/databases/$(database)/documents/profile_handovers/$(id))
+        && handoverDoc(id).data.session_id == code
+        && handoverDoc(id).data.created_at > request.time - duration.value(10, 'm')
+        && exists(/databases/$(database)/documents/sessions/$(code)/feedback/$(handoverDoc(id).data.from_uid));
+    }
+
     match /profiles/{uid} {
       allow get, delete: if isOwnerSignedIn(uid);
       // Only the consent record: the version of the text agreed to, and when.
@@ -204,16 +232,18 @@ service cloud.firestore {
 
       // One document per session, copied from the student's own released
       // feedback: only a session whose feedback was released and where this
-      // student really has feedback, so nothing can be invented. Not edited
+      // student really has feedback (under this UID, or under the browser
+      // that handed it over), so nothing can be invented. Not edited
       // afterwards; the student may remove it.
       match /sessions/{code} {
         allow get, list, delete: if isOwnerSignedIn(uid);
         allow create: if isOwnerSignedIn(uid)
           && exists(/databases/$(database)/documents/profiles/$(uid))
           && sessionDoc(code).data.feedback_released == true
-          && exists(/databases/$(database)/documents/sessions/$(code)/feedback/$(uid))
+          && (exists(/databases/$(database)/documents/sessions/$(code)/feedback/$(uid))
+              || handoverAllows(code, request.resource.data.get('handover_id', '')))
           && request.resource.data.keys()
-               .hasOnly(['course_id', 'title', 'concepts', 'added_at'])
+               .hasOnly(['course_id', 'title', 'concepts', 'added_at', 'handover_id'])
           && request.resource.data.course_id == sessionDoc(code).data.course_id
           && request.resource.data.concepts is list
           && request.resource.data.added_at == request.time;

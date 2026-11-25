@@ -448,6 +448,58 @@ describe('personal profiles', () => {
     await assertFails(setDoc(doc(linked('student2'), 'profiles', 'student2', 'sessions', CODE), saved()));
   });
 
+  describe('handover from another browser', () => {
+    // student1 answered in this browser (anonymous); their Google account
+    // already has a profile under 'student9' from another browser.
+    const handover = (overrides = {}) => ({
+      session_id: CODE, from_uid: 'student1', created_at: serverTimestamp(), ...overrides,
+    });
+    const profile9 = () => setDoc(doc(linked('student9'), 'profiles', 'student9'), consent());
+
+    test('the browser with feedback writes a handover; nobody reads it', async () => {
+      await assertFails(setDoc(doc(student(), 'profile_handovers', 'h1'), handover()));  // not released
+      await release();
+      await assertSucceeds(setDoc(doc(student(), 'profile_handovers', 'h1'), handover()));
+      await assertFails(getDoc(doc(student(), 'profile_handovers', 'h1')));
+      await assertFails(getDoc(doc(linked('student9'), 'profile_handovers', 'h1')));
+      await assertFails(getDocs(collection(linked('student9'), 'profile_handovers')));
+      await assertFails(updateDoc(doc(student(), 'profile_handovers', 'h1'), { session_id: 'X' }));
+      // Only for itself, only where it has feedback, only these fields.
+      await assertFails(setDoc(doc(student('student2'), 'profile_handovers', 'h2'), handover()));
+      await assertFails(setDoc(doc(student('student2'), 'profile_handovers', 'h2'),
+        handover({ from_uid: 'student2' })));
+      await assertFails(setDoc(doc(student(), 'profile_handovers', 'h3'), handover({ extra: 1 })));
+      await assertFails(setDoc(doc(nobody(), 'profile_handovers', 'h4'), handover()));
+    });
+
+    test('the existing profile adds that session with the handover', async () => {
+      await release();
+      await profile9();
+      await assertFails(setDoc(doc(linked('student9'), 'profiles', 'student9', 'sessions', CODE), saved()));
+      await setDoc(doc(student(), 'profile_handovers', 'h1'), handover());
+      await assertFails(setDoc(doc(linked('student9'), 'profiles', 'student9', 'sessions', CODE),
+        saved({ handover_id: 'nope' })));
+      await assertSucceeds(setDoc(doc(linked('student9'), 'profiles', 'student9', 'sessions', CODE),
+        saved({ handover_id: 'h1' })));
+    });
+
+    test('not for another session, and not after 10 minutes', async () => {
+      await release();
+      await profile9();
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        const db = ctx.firestore();
+        await setDoc(doc(db, 'sessions', 'OTHER1'), { course_id: COURSE, feedback_released: true });
+        await setDoc(doc(db, 'profile_handovers', 'old'),
+          { session_id: CODE, from_uid: 'student1', created_at: new Date(Date.now() - 11 * 60 * 1000) });
+      });
+      await setDoc(doc(student(), 'profile_handovers', 'h1'), handover());
+      await assertFails(setDoc(doc(linked('student9'), 'profiles', 'student9', 'sessions', 'OTHER1'),
+        saved({ handover_id: 'h1' })));
+      await assertFails(setDoc(doc(linked('student9'), 'profiles', 'student9', 'sessions', CODE),
+        saved({ handover_id: 'old' })));
+    });
+  });
+
   test('a linked student still joins and answers as before', async () => {
     await assertSucceeds(setDoc(doc(linked(), 'sessions', CODE, 'participants', 'student1'),
       { joined_at: serverTimestamp() }));

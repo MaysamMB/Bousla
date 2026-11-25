@@ -40,6 +40,25 @@ class _BlockedOnceAuth extends InMemoryAuthService {
   }
 }
 
+/// The Google account already has a profile from another browser, and the
+/// sign-in window to it is blocked the first time.
+class _ExistingBlockedOnceAuth extends InMemoryAuthService {
+  _ExistingBlockedOnceAuth() {
+    existingStudentUid = 'elsewhere';
+  }
+
+  var switches = 0;
+
+  @override
+  Future<StudentAccount> switchToLinkedStudentAccount() {
+    switches++;
+    if (switches == 1) {
+      throw const StudentLinkFailure(StudentLinkProblem.popupBlocked);
+    }
+    return super.switchToLinkedStudentAccount();
+  }
+}
+
 Future<(AppServices, Session)> _setUp({AuthService? auth}) async {
   final services = auth == null
       ? AppServices.inMemory(initialLocale: const Locale('en'))
@@ -116,6 +135,67 @@ void main() {
     expect(find.text('This session is in your profile.'), findsOneWidget);
     expect(services.auth.studentAccount, isNotNull);
     expect(await services.profiles.hasSession(_me, session.id), isTrue);
+  });
+
+  testWidgets('a Google account with a profile from another browser: '
+      'cancel keeps nothing, continue adds this session to it', (tester) async {
+    final auth = InMemoryAuthService()..existingStudentUid = 'elsewhere';
+    final (services, session) = await _setUp(auth: auth);
+    await services.profiles.create('elsewhere');
+    await _show(tester, services, session);
+
+    await tester.tap(find.text('Add this session to my profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I agree, create my profile'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('existing-profile')), findsOneWidget);
+    expect(find.text('You already have a Bousla profile'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(services.auth.studentAccount, isNull);
+    expect(await services.profiles.hasSession('elsewhere', session.id), isFalse);
+
+    await tester.tap(find.text('Add this session to my profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I agree, create my profile'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign in and add the session'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('This session is in your profile.'), findsOneWidget);
+    expect(services.auth.studentAccount?.uid, 'elsewhere');
+    expect(await services.profiles.hasSession('elsewhere', session.id), isTrue);
+    expect(await services.profiles.hasSession(_me, session.id), isFalse);
+  });
+
+  testWidgets('the window to the existing profile is blocked: the next tap '
+      'opens it, with no dialog in between', (tester) async {
+    final auth = _ExistingBlockedOnceAuth();
+    final (services, session) = await _setUp(auth: auth);
+    await _show(tester, services, session);
+
+    await tester.tap(find.text('Add this session to my profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I agree, create my profile'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign in and add the session'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Continue signing in with Google'), findsOneWidget);
+
+    await tester.tap(find.text('Continue signing in with Google'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('profile-consent')), findsNothing);
+    expect(find.byKey(const ValueKey('existing-profile')), findsNothing);
+    expect(auth.switches, 2);
+    // That profile had no consent record yet: created from this agreement.
+    expect(await services.profiles.consentVersion('elsewhere'), 1);
+    expect(await services.profiles.hasSession('elsewhere', session.id), isTrue);
   });
 
   testWidgets('my profile: progress, remove a session, delete everything',
