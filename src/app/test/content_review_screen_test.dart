@@ -57,6 +57,10 @@ void main() {
     expect(find.text('Waiting (0)'), findsOneWidget);
     expect(find.text('Rejected (1)'), findsOneWidget);
     expect(find.textContaining('rejected 1'), findsOneWidget);
+    // The line counts AI drafts out of every question in the tabs (6), so
+    // it never looks like it contradicts the tab counts.
+    expect(find.textContaining('of 6 questions were drafted by AI'),
+        findsOneWidget);
 
     final all = await tester.runAsync(
       () => services.content.listQuestions(

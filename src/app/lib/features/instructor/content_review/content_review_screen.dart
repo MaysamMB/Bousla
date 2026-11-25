@@ -5,6 +5,7 @@ import '../../../app_services.dart';
 import '../../../data/models.dart';
 import '../../../data/question_review.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/text_direction.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
@@ -387,7 +388,10 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                       },
                     ),
                   ),
-                _StatsBanner(stats: aiReviewStats(data.questions)),
+                _StatsBanner(
+                  stats: aiReviewStats(data.questions),
+                  allQuestions: data.questions.length,
+                ),
                 // One compact row: AI drafting, and the answer languages
                 // for all questions (in a sheet, rarely changed).
                 Padding(
@@ -403,6 +407,11 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                           icon: const Icon(Icons.auto_awesome),
                           label: Text(l.reviewAiGenerate),
                         ),
+                      OutlinedButton.icon(
+                        onPressed: () => _openEditor(data),
+                        icon: const Icon(Icons.add),
+                        label: Text(l.reviewAddQuestion),
+                      ),
                       OutlinedButton.icon(
                         key: const ValueKey('answer-languages'),
                         onPressed: () => _answerLanguages(data),
@@ -495,13 +504,6 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                 ),
               ],
             ),
-            floatingActionButton: selected.isEmpty
-                ? FloatingActionButton.extended(
-                    onPressed: () => _openEditor(data),
-                    icon: const Icon(Icons.add),
-                    label: Text(l.reviewAddQuestion),
-                  )
-                : null,
             bottomNavigationBar: selected.isEmpty
                 ? null
                 : SafeArea(
@@ -540,9 +542,13 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
 }
 
 class _StatsBanner extends StatelessWidget {
-  const _StatsBanner({required this.stats});
+  const _StatsBanner({required this.stats, required this.allQuestions});
 
   final AiReviewStats stats;
+
+  /// Every question in the tabs, AI or not: the tabs count these, the line
+  /// counts AI drafts only, so it says both.
+  final int allQuestions;
 
   @override
   Widget build(BuildContext context) {
@@ -559,9 +565,10 @@ class _StatsBanner extends StatelessWidget {
           Expanded(
             child: Text(
               stats.total > 0
-                  ? l.reviewStats(
+                  ? l.reviewAiShare(
                       stats.total,
-                      stats.approvedAsIs,
+                      allQuestions,
+                      stats.approvedAsIs + stats.approvedEdited,
                       stats.approvedEdited,
                       stats.rejected,
                       stats.pending,
@@ -783,6 +790,8 @@ class _QuestionCard extends StatelessWidget {
                   child: Text(
                     question.prompt.of(language),
                     style: theme.textTheme.titleMedium,
+                    textDirection: textDirectionOf(question.prompt.of(language)),
+                    textAlign: screenAlign(context),
                   ),
                 ),
                 // Rarely used per question: hide the answers in one
@@ -832,6 +841,11 @@ class _QuestionCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         option.text.of(question.optionLanguageFor(language)),
+                        // SQL reads left-to-right even in Arabic.
+                        textDirection: textDirectionOf(
+                          option.text.of(question.optionLanguageFor(language)),
+                        ),
+                        textAlign: screenAlign(context),
                       ),
                     ),
                   ],

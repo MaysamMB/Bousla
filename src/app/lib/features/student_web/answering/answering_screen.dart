@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../app_services.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/text_direction.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../feedback/feedback_screen.dart';
@@ -164,6 +165,10 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                   Text(
                     q.prompt.of(language),
                     style: Theme.of(context).textTheme.titleLarge,
+                    // A question written in English (or code) reads
+                    // left-to-right even in the Arabic interface.
+                    textDirection: textDirectionOf(q.prompt.of(language)),
+                    textAlign: screenAlign(context),
                   ),
                   const SizedBox(height: 16),
                   // The instructor may hide the options in one language;
@@ -259,13 +264,10 @@ class _OptionText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     option.text.of(language),
-    // Read in its own direction, but aligned with the rest of the screen.
-    textDirection: language == Language.ar
-        ? TextDirection.rtl
-        : TextDirection.ltr,
-    textAlign: Directionality.of(context) == TextDirection.rtl
-        ? TextAlign.right
-        : TextAlign.left,
+    // Read in its own direction (from the text: SQL in the Arabic options
+    // is still left-to-right), but aligned with the rest of the screen.
+    textDirection: textDirectionOf(option.text.of(language)),
+    textAlign: screenAlign(context),
   );
 }
 
