@@ -40,7 +40,7 @@ class FirestoreProfileRepository implements ProfileRepository {
 
   @override
   Future<void> saveSession(String uid, Session session, StudentFeedback feedback) =>
-      _sessions(uid).doc(session.code).set(
+      _sessions(uid).doc(session.id).set(
             savedSessionToJson(savedSessionFrom(session, feedback)),
           );
 

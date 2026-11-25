@@ -83,7 +83,7 @@ class InMemoryProfileRepository implements ProfileRepository {
   @override
   Future<void> saveSession(String uid, Session session, StudentFeedback feedback) async {
     if (!_consent.containsKey(uid)) throw StateError('no profile');
-    (_sessions[uid] ??= {})[session.code] = savedSessionFrom(session, feedback,
+    (_sessions[uid] ??= {})[session.id] = savedSessionFrom(session, feedback,
         addedAt: DateTime.now());
   }
 
@@ -114,7 +114,9 @@ SavedSession savedSessionFrom(
   DateTime? addedAt,
 }) =>
     SavedSession(
-      code: session.code,
+      // The session's document ID (the join code on Firestore), as in
+      // profiles/{uid}/sessions/{id} and the security rules.
+      code: session.id,
       courseId: session.courseId,
       title: session.title,
       addedAt: addedAt,
