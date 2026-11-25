@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models.dart';
 import '../question_review.dart';
+import '../resource_review.dart';
 import '../repositories/content_repository.dart';
 import 'firestore_codec.dart';
 
@@ -380,6 +381,76 @@ class FirestoreContentRepository implements ContentRepository {
             when !approvedOnly || r.status == ReviewStatus.approved)
           r,
     ];
+  }
+
+  @override
+  Future<Resource> saveResource(String courseId, ResourceDraft draft) async {
+    final approved = {
+      for (final c in await listConcepts(courseId))
+        if (c.status == ReviewStatus.approved) c.id,
+    };
+    final issues = validateResourceDraft(draft, approved);
+    if (issues.isNotEmpty) throw InvalidResourceException(issues);
+    final col = _items(courseId, 'resources');
+    Resource? before;
+    if (draft.id case final id?) {
+      final doc = await col.doc(id).get();
+      if (!doc.exists) throw ArgumentError(id);
+      before = Resource.fromJson(withId(doc));
+    }
+    final id = draft.id ?? 'res_i_${col.doc().id}';
+    final saved = resourceFromDraft(draft, id: id, before: before);
+    await col.doc(id).set({
+      ...resourceToJson(saved, reviewedBy: currentUserId()),
+      if (before == null) 'added_by': currentUserId(),
+      'updated_at': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    return saved;
+  }
+
+  @override
+  Future<List<Resource>> saveAiResourceSuggestions(
+    String courseId, {
+    required String modelName,
+    required List<ResourceSuggestion> suggestions,
+  }) async {
+    final col = _items(courseId, 'resources');
+    final batch = _db.batch();
+    final saved = <Resource>[];
+    for (final s in suggestions) {
+      final r = resourceFromSuggestion(s, id: 'ai_res_${col.doc().id}');
+      batch.set(col.doc(r.id), {
+        ...resourceToJson(r, generatedBy: modelName),
+        'added_by': currentUserId(),
+        'updated_at': FieldValue.serverTimestamp(),
+      });
+      saved.add(r);
+    }
+    await batch.commit();
+    return saved;
+  }
+
+  @override
+  Future<void> setResourcesStatus(
+    String courseId,
+    Iterable<String> ids,
+    ReviewStatus status,
+  ) async {
+    final col = _items(courseId, 'resources');
+    final batch = _db.batch();
+    for (final id in ids.toSet()) {
+      final doc = await col.doc(id).get();
+      if (!doc.exists) continue;
+      batch.update(col.doc(id), {
+        'provenance.status': switch (status) {
+          ReviewStatus.pendingReview => 'pending_review',
+          ReviewStatus.approved => 'approved',
+          ReviewStatus.rejected => 'rejected',
+        },
+        'updated_at': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
   }
 
   @override

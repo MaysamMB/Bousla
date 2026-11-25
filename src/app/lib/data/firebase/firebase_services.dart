@@ -10,6 +10,7 @@ import 'firestore_content_repository.dart';
 import 'firestore_session_repository.dart';
 import 'gemini_feedback_explainer.dart';
 import 'gemini_question_generator.dart';
+import 'gemini_resource_suggester.dart';
 import 'gemini_teaching_draft_generator.dart';
 
 /// Connects to Firebase and returns services backed by Firestore.
@@ -53,5 +54,6 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
     questionGenerator: GeminiQuestionGenerator(),
     feedbackExplainer: GeminiFeedbackExplainer(),
     teachingDraftGenerator: GeminiTeachingDraftGenerator(),
+    resourceSuggester: GeminiResourceSuggester(),
   );
 }

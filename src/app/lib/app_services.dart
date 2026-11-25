@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'data/fake/in_memory_content_repository.dart';
 import 'data/ai/feedback_explainer.dart';
 import 'data/ai/question_generator.dart';
+import 'data/ai/resource_suggester.dart';
 import 'data/ai/teaching_draft_generator.dart';
 import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
@@ -22,6 +23,7 @@ class AppServices {
     this.questionGenerator,
     this.feedbackExplainer,
     this.teachingDraftGenerator,
+    this.resourceSuggester,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
         locale = ValueNotifier(initialLocale);
@@ -55,6 +57,10 @@ class AppServices {
 
   /// Optional instructor draft generator; absent in offline mode.
   final TeachingDraftGenerator? teachingDraftGenerator;
+
+  /// AI level 1, resources: describes resources to add (never links). Null
+  /// when not available; the resources screen then hides the button.
+  final ResourceSuggester? resourceSuggester;
 
   /// Current UI language. Changing it rebuilds the app in that language and
   /// direction (RTL for Arabic, LTR for English).
