@@ -74,7 +74,9 @@ class _ApprovalCheckState extends State<_ApprovalCheck> {
             actions: const [LanguageSwitcher()],
           ),
           body: WatermarkedBody(
-            child: Center(
+            child: Align(
+              // Lower half: the watermark sits in the empty space above.
+              alignment: const Alignment(0, 0.5),
               child: waiting
                   ? const CircularProgressIndicator()
                   : ConstrainedBox(
@@ -198,7 +200,9 @@ class _SignInFormState extends State<_SignInForm> {
         actions: const [LanguageSwitcher()],
       ),
       body: WatermarkedBody(
-        child: Center(
+        child: Align(
+          // Lower half: the watermark sits in the empty space above.
+          alignment: const Alignment(0, 0.5),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: ListView(

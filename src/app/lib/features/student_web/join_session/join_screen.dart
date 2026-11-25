@@ -157,7 +157,9 @@ class _JoinScreenState extends State<JoinScreen> {
           // The Bousla mark, large and faint in the empty space above
           // the form (clear of the code field and its messages).
           const BouslaWatermark(alignment: Alignment(0, -0.62)),
-          Center(
+          Align(
+            // Lower half: the watermark sits in the empty space above.
+            alignment: const Alignment(0, 0.5),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 360),
               child: SafeArea(
