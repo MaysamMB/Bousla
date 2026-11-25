@@ -485,7 +485,7 @@ void main() {
       final text = templateExplanation(_profile);
       expect(text.ar,
           contains('قد يساعدك مراجعة المفتاح الأساسي قبل المفتاح الخارجي.'));
-      expect(text.ar, contains('أظهرت فهمًا جيدًا لـ النموذج العلائقي.'));
+      expect(text.ar, contains('أظهرت فهمًا جيدًا لمفهوم النموذج العلائقي.'));
       expect(text.en,
           contains('Reviewing Primary Key before Foreign Key may help.'));
     });
