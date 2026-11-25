@@ -1,7 +1,7 @@
 # Bousla — Demo Script
 
 Competition: Saturday 28 November 2026. Site: https://bousla-educathon.web.app
-Status labels below: **ready** = works on the live site today (24 Nov) · **if ready** = depends on a task still in progress (see the team plan doc) · say only what is true on the day.
+Status labels below (updated 25 Nov): **ready** = used on the live site · **built, check Friday** = implemented and tested (automated tests and the emulator) but not yet run on the live site or with live Gemini; the Friday rehearsal decides · say only what is true on the day.
 
 Rule: never present an unfinished feature as working. If a step fails, use its fallback and say so plainly.
 
@@ -13,8 +13,12 @@ Rule: never present an unfinished feature as working. If a step fails, use its f
 | Venue network reaches the site, Firebase, `www.gstatic.com` and `www.google.com/recaptcha` | Open the site on a phone on the venue Wi-Fi; bring a phone hotspot as backup | Everyone |
 | Instructor signed in on the presentation laptop | `/#/instructor`, account of the course owner | Maysam |
 | 4–6 approved questions in the course, at least one concept and its prerequisite (e.g. `db_pk_*` and `db_fk_*`) | Review screen, "Approved" tab | Maysam |
-| AI drafts already made from 2–3 real lectures and reviewed | Done Wednesday after 10:00 (Gemini quota renews then); keep at least one group still "waiting" to review live | Maysam |
-| Gemini quota not spent on Saturday | Nobody presses "Draft questions from material" before the demo | Everyone |
+| Approved resources for the concepts the questions test, at least one in Arabic, so feedback has next steps | **مصادر التعلّم** screen: add by hand (title, link, kind, language, concepts) | Maysam |
+| AI resource suggestions made once and checked; keep one suggestion "waiting for a link" to show live | **مصادر التعلّم** → "Suggest resources (AI)", Thursday after 10:00 | Maysam |
+| Light theme on the presentation laptop (clearer on a projector) | Sun/moon button next to the language button | Maysam |
+| AI drafts already made from 2–3 real lectures and reviewed | Thursday after 10:00 (Gemini quota renews then); keep at least one group still "waiting" to review live | Maysam |
+| Gemini quota not spent on Saturday (20 requests a day, shared by question drafts, resource suggestions, feedback explanations and teaching tactics) | Nobody presses an AI button on Saturday before the demo except the one feedback release | Everyone |
+| Friday rehearsal session renamed so the past-sessions list reads well (e.g. "Rehearsal — keys") | Past sessions → rename | Maysam |
 | Team phones charged, browser open on the site | 4 phones | Everyone |
 | Offline fallback works | `.\bousla demo` on the laptop (red "LOCAL DEMO" ribbon) | Maysam |
 
@@ -29,6 +33,7 @@ Passing a course does not show *which* concept a student is missing, or whether 
 - **Edit** one (e.g. a weak Arabic term) and **reject** one with a reason. Point at the line "AI drafts: N · approved as is · edited · rejected" — this is how we measure AI quality, with real numbers.
 - Say: there is no "approve all". Every AI draft is seen by a person before a student sees it.
 - No live drafting in a 3–5 minute slot: it can take up to a minute. Show the drafts made on Wednesday.
+- **Resources (20 s, built, check Friday):** open **مصادر التعلّم**. Show one AI suggestion waiting for a link: kind, where to look, search words, what it should cover, and *no link*. Say: models invent links, so the AI only describes; the instructor finds the real resource and approves it. Press **إضافة الرابط واعتماده**, paste a link you prepared, save.
 - Fallback: none needed (nothing here depends on Gemini at demo time).
 
 ### 3. Students join in seconds (60 s) — ready
@@ -38,23 +43,26 @@ Passing a course does not show *which* concept a student is missing, or whether 
 - The instructor screen updates live: "طلاب أجابوا · مجموع الإجابات".
 - Fallback: type the code on `/#/join` instead of scanning.
 
-### 4. What the class understands (45 s) — if ready (Yasmeen's task)
+### 4. What the class understands (45 s) — built, check Friday (Yasmeen)
 - Under the counter: each concept's difficulty with its evidence (respondents, accuracy), weakest first.
 - A *possible* prerequisite signal, in cautious words ("قد يكون … سبباً محتملاً").
 - Privacy: a concept answered by fewer than 3 students shows no numbers. With 1–2 students the panel shows only a session overview (overall % correct and which concepts to start with, no numbers per concept); say so: that is the protection working.
 - Fallback: a session from the Friday rehearsal with the team as students (say it is the rehearsal session).
 
-### 5. Each student's feedback (45 s) — if ready (Lina's task)
+### 5. Each student's feedback (45 s) — built, check Friday (Lina)
 - **Close the session → Release feedback.** Phones switch to personal feedback: state per concept with "X of Y correct", next steps with approved resources in the student's language, a short explanation labelled "AI-generated".
+- Next steps show the resources approved in the resources screen, the student's language first: the link made in part 2 can appear here.
+- **Show my knowledge map** opens the session map (foundations first), which the student can save to the phone.
 - Say: the AI explains engine results; it never changes a score or a state, and if it fails, a fixed template is shown instead.
-- Fallback: show the template feedback only (AI explanation turned off in the release dialog).
+- Fallback: show the template feedback only (AI explanation turned off in the release dialog). If a phone says there is no feedback for it, open the same link again on that phone (feedback belongs to the browser that answered); this was seen once on the live site and is still being checked.
 
 ### 6. Privacy and limits, said plainly (20 s)
 Say two sentences: "Students join anonymously for one session, answer keys are readable only by the instructor, and the class view shows no per-concept numbers for groups under 3. Our limits: a free AI quota, provisional thresholds, and content still under team review."
 
 Keep for questions (do not read out):
 - No longitudinal tracking is claimed without identity linking.
-- Security rules are tested on the emulator (27 tests).
+- Security rules are tested on the emulator (36 tests); only approved instructor accounts can create courses and sessions.
+- AI resource suggestions with any link or domain name are dropped automatically; students only ever get approved resources.
 - Gemini runs through Firebase with App Check; course files are not stored.
 - The instructor app must stay open while scoring (no paid server).
 
@@ -75,21 +83,21 @@ Bousla turns a short in-class quiz into what each student should learn next, and
 | Part | Criterion (weight) |
 |---|---|
 | 4, 5 — what the class / each student understands, with evidence | Educational relevance (30%) |
-| 2, 5 — AI drafts with human review and measured quality; AI explanations with guards | AI quality and originality (25%) |
+| 2, 5 — AI drafts with human review and measured quality; AI resource descriptions without invented links; AI explanations with guards | AI quality and originality (25%) |
 | 3 — live on real phones, no install | Feasibility and impact (20%) |
 | 2, 6 — no "approve all", privacy rules, honest limits | Ethics, inclusivity, transparency (15%) |
 | Whole flow in 3–5 minutes, in Arabic and English | Presentation and prototype (10%) |
 
 ## Timing
 
-Slot: 3–5 minutes (confirmed 24 Nov). Planned total: about 4 min 20 s.
+Slot: 3–5 minutes (confirmed 24 Nov). Planned total: about 4 min 40 s (part 2 now includes resources).
 
 To get down to 3 minutes, cut in this order:
 1. Part 1 → one sentence (−10 s).
-2. Part 2 → show the stats line and one edit only, skip the reject (−20 s).
+2. Part 2 → show the stats line and one edit only, skip the reject (−20 s); show the resource suggestion without adding its link (−10 s).
 3. Part 3 → one phone instead of two languages; mention the language switch (−20 s).
 4. Part 6 → one sentence (−10 s).
 
-Never cut parts 4 and 5 when they are ready: they carry the 30% criterion. If part 4 or 5 is not ready, give its time to part 3 (more phones joining live).
+Never cut parts 4 and 5 when they work at the rehearsal: they carry the 30% criterion. If part 4 or 5 is not ready, give its time to part 3 (more phones joining live).
 
 Rehearse with a timer on Friday, on the presentation laptop and network.
