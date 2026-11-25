@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../feedback/feedback_screen.dart' show stateLabel;
+import '../../../shared/widgets/bousla_mark.dart';
 
 /// "My profile": the student's own saved sessions (architecture §10).
 /// Progress per concept across sessions, the sessions themselves (each can
@@ -95,111 +96,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(l.studentProfileTitle),
         actions: const [LanguageSwitcher()],
       ),
-      body: account == null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(l.studentProfileNone, textAlign: TextAlign.center),
-              ),
-            )
-          : FutureBuilder<List<SavedSession>>(
-              future: _sessions,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text(l.errorGeneric));
-                }
-                final sessions = snapshot.data;
-                if (sessions == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final progress = _progressByConcept(sessions);
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 640),
-                    child: ListView(
-                      padding: const EdgeInsets.all(20),
-                      children: [
-                        Text(
-                          l.studentProfileSignedInAs(account.label),
-                          style: theme.textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l.studentProfileProgressTitle,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l.studentProfileProgressNote,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 8),
-                        if (sessions.isEmpty) Text(l.studentProfileEmpty),
-                        for (final entry in progress)
-                          Card(
-                            key: ValueKey('progress-${entry.$1}'),
-                            child: ListTile(
-                              title: Text(entry.$2.first.$2.name.of(lang)),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  for (final (session, concept) in entry.$2)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Text(
-                                        '${_sessionName(l, session, lang)}: '
-                                        '${stateLabel(l, concept.state)} · '
-                                        '${l.studentFeedbackEvidence(concept.correct, concept.attempts)}',
+      body: WatermarkedBody(
+        alignment: Alignment(0, 0.7),
+        child: account == null
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(l.studentProfileNone, textAlign: TextAlign.center),
+                ),
+              )
+            : FutureBuilder<List<SavedSession>>(
+                future: _sessions,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text(l.errorGeneric));
+                  }
+                  final sessions = snapshot.data;
+                  if (sessions == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final progress = _progressByConcept(sessions);
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 640),
+                      child: ListView(
+                        padding: const EdgeInsets.all(20),
+                        children: [
+                          Text(
+                            l.studentProfileSignedInAs(account.label),
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l.studentProfileProgressTitle,
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l.studentProfileProgressNote,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 8),
+                          if (sessions.isEmpty) Text(l.studentProfileEmpty),
+                          for (final entry in progress)
+                            Card(
+                              key: ValueKey('progress-${entry.$1}'),
+                              child: ListTile(
+                                title: Text(entry.$2.first.$2.name.of(lang)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    for (final (session, concept) in entry.$2)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          '${_sessionName(l, session, lang)}: '
+                                          '${stateLabel(l, concept.state)} · '
+                                          '${l.studentFeedbackEvidence(concept.correct, concept.attempts)}',
+                                        ),
                                       ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
+                          const SizedBox(height: 24),
+                          Text(
+                            l.studentProfileSessionsTitle,
+                            style: theme.textTheme.titleMedium,
                           ),
-                        const SizedBox(height: 24),
-                        Text(
-                          l.studentProfileSessionsTitle,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        if (sessions.isEmpty) Text(l.studentProfileEmpty),
-                        for (final s in sessions)
-                          Card(
-                            key: ValueKey('session-${s.code}'),
-                            child: ListTile(
-                              title: Text(_sessionName(l, s, lang)),
-                              subtitle: s.addedAt == null
-                                  ? null
-                                  : Text(MaterialLocalizations.of(context)
-                                      .formatMediumDate(s.addedAt!.toLocal())),
-                              trailing: IconButton(
-                                tooltip: l.studentProfileRemoveSession,
-                                icon: const Icon(Icons.remove_circle_outline),
-                                onPressed: () => _remove(s),
+                          const SizedBox(height: 8),
+                          if (sessions.isEmpty) Text(l.studentProfileEmpty),
+                          for (final s in sessions)
+                            Card(
+                              key: ValueKey('session-${s.code}'),
+                              child: ListTile(
+                                title: Text(_sessionName(l, s, lang)),
+                                subtitle: s.addedAt == null
+                                    ? null
+                                    : Text(MaterialLocalizations.of(context)
+                                        .formatMediumDate(s.addedAt!.toLocal())),
+                                trailing: IconButton(
+                                  tooltip: l.studentProfileRemoveSession,
+                                  icon: const Icon(Icons.remove_circle_outline),
+                                  onPressed: () => _remove(s),
+                                ),
                               ),
                             ),
+                          const SizedBox(height: 32),
+                          OutlinedButton.icon(
+                            onPressed: _signOut,
+                            icon: const Icon(Icons.logout),
+                            label: Text(l.studentProfileSignOut),
                           ),
-                        const SizedBox(height: 32),
-                        OutlinedButton.icon(
-                          onPressed: _signOut,
-                          icon: const Icon(Icons.logout),
-                          label: Text(l.studentProfileSignOut),
-                        ),
-                        const SizedBox(height: 12),
-                        TextButton.icon(
-                          style: TextButton.styleFrom(
-                            foregroundColor: theme.colorScheme.error,
+                          const SizedBox(height: 12),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.colorScheme.error,
+                            ),
+                            onPressed: _deleteAll,
+                            icon: const Icon(Icons.delete_forever_outlined),
+                            label: Text(l.studentProfileDelete),
                           ),
-                          onPressed: _deleteAll,
-                          icon: const Icon(Icons.delete_forever_outlined),
-                          label: Text(l.studentProfileDelete),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

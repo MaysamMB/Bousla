@@ -130,3 +130,24 @@ class BouslaWatermark extends StatelessWidget {
     );
   }
 }
+
+/// A screen's body with the [BouslaWatermark] behind it, for screens with a
+/// lot of empty space (home, sign-in, a new session, an empty profile).
+class WatermarkedBody extends StatelessWidget {
+  const WatermarkedBody({
+    super.key,
+    required this.child,
+    this.alignment = const Alignment(0, -0.55),
+  });
+
+  final Widget child;
+
+  /// Where the mark sits; keep it in the screen's empty space.
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+        fit: StackFit.expand,
+        children: [BouslaWatermark(alignment: alignment), child],
+      );
+}

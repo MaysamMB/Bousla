@@ -13,6 +13,7 @@ import '../resources/session_resources_card.dart';
 import 'share_feedback.dart';
 import 'past_sessions_screen.dart';
 import 'publish_feedback_dialog.dart';
+import '../../../shared/widgets/bousla_mark.dart';
 
 /// All courses, the chosen one, and its approved questions.
 typedef _Content = (List<Course>, Course, List<QuestionView>);
@@ -185,73 +186,76 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           const LanguageSwitcher(),
         ],
       ),
-      body: FutureBuilder<_Content?>(
-        future: _content,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) return Center(child: Text(l.errorGeneric));
-          if (snapshot.connectionState != ConnectionState.done)
-            return const Center(child: CircularProgressIndicator());
-          final data = snapshot.data;
-          if (data == null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(l.instructorNoCourse, textAlign: TextAlign.center),
-              ),
-            );
-          }
-          final (courses, course, questions) = data;
-          final session = _session;
-          return ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              CoursePicker(
-                courses: courses,
-                current: course,
-                // One session belongs to one course.
-                enabled: session == null,
-                onChanged: _reload,
-              ),
-              const SizedBox(height: 8),
-              Text(l.instructorQuestionsAvailable(questions.length)),
-              const SizedBox(height: 24),
-              if (session == null) ...[
-                if (_openFound case final open?) ...[
-                  _OpenSessionCard(
-                    session: open,
-                    onContinue: () => _continue(open),
-                    onClose: () => _closeFound(open),
+      body: WatermarkedBody(
+        alignment: Alignment(0, 0.55),
+        child: FutureBuilder<_Content?>(
+          future: _content,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) return Center(child: Text(l.errorGeneric));
+            if (snapshot.connectionState != ConnectionState.done)
+              return const Center(child: CircularProgressIndicator());
+            final data = snapshot.data;
+            if (data == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(l.instructorNoCourse, textAlign: TextAlign.center),
+                ),
+              );
+            }
+            final (courses, course, questions) = data;
+            final session = _session;
+            return ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                CoursePicker(
+                  courses: courses,
+                  current: course,
+                  // One session belongs to one course.
+                  enabled: session == null,
+                  onChanged: _reload,
+                ),
+                const SizedBox(height: 8),
+                Text(l.instructorQuestionsAvailable(questions.length)),
+                const SizedBox(height: 24),
+                if (session == null) ...[
+                  if (_openFound case final open?) ...[
+                    _OpenSessionCard(
+                      session: open,
+                      onContinue: () => _continue(open),
+                      onClose: () => _closeFound(open),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  OutlinedButton.icon(
+                    onPressed: _openReview,
+                    icon: const Icon(Icons.fact_check_outlined),
+                    label: Text(l.instructorReviewQuestions),
                   ),
-                  const SizedBox(height: 24),
-                ],
-                OutlinedButton.icon(
-                  onPressed: _openReview,
-                  icon: const Icon(Icons.fact_check_outlined),
-                  label: Text(l.instructorReviewQuestions),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/instructor/resources'),
-                  icon: const Icon(Icons.library_books_outlined),
-                  label: Text(l.instructorResTitle),
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: questions.isEmpty
-                      ? null
-                      : () => _confirmCreate(course, questions),
-                  child: Text(l.instructorCreateSession),
-                ),
-              ] else
-                _LiveSessionPanel(
-                  session: session,
-                  joinLink: _joinLink(session.code),
-                  onNewSession: _startNew,
-                ),
-            ],
-          );
-        },
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/instructor/resources'),
+                    icon: const Icon(Icons.library_books_outlined),
+                    label: Text(l.instructorResTitle),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: questions.isEmpty
+                        ? null
+                        : () => _confirmCreate(course, questions),
+                    child: Text(l.instructorCreateSession),
+                  ),
+                ] else
+                  _LiveSessionPanel(
+                    session: session,
+                    joinLink: _joinLink(session.code),
+                    onNewSession: _startNew,
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
