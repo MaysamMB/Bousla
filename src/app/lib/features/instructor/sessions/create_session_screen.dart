@@ -9,6 +9,7 @@ import '../course_picker.dart';
 import 'join_qr.dart';
 import '../../../data/session_title.dart';
 import 'live_insights_panel.dart';
+import '../resources/session_resources_card.dart';
 import 'past_sessions_screen.dart';
 import 'publish_feedback_dialog.dart';
 
@@ -311,10 +312,23 @@ class _LiveSessionPanel extends StatelessWidget {
           stream: sessions.watchSession(session.id),
           builder: (context, snapshot) {
             final current = snapshot.data ?? session;
+            // Resources can still be added until feedback is published.
+            final resources = current.feedbackReleased
+                ? null
+                : SessionResourcesCard(session: current);
             if (current.status != SessionStatus.closed) {
-              return OutlinedButton(
-                onPressed: () => sessions.closeSession(session.id),
-                child: Text(l.instructorCloseSession),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => sessions.closeSession(session.id),
+                    child: Text(l.instructorCloseSession),
+                  ),
+                  if (resources != null) ...[
+                    const SizedBox(height: 24),
+                    resources,
+                  ],
+                ],
               );
             }
             // Feedback is published after closing, once (the button goes
@@ -342,6 +356,10 @@ class _LiveSessionPanel extends StatelessWidget {
                   icon: const Icon(Icons.add),
                   label: Text(l.instructorStartAnother),
                 ),
+                if (resources != null) ...[
+                  const SizedBox(height: 24),
+                  resources,
+                ],
               ],
             );
           },

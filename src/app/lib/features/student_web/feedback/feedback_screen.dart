@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 
 import '../../../app_services.dart';
 import '../../../data/feedback.dart';
+import '../../../data/resource_review.dart' show isWebLink;
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
+import '../../../shared/open_link.dart' as shared;
 import '../../../shared/widgets/language_switcher.dart';
 import '../knowledge_map/knowledge_map_screen.dart';
 
@@ -97,9 +99,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
 /// The feedback itself, in the current UI language.
 class FeedbackView extends StatelessWidget {
-  const FeedbackView({super.key, required this.feedback});
+  const FeedbackView({
+    super.key,
+    required this.feedback,
+    this.openLink = shared.openLink,
+  });
 
   final StudentFeedback feedback;
+
+  /// Opens a resource's link (the shared [shared.openLink]; replaced in
+  /// tests).
+  final void Function(String url) openLink;
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +199,11 @@ class FeedbackView extends StatelessWidget {
                           style: theme.textTheme.bodyLarge,
                         ),
                         for (final res in r.resources)
-                          _ResourceTile(resource: res, language: language),
+                          _ResourceTile(
+                            resource: res,
+                            language: language,
+                            openLink: openLink,
+                          ),
                       ],
                     ),
                   ),
@@ -288,15 +302,35 @@ String _stepText(
     };
 
 class _ResourceTile extends StatelessWidget {
-  const _ResourceTile({required this.resource, required this.language});
+  const _ResourceTile({
+    required this.resource,
+    required this.language,
+    required this.openLink,
+  });
 
   final FeedbackResource resource;
   final Language language;
+  final void Function(String url) openLink;
+
+  /// In the student's language, else the other one; null when there is none.
+  String? get _description {
+    final d = resource.description;
+    if (d == null) return null;
+    for (final t in [d.of(language), d.ar, d.en]) {
+      if (t.trim().isNotEmpty) return t.trim();
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final url = resource.url;
+    final theme = Theme.of(context);
+    final raw = resource.url?.trim() ?? '';
+    // Only the URL stored with the approved resource, and only a web link
+    // (http/https with a host): anything else is never opened.
+    final url = raw.isNotEmpty && isWebLink(raw) ? raw : null;
+    final description = _description;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(switch (resource.type) {
@@ -306,17 +340,33 @@ class _ResourceTile extends StatelessWidget {
         ResourceType.activity => Icons.edit_note,
       }),
       title: Text(resource.title.of(language)),
-      // Only the URL stored with the approved resource; links are read
-      // left-to-right in both languages.
-      subtitle: url == null || url.isEmpty
-          ? Text(l.studentFeedbackResourceActivity)
-          : Directionality(
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (description != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, bottom: 4),
+              child: Text(description, style: theme.textTheme.bodyMedium),
+            ),
+          if (url != null)
+            // Links are read left-to-right in both languages.
+            Directionality(
               textDirection: TextDirection.ltr,
-              child: SelectableText(
+              child: Text(
                 url,
                 semanticsLabel: l.studentFeedbackResourceLink(url),
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                ),
               ),
-            ),
+            )
+          else if (description == null)
+            Text(l.studentFeedbackResourceActivity),
+        ],
+      ),
+      trailing: url == null ? null : const Icon(Icons.open_in_new),
+      onTap: url == null ? null : () => openLink(url),
     );
   }
 }

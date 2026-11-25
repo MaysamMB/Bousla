@@ -6,19 +6,30 @@ import '../../../data/ai/question_generator.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../content_review/generate_from_material.dart';
+import '../sessions/past_sessions_screen.dart' show sessionTitleText;
+import 'session_focus.dart';
 
 /// Asks AI to describe resources for the chosen concepts (one request). The
 /// descriptions are saved as pending, without links, and the dialog pops a
 /// one-line summary for the screen. The material file is optional.
+///
+/// The instructor may describe what they need in their own words. Without a
+/// description, the latest session's class results (aggregate only) guide
+/// the suggestions, and the concepts they point to are chosen first.
+/// Suggestions whose title a course resource already has are not saved.
 class SuggestResourcesDialog extends StatefulWidget {
   const SuggestResourcesDialog({
     super.key,
     required this.courseId,
     required this.concepts,
     this.pickMaterial,
+    this.loadFocus,
   });
 
   final String courseId;
+
+  /// Replaced in tests; by default [loadLatestSessionFocus].
+  final Future<SessionFocus?> Function()? loadFocus;
 
   /// Approved concepts.
   final List<Concept> concepts;
@@ -35,6 +46,48 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
   var _busy = false;
   GenerationProblem? _problem;
   var _nothingUsable = false;
+  var _allDuplicates = false;
+  final _request = TextEditingController();
+  SessionFocus? _focus;
+  var _focusLoaded = false;
+  var _focusRequested = false;
+
+  /// The instructor changed the concept choice: the session focus no longer
+  /// changes it.
+  var _chosenTouched = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_focusRequested) return;
+    _focusRequested = true;
+    final services = ServicesScope.of(context);
+    final load = widget.loadFocus ??
+        () => loadLatestSessionFocus(services, widget.courseId);
+    load().then((f) {
+      if (!mounted) return;
+      setState(() {
+        _focus = f;
+        _focusLoaded = true;
+        final known = {for (final c in widget.concepts) c.id};
+        final ids = [
+          for (final id in f?.focus.conceptIds ?? const <String>[])
+            if (known.contains(id)) id,
+        ];
+        if (ids.isNotEmpty && !_chosenTouched) {
+          _chosen
+            ..clear()
+            ..addAll(ids);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _request.dispose();
+    super.dispose();
+  }
 
   Future<void> _pick() async {
     setState(() => _problem = null);
@@ -55,7 +108,9 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
       _busy = true;
       _problem = null;
       _nothingUsable = false;
+      _allDuplicates = false;
     });
+    final request = _request.text.trim();
     try {
       final result = await suggester.suggestResources(
         concepts: [
@@ -64,25 +119,43 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
         ],
         perConcept: _perConcept,
         material: _file,
+        request: request.isEmpty ? null : request,
+        focus: request.isEmpty ? _focus?.focus : null,
       );
       if (result.accepted.isEmpty) {
         if (mounted) setState(() => _nothingUsable = true);
         return;
       }
+      // Not the same resource twice: titles the course already has are
+      // skipped (rejected ones excepted).
+      final (fresh, duplicates) = withoutExistingResources(
+        result.accepted,
+        await services.content.listResources(
+          widget.courseId,
+          approvedOnly: false,
+        ),
+      );
+      if (fresh.isEmpty) {
+        if (mounted) setState(() => _allDuplicates = true);
+        return;
+      }
       await services.content.saveAiResourceSuggestions(
         widget.courseId,
         modelName: suggester.modelName,
-        suggestions: result.accepted,
+        suggestions: fresh,
       );
       final links = result.dropped
           .where((i) => i == SuggestionIssue.containsLink)
           .length;
+      final done = l.instructorResSuggestDone(
+        fresh.length,
+        result.dropped.length,
+        links,
+      );
       navigator.pop(
-        l.instructorResSuggestDone(
-          result.accepted.length,
-          result.dropped.length,
-          links,
-        ),
+        duplicates == 0
+            ? done
+            : '$done ${l.instructorResSuggestDuplicates(duplicates)}',
       );
     } on QuestionGenerationException catch (e) {
       if (mounted) setState(() => _problem = e.problem);
@@ -91,6 +164,20 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _focusText(AppLocalizations l, Language lang) {
+    final f = _focus;
+    if (f == null || f.focus.isEmpty) return l.instructorResFocusNone;
+    final names = {for (final c in widget.concepts) c.id: c.name.of(lang)};
+    final listed = [
+      for (final id in f.focus.conceptIds)
+        if (names[id] != null) names[id]!,
+    ];
+    return l.instructorResFocusFrom(
+      sessionTitleText(context, f.session),
+      listed.join(lang == Language.ar ? '، ' : ', '),
+    );
   }
 
   @override
@@ -110,6 +197,31 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
             children: [
               Text(l.instructorResSuggestHelp, style: theme.textTheme.bodySmall),
               const SizedBox(height: 16),
+              TextField(
+                controller: _request,
+                enabled: !_busy,
+                minLines: 2,
+                maxLines: 4,
+                maxLength: maxResourceRequestLength,
+                decoration: InputDecoration(
+                  labelText: l.instructorResRequestLabel,
+                  helperText: l.instructorResRequestHint,
+                  helperMaxLines: 3,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              // What guides the suggestions when nothing is written.
+              if (_request.text.trim().isEmpty && _focusLoaded)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    _focusText(l, lang),
+                    key: const ValueKey('resource-focus'),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              const SizedBox(height: 8),
               Text(l.instructorResFieldConcepts),
               const SizedBox(height: 8),
               Wrap(
@@ -122,10 +234,10 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
                       selected: _chosen.contains(c.id),
                       onSelected: _busy
                           ? null
-                          : (on) => setState(
-                                () =>
-                                    on ? _chosen.add(c.id) : _chosen.remove(c.id),
-                              ),
+                          : (on) => setState(() {
+                                _chosenTouched = true;
+                                on ? _chosen.add(c.id) : _chosen.remove(c.id);
+                              }),
                     ),
                 ],
               ),
@@ -165,6 +277,14 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
                     generationProblemText(l, p),
+                    style: TextStyle(color: theme.colorScheme.error),
+                  ),
+                ),
+              if (_allDuplicates)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    l.instructorResSuggestAllDuplicates,
                     style: TextStyle(color: theme.colorScheme.error),
                   ),
                 ),

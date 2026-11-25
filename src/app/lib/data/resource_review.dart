@@ -30,15 +30,27 @@ class ResourceDraft {
   }
 }
 
-enum ResourceDraftIssue { noConcept, titleMissing, urlMissing, urlInvalid }
+enum ResourceDraftIssue {
+  noConcept,
+  titleMissing,
+  urlMissing,
+  urlInvalid,
+
+  /// Another resource of the course already has this link.
+  duplicateLink,
+}
 
 /// Activities may have no link; videos, links and files need an http(s)
-/// link the instructor checked.
+/// link the instructor checked. With [existing] (the course's resources),
+/// a link already used by another resource is refused; rejected ones do
+/// not count.
 List<ResourceDraftIssue> validateResourceDraft(
   ResourceDraft d,
-  Set<String> approvedConceptIds,
-) {
+  Set<String> approvedConceptIds, {
+  Iterable<Resource> existing = const [],
+}) {
   final url = d.url?.trim() ?? '';
+  final valid = url.isNotEmpty && isWebLink(url);
   return [
     if (!d.conceptIds.any(approvedConceptIds.contains))
       ResourceDraftIssue.noConcept,
@@ -46,7 +58,30 @@ List<ResourceDraftIssue> validateResourceDraft(
     if (url.isEmpty && d.type != ResourceType.activity)
       ResourceDraftIssue.urlMissing,
     if (url.isNotEmpty && !isWebLink(url)) ResourceDraftIssue.urlInvalid,
+    if (valid &&
+        existing.any(
+          (r) =>
+              r.id != d.id &&
+              r.status != ReviewStatus.rejected &&
+              r.url != null &&
+              sameWebLink(r.url!, url),
+        ))
+      ResourceDraftIssue.duplicateLink,
   ];
+}
+
+/// The same page, ignoring http/https, "www.", letter case of the host and
+/// a trailing slash.
+bool sameWebLink(String a, String b) {
+  String key(String url) {
+    final u = Uri.tryParse(url.trim());
+    if (u == null) return url.trim();
+    final host = u.host.toLowerCase().replaceFirst(RegExp(r'^www\.'), '');
+    final path = u.path.replaceFirst(RegExp(r'/+$'), '');
+    return '$host$path${u.hasQuery ? '?${u.query}' : ''}';
+  }
+
+  return key(a) == key(b);
 }
 
 bool isWebLink(String url) {
