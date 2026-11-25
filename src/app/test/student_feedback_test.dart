@@ -403,7 +403,7 @@ void main() {
       await closeAndOpenDialog(tester);
 
       expect(find.text('Add an AI explanation'), findsOneWidget);
-      final toggle = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
+      final toggle = tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Add an AI explanation'));
       expect(toggle.onChanged, isNull);
       expect(toggle.value, isFalse);
 
@@ -458,7 +458,7 @@ void main() {
       await tester.tap(find.text('Publish feedback'));
       await tester.pumpAndSettle();
 
-      final toggle = find.byType(SwitchListTile);
+      final toggle = find.widgetWithText(SwitchListTile, 'Add an AI explanation');
       expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
       await tester.tap(toggle);
       await tester.pumpAndSettle();

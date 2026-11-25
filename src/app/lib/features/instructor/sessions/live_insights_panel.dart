@@ -8,6 +8,9 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import 'live_insights.dart';
+import 'teaching_actions_card.dart';
+import 'concept_overview_card.dart';
+import 'insights_presentation_layout.dart';
 
 typedef _InsightsContent = (
   List<Question>,
@@ -15,7 +18,7 @@ typedef _InsightsContent = (
   List<Concept>,
 );
 
-class LiveInsightsPanel extends StatefulWidget {
+class LiveInsightsPanel extends StatelessWidget {
   const LiveInsightsPanel({
     super.key,
     required this.session,
@@ -24,12 +27,24 @@ class LiveInsightsPanel extends StatefulWidget {
   final Session session;
 
   @override
-  State<LiveInsightsPanel> createState() =>
-      _LiveInsightsPanelState();
+  Widget build(BuildContext context) => _SessionInsightsPanel(
+        // A new session or service instance must never reuse old evidence.
+        key: ValueKey((session.id, session.courseId, ServicesScope.of(context))),
+        session: session,
+      );
+}
+
+class _SessionInsightsPanel extends StatefulWidget {
+  const _SessionInsightsPanel({super.key, required this.session});
+
+  final Session session;
+
+  @override
+  State<_SessionInsightsPanel> createState() => _LiveInsightsPanelState();
 }
 
 class _LiveInsightsPanelState
-    extends State<LiveInsightsPanel> {
+    extends State<_SessionInsightsPanel> {
   Future<_InsightsContent>? _content;
   Stream<List<Response>>? _responses;
 
@@ -143,80 +158,104 @@ class _LiveInsightsPanelState
 
     final visibleIds = {
       for (final concept in insights.concepts)
-        if (!concept.suppressed) concept.conceptId,
+        if (!concept.suppressed &&
+            concept.respondents >= insights.minGroupSize &&
+            covered.contains(concept.conceptId))
+          concept.conceptId,
     };
 
     final signals = insights.prerequisiteSignals
         .where(
           (signal) =>
+              signal.participantsWithPossibleGap >= insights.minGroupSize &&
               visibleIds.contains(signal.conceptId) &&
               visibleIds.contains(signal.prerequisiteId),
         )
         .take(3);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          l.instructorInsightsTitle,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-
-        const SizedBox(height: 16),
-
-        if (insights.participantCount == 0)
+    return InsightsPresentationLayout(
+      key: ValueKey(widget.session.id),
+      builder: (context, presentationMode) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           Text(
-            l.instructorInsightsWaiting(
-              insights.minGroupSize,
-            ),
-          )
-        else ...[
-          for (final concept in insights.concepts)
-            if (covered.contains(concept.conceptId))
-            _ConceptInsightCard(
-              name: names[concept.conceptId] ??
-                  concept.conceptId,
-              summary: concept,
-              minGroupSize: insights.minGroupSize,
-            ),
-
-          if (signals.isNotEmpty) ...[
-            const SizedBox(height: 24),
-
-            Text(
-              l.instructorInsightsPrerequisiteTitle,
-              style:
-                  Theme.of(context).textTheme.titleLarge,
-            ),
-
-            const SizedBox(height: 12),
-
-            // Two lines per signal, readable on a projector: the numbers,
-            // then a cautious suggestion.
-            for (final signal in signals) ...[
-              _InsightBullet(
-                text: l.instructorInsightsSignal(
-                  signal.participantsWithPossibleGap,
-                  signal.participantsStrugglingWithConcept,
-                  names[signal.conceptId] ?? signal.conceptId,
-                  names[signal.prerequisiteId] ?? signal.prerequisiteId,
-                ),
-                detail: l.instructorInsightsSignalAction(
-                  names[signal.prerequisiteId] ?? signal.prerequisiteId,
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ],
+            l.instructorInsightsTitle,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
 
           const SizedBox(height: 16),
 
-          Text(
-            l.instructorInsightsDisclaimer,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          if (insights.participantCount == 0)
+            Text(
+              l.instructorInsightsWaiting(
+                insights.minGroupSize,
+              ),
+            )
+          else ...[
+            ConceptOverviewCard(
+              insights: insights,
+              coveredConceptIds: covered,
+              conceptNames: names,
+              presentationMode: presentationMode,
+            ),
+            TeachingActionsCard(
+              insights: insights,
+              coveredConceptIds: covered,
+              conceptNames: names,
+              showStrategy: !presentationMode,
+              sessionId: widget.session.id,
+              chooseStrategy: ServicesScope.of(context).teachingDraftGenerator?.generate,
+            ),
+            if (!presentationMode) ...[
+              for (final concept in insights.concepts)
+                if (covered.contains(concept.conceptId))
+                _ConceptInsightCard(
+                  name: names[concept.conceptId] ??
+                      concept.conceptId,
+                  summary: concept,
+                  minGroupSize: insights.minGroupSize,
+                ),
+
+              if (signals.isNotEmpty) ...[
+                const SizedBox(height: 24),
+
+                Text(
+                  l.instructorInsightsPrerequisiteTitle,
+                  style:
+                      Theme.of(context).textTheme.titleLarge,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Two lines per signal, readable on a projector: the numbers,
+                // then a cautious suggestion.
+                for (final signal in signals) ...[
+                  _InsightBullet(
+                    text: l.instructorInsightsSignal(
+                      signal.participantsWithPossibleGap,
+                      signal.participantsStrugglingWithConcept,
+                      names[signal.conceptId] ?? signal.conceptId,
+                      names[signal.prerequisiteId] ?? signal.prerequisiteId,
+                    ),
+                    detail: l.instructorInsightsSignalAction(
+                      names[signal.prerequisiteId] ?? signal.prerequisiteId,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ],
+
+            ],
+
+            const SizedBox(height: 16),
+
+            Text(
+              l.instructorInsightsDisclaimer,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'data/fake/in_memory_content_repository.dart';
 import 'data/ai/feedback_explainer.dart';
 import 'data/ai/question_generator.dart';
+import 'data/ai/teaching_draft_generator.dart';
 import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
 import 'data/repositories/content_repository.dart';
@@ -18,6 +19,7 @@ class AppServices {
     this.inMemory = false,
     this.questionGenerator,
     this.feedbackExplainer,
+    this.teachingDraftGenerator,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
         locale = ValueNotifier(initialLocale);
@@ -48,6 +50,9 @@ class AppServices {
   /// AI level 2 (explanations in published feedback). Null when not
   /// available: feedback is then published with template explanations.
   final FeedbackExplainer? feedbackExplainer;
+
+  /// Optional instructor draft generator; absent in offline mode.
+  final TeachingDraftGenerator? teachingDraftGenerator;
 
   /// Current UI language. Changing it rebuilds the app in that language and
   /// direction (RTL for Arabic, LTR for English).

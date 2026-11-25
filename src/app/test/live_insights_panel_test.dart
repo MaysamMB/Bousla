@@ -100,6 +100,23 @@ void main() {
     expect(find.textContaining('appears once at least 5'), findsOneWidget);
   });
 
+  testWidgets('switching sessions discards previous classroom evidence', (
+    tester,
+  ) async {
+    final (services, first) = await _session(5);
+    await _show(tester, services, first);
+    expect(find.textContaining('5 answered · 0% correct'), findsWidgets);
+    final second = await services.sessions.createSession(
+      courseId: first.courseId,
+      ownerId: first.ownerId,
+      questions: first.questions,
+    );
+    // Same widget position and services, but a different empty session.
+    await _show(tester, services, second);
+    expect(find.textContaining('5 answered · 0% correct'), findsNothing);
+    expect(find.textContaining('appears once at least 5'), findsOneWidget);
+  });
+
   testWidgets('the session screen shows the panel under the counter', (
     tester,
   ) async {
