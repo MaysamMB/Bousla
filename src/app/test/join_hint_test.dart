@@ -43,4 +43,15 @@ void main() {
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.decoration!.errorMaxLines, greaterThanOrEqualTo(3));
   });
+
+  testWidgets('the join screen opens "My profile", which explains how to start', (
+    tester,
+  ) async {
+    await _open(tester, '/join');
+    await tester.tap(find.byKey(const ValueKey('open-profile')));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('ملفي'), findsWidgets);
+    expect(find.textContaining('احفظ تقدّمك (اختياري)'), findsOneWidget);
+  });
 }
