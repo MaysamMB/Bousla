@@ -345,5 +345,6 @@
   "reviewEditorRemoveTranslation": "إزالة الترجمة",
   "reviewEditorTranslationAr": "الترجمة العربية",
   "reviewEditorTranslationEn": "الترجمة الإنجليزية",
-  "reviewEditorOptionText": "الإجابة"
+  "reviewEditorOptionText": "الإجابة",
+  "reviewAiShare": "{total} من {all, plural, =1{سؤال واحد} =2{سؤالين} few{{all} أسئلة} other{{all} سؤالاً}} اقترحها الذكاء الاصطناعي: اعتُمد {approved} (منها {edited} بعد تعديل) · رُفض {rejected} · بالانتظار {pending}"
 }

@@ -638,5 +638,7 @@
   "reviewEditorRemoveTranslation": "Remove the translation",
   "reviewEditorTranslationAr": "Arabic translation",
   "reviewEditorTranslationEn": "English translation",
-  "reviewEditorOptionText": "Answer"
+  "reviewEditorOptionText": "Answer",
+  "reviewAiShare": "{total} of {all} questions were drafted by AI: approved {approved} ({edited} after editing) · rejected {rejected} · waiting {pending}",
+  "@reviewAiShare": {"placeholders": {"total": {"type": "int"}, "all": {"type": "int"}, "approved": {"type": "int"}, "edited": {"type": "int"}, "rejected": {"type": "int"}, "pending": {"type": "int"}}}
 }

@@ -388,7 +388,10 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                       },
                     ),
                   ),
-                _StatsBanner(stats: aiReviewStats(data.questions)),
+                _StatsBanner(
+                  stats: aiReviewStats(data.questions),
+                  allQuestions: data.questions.length,
+                ),
                 // One compact row: AI drafting, and the answer languages
                 // for all questions (in a sheet, rarely changed).
                 Padding(
@@ -539,9 +542,13 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
 }
 
 class _StatsBanner extends StatelessWidget {
-  const _StatsBanner({required this.stats});
+  const _StatsBanner({required this.stats, required this.allQuestions});
 
   final AiReviewStats stats;
+
+  /// Every question in the tabs, AI or not: the tabs count these, the line
+  /// counts AI drafts only, so it says both.
+  final int allQuestions;
 
   @override
   Widget build(BuildContext context) {
@@ -558,9 +565,10 @@ class _StatsBanner extends StatelessWidget {
           Expanded(
             child: Text(
               stats.total > 0
-                  ? l.reviewStats(
+                  ? l.reviewAiShare(
                       stats.total,
-                      stats.approvedAsIs,
+                      allQuestions,
+                      stats.approvedAsIs + stats.approvedEdited,
                       stats.approvedEdited,
                       stats.rejected,
                       stats.pending,
