@@ -198,6 +198,18 @@ choose a support email, save. `bousla-educathon.web.app` is already an
 authorised domain. Without this step the app says Google sign-in is not
 enabled, and nothing is stored.
 
+**Safari (iPhone):** Safari blocks the sign-in window when it runs on
+another domain (`…firebaseapp.com`), and saving fails. So sign-in runs on
+the site's own domain (done 26 Nov):
+
+1. `src/app/firebase.env.json`: `"FIREBASE_AUTH_DOMAIN": "bousla-educathon.web.app"`.
+2. Google Cloud console → **APIs & Services → Credentials → OAuth 2.0
+   Client IDs → Web client (auto created by Google Service)** →
+   **Authorized redirect URIs** → add
+   `https://bousla-educathon.web.app/__/auth/handler` (keep the
+   `firebaseapp.com` one) → Save.
+3. `.\bousla deploy`.
+
 On the emulators, Google sign-in opens the emulator's own test window.
 
 ## Data layout
