@@ -5,6 +5,7 @@ import '../../../app_services.dart';
 import '../../../data/models.dart';
 import '../../../data/question_review.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/text_direction.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
@@ -404,6 +405,11 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                           label: Text(l.reviewAiGenerate),
                         ),
                       OutlinedButton.icon(
+                        onPressed: () => _openEditor(data),
+                        icon: const Icon(Icons.add),
+                        label: Text(l.reviewAddQuestion),
+                      ),
+                      OutlinedButton.icon(
                         key: const ValueKey('answer-languages'),
                         onPressed: () => _answerLanguages(data),
                         icon: const Icon(Icons.translate),
@@ -495,13 +501,6 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                 ),
               ],
             ),
-            floatingActionButton: selected.isEmpty
-                ? FloatingActionButton.extended(
-                    onPressed: () => _openEditor(data),
-                    icon: const Icon(Icons.add),
-                    label: Text(l.reviewAddQuestion),
-                  )
-                : null,
             bottomNavigationBar: selected.isEmpty
                 ? null
                 : SafeArea(
@@ -783,6 +782,8 @@ class _QuestionCard extends StatelessWidget {
                   child: Text(
                     question.prompt.of(language),
                     style: theme.textTheme.titleMedium,
+                    textDirection: textDirectionOf(question.prompt.of(language)),
+                    textAlign: screenAlign(context),
                   ),
                 ),
                 // Rarely used per question: hide the answers in one
@@ -832,6 +833,11 @@ class _QuestionCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         option.text.of(question.optionLanguageFor(language)),
+                        // SQL reads left-to-right even in Arabic.
+                        textDirection: textDirectionOf(
+                          option.text.of(question.optionLanguageFor(language)),
+                        ),
+                        textAlign: screenAlign(context),
                       ),
                     ),
                   ],
