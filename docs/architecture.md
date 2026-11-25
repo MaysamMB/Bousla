@@ -165,7 +165,7 @@ Validation (`validate_data.py`, mirrored later in Dart): unique IDs; non-empty `
 
 **Versioning:** a question version that has been used in a session is never edited in place. Editing creates `version + 1`; responses store the version they answered, so old evidence still matches the question it was given for. In the MVP the rule is simpler and stricter: editing an **approved** question always creates a new version (it may have been used); pending and rejected questions are edited in place. Sessions load the exact versions they were created with (`ContentRepository.questionsForSession`).
 
-Uploading the instructor's own resources (links, videos, activities) follows steps 4–5 with `source: "instructor"`.
+Uploading the instructor's own resources (links, videos, activities) follows steps 4–5 with `source: "instructor"`. Implemented 25 Nov differently from step 2 for resources: the model only *describes* resources (kind, where to look, search words, what to cover) and never gives links, because models invent URLs; the instructor finds the real resource, adds its link and approves (`/instructor/resources`). Resources the instructor adds directly are approved on save.
 
 ## 5. Responses
 
