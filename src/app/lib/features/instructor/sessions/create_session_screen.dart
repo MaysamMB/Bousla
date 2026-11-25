@@ -10,6 +10,7 @@ import 'join_qr.dart';
 import '../../../data/session_title.dart';
 import 'live_insights_panel.dart';
 import '../resources/session_resources_card.dart';
+import 'share_feedback.dart';
 import 'past_sessions_screen.dart';
 import 'publish_feedback_dialog.dart';
 
@@ -344,11 +345,14 @@ class _LiveSessionPanel extends StatelessWidget {
               children: [
                 Text(l.instructorSessionClosed, textAlign: TextAlign.center),
                 const SizedBox(height: 12),
-                if (current.feedbackReleased)
+                if (current.feedbackReleased) ...[
                   Text(
                     l.instructorFeedbackPublished,
                     textAlign: TextAlign.center,
-                  )
+                  ),
+                  const SizedBox(height: 12),
+                  ShareFeedbackButton(session: current),
+                ]
                 else
                   FilledButton.icon(
                     onPressed: () =>

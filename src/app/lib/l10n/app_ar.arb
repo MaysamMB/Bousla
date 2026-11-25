@@ -346,5 +346,12 @@
   "reviewEditorTranslationAr": "الترجمة العربية",
   "reviewEditorTranslationEn": "الترجمة الإنجليزية",
   "reviewEditorOptionText": "الإجابة",
-  "reviewAiShare": "{total} من {all, plural, =1{سؤال واحد} =2{سؤالين} few{{all} أسئلة} other{{all} سؤالاً}} اقترحها الذكاء الاصطناعي: اعتُمد {approved} (منها {edited} بعد تعديل) · رُفض {rejected} · بالانتظار {pending}"
+  "reviewAiShare": "{total} من {all, plural, =1{سؤال واحد} =2{سؤالين} few{{all} أسئلة} other{{all} سؤالاً}} اقترحها الذكاء الاصطناعي: اعتُمد {approved} (منها {edited} بعد تعديل) · رُفض {rejected} · بالانتظار {pending}",
+  "instructorShareFeedback": "مشاركة الرابط مع الطلاب",
+  "instructorShareHint": "بوصلة لا تعرف من هم طلابك، فلا تستطيع إرسال إشعار لهم. أرسل لهم هذه الرسالة: ملاحظات كل طالب على الهاتف والمتصفح الذي أجاب منه.",
+  "instructorShareMessage": "ملاحظاتكم الشخصية من جلسة بوصلة ({code}) جاهزة. افتحوا الرابط من نفس الهاتف والمتصفح الذي أجبتم منه:",
+  "instructorShareSend": "مشاركة…",
+  "instructorShareCopy": "نسخ الرسالة",
+  "instructorShareCopied": "نُسخت الرسالة",
+  "instructorShareClassroom": "Google Classroom"
 }
