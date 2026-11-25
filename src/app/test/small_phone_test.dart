@@ -46,6 +46,21 @@ void main() {
       expect(find.byType(FilledButton).hitTestable(), findsOneWidget);
     });
 
+    testWidgets('join stays reachable above the keyboard ($locale)',
+        (tester) async {
+      final services = AppServices.inMemory(initialLocale: locale);
+      await showOnPhone(tester, services, const JoinScreen());
+      await tester.showKeyboard(find.byType(TextField));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.enterText(find.byType(TextField), 'ABC234');
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final join = find.byType(FilledButton);
+      expect(tester.getRect(join).bottom, lessThanOrEqualTo(568 - 300));
+      expect(join.hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('submit stays visible on a small phone ($locale)', (
       tester,
     ) async {
