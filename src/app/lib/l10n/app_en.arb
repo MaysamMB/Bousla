@@ -683,5 +683,6 @@
   "studentProfileDeleteConfirm": "Delete",
   "studentProfileCancel": "Cancel",
   "studentProfileDeleted": "Your profile was deleted.",
-  "studentProfileSignOut": "Sign out"
+  "studentProfileSignOut": "Sign out",
+  "studentProfileContinueSignIn": "Continue signing in with Google"
 }

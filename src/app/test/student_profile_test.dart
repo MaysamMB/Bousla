@@ -1,6 +1,9 @@
 import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/feedback.dart';
+import 'package:bousla_app/data/fake/in_memory_content_repository.dart';
+import 'package:bousla_app/data/fake/in_memory_session_repository.dart';
 import 'package:bousla_app/data/models.dart';
+import 'package:bousla_app/data/repositories/auth_service.dart';
 import 'package:bousla_app/features/student_web/feedback/feedback_screen.dart';
 import 'package:bousla_app/l10n/app_localizations.dart';
 import 'package:bousla_engine/bousla_engine.dart';
@@ -23,8 +26,30 @@ const _feedback = StudentFeedback(
   ],
 );
 
-Future<(AppServices, Session)> _setUp() async {
-  final services = AppServices.inMemory(initialLocale: const Locale('en'));
+/// Safari blocks the first sign-in window (not opened straight from a tap).
+class _BlockedOnceAuth extends InMemoryAuthService {
+  var tries = 0;
+
+  @override
+  Future<StudentAccount> linkStudentAccount() {
+    tries++;
+    if (tries == 1) {
+      throw const StudentLinkFailure(StudentLinkProblem.popupBlocked);
+    }
+    return super.linkStudentAccount();
+  }
+}
+
+Future<(AppServices, Session)> _setUp({AuthService? auth}) async {
+  final services = auth == null
+      ? AppServices.inMemory(initialLocale: const Locale('en'))
+      : AppServices(
+          content: InMemoryContentRepository(),
+          sessions: InMemorySessionRepository(),
+          auth: auth,
+          inMemory: true,
+          initialLocale: const Locale('en'),
+        );
   final session = await services.sessions.createSession(
     courseId: 'database_systems',
     ownerId: 'teacher',
@@ -124,5 +149,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(await services.profiles.consentVersion(_me), isNull);
     expect(find.text('Your profile was deleted.'), findsOneWidget);
+  });
+
+  testWidgets('a blocked sign-in window: one more tap, no second consent',
+      (tester) async {
+    final auth = _BlockedOnceAuth();
+    final (services, session) = await _setUp(auth: auth);
+    await _show(tester, services, session);
+    await tester.tap(find.text('Add this session to my profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I agree, create my profile'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Continue signing in with Google'), findsOneWidget);
+    expect(await services.profiles.consentVersion(_me), isNull);
+
+    await tester.tap(find.text('Continue signing in with Google'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('profile-consent')), findsNothing);
+    expect(find.text('This session is in your profile.'), findsOneWidget);
+    expect(auth.tries, 2);
+    expect(await services.profiles.hasSession(_me, session.id), isTrue);
   });
 }

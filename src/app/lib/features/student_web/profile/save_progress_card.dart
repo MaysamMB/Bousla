@@ -29,6 +29,10 @@ class SaveProgressCard extends StatefulWidget {
 class _SaveProgressCardState extends State<SaveProgressCard> {
   var _saved = false;
   var _busy = false;
+
+  /// The student agreed but the browser blocked the sign-in window: the
+  /// next tap opens it straight away (no dialog in between).
+  var _agreedAwaitingSignIn = false;
   var _checked = false;
 
   @override
@@ -67,14 +71,18 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       var account = services.auth.studentAccount;
-      final consented = account == null
+      if (_agreedAwaitingSignIn && account == null) {
+        // Straight from this tap, so the browser allows the window.
+        account = await services.auth.linkStudentAccount();
+      }
+      final consented = account == null || _agreedAwaitingSignIn
           ? null
           : await services.profiles.consentVersion(account.uid);
       final needsConsent =
           consented == null || consented < profileConsentVersion;
       // Consent before anything is linked or stored, and again when the
       // text changed. No spinner while the student reads it.
-      if (needsConsent) {
+      if (needsConsent && !_agreedAwaitingSignIn) {
         if (!mounted) return;
         final agreed = await showProfileConsent(context);
         if (agreed != true) return;
@@ -85,8 +93,17 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
       final session =
           await services.sessions.watchSession(widget.sessionId).first;
       await services.profiles.saveSession(account.uid, session, widget.feedback);
-      if (mounted) setState(() => _saved = true);
+      if (mounted) {
+        setState(() {
+          _saved = true;
+          _agreedAwaitingSignIn = false;
+        });
+      }
     } on StudentLinkFailure catch (e) {
+      if (e.problem == StudentLinkProblem.popupBlocked) {
+        if (mounted) setState(() => _agreedAwaitingSignIn = true);
+        return;
+      }
       messenger.showSnackBar(SnackBar(content: Text(_problemText(l, e.problem))));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l.studentProfileErrFailed)));
@@ -146,7 +163,11 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.bookmark_add_outlined),
-                      label: Text(l.studentProfileSaveAction),
+                      label: Text(
+                        _agreedAwaitingSignIn
+                            ? l.studentProfileContinueSignIn
+                            : l.studentProfileSaveAction,
+                      ),
                     ),
             ),
           ],

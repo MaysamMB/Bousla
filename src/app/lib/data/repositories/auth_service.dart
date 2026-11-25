@@ -57,6 +57,10 @@ enum StudentLinkProblem {
   /// The sign-in window was closed.
   cancelled,
 
+  /// The browser blocked the sign-in window (Safari does when it does not
+  /// open straight from a tap): ask the student to tap once more.
+  popupBlocked,
+
   /// This Google account is already linked to another Bousla profile (from
   /// another browser), so this browser's sessions cannot join it.
   accountInUse,
@@ -90,6 +94,7 @@ StudentLinkProblem studentLinkProblemFromCode(String code) => switch (code) {
       'email-already-in-use' ||
       'account-exists-with-different-credential' =>
         StudentLinkProblem.accountInUse,
+      'popup-blocked' => StudentLinkProblem.popupBlocked,
       'operation-not-allowed' => StudentLinkProblem.notEnabled,
       'network-request-failed' => StudentLinkProblem.network,
       _ => StudentLinkProblem.unknown,

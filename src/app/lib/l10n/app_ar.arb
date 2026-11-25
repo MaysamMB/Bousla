@@ -387,5 +387,6 @@
   "studentProfileDeleteConfirm": "احذف",
   "studentProfileCancel": "إلغاء",
   "studentProfileDeleted": "حُذف ملفك.",
-  "studentProfileSignOut": "تسجيل الخروج"
+  "studentProfileSignOut": "تسجيل الخروج",
+  "studentProfileContinueSignIn": "متابعة تسجيل الدخول بحساب Google"
 }
