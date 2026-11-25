@@ -11,8 +11,14 @@ class FirebaseAuthService implements AuthService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _db;
 
+  // Instructors sign in with email and password. A student who linked a
+  // Google account for their profile is not an instructor candidate.
   static String? _instructorUid(User? user) =>
-      user == null || user.isAnonymous ? null : user.uid;
+      user == null ||
+              user.isAnonymous ||
+              !user.providerData.any((p) => p.providerId == 'password')
+          ? null
+          : user.uid;
 
   @override
   bool get requiresSignIn => true;
@@ -61,6 +67,33 @@ class FirebaseAuthService implements AuthService {
         .doc(uid)
         .get(const GetOptions(source: Source.server));
     return doc.exists;
+  }
+
+  @override
+  StudentAccount? get studentAccount {
+    final user = _auth.currentUser;
+    if (user == null || user.isAnonymous) return null;
+    if (!user.providerData.any((p) => p.providerId == 'google.com')) {
+      return null;
+    }
+    return StudentAccount(uid: user.uid, label: user.email ?? '');
+  }
+
+  @override
+  Future<StudentAccount> linkStudentAccount() async {
+    final user = _auth.currentUser;
+    if (user == null || !user.isAnonymous) {
+      throw const StudentLinkFailure(StudentLinkProblem.noSession);
+    }
+    try {
+      // A Google window; the UID stays the same, so this browser's answers
+      // and feedback stay this student's.
+      await user.linkWithPopup(GoogleAuthProvider());
+    } on FirebaseAuthException catch (e) {
+      throw StudentLinkFailure(studentLinkProblemFromCode(e.code), e.code);
+    }
+    return studentAccount ??
+        (throw const StudentLinkFailure(StudentLinkProblem.unknown));
   }
 
   @override
