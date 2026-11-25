@@ -31,6 +31,20 @@ void main() {
       expect(validateDraft(_validDraft(), concepts), isEmpty);
     });
 
+    test('a question written in one language (same text twice) is valid',
+        () {
+      final draft = QuestionDraft(
+        conceptIds: const ['primary_key'],
+        prompt: const LocalizedText(
+          ar: 'Can a primary key be NULL?',
+          en: 'Can a primary key be NULL?',
+        ),
+        options: [_o('a', 'Yes', 'Yes'), _o('b', 'No', 'No')],
+        correctOptionId: 'b',
+      );
+      expect(validateDraft(draft, concepts), isEmpty);
+    });
+
     test('reports every problem it finds', () {
       final draft = QuestionDraft(
         conceptIds: const ['nope'],

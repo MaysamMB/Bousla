@@ -1,0 +1,8 @@
+{
+  // firebase/node_modules holds npm packages (firebase-tools ships a Dart
+  // template, server.dart). It is not our code: keep the Dart analyzer out.
+  "dart.analysisExcludedFolders": ["firebase/node_modules"],
+  // Bousla runs on the web only; the Android folder is Flutter's default and
+  // is never built. Stop the Java extension from importing it with Gradle.
+  "java.import.gradle.enabled": false
+}
