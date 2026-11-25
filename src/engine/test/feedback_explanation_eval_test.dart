@@ -9,155 +9,16 @@ import 'dart:convert';
 import 'package:bousla_engine/bousla_engine.dart';
 import 'package:test/test.dart';
 
-LocalizedText _t(String ar, String en) => LocalizedText(ar: ar, en: en);
+import 'support/explanation_eval_cases.dart';
 
-/// The real Database Systems concepts (data/courses/database-systems).
-final _course = [
-  Concept(id: 'relational_model', name: _t('النموذج العلائقي', 'Relational Model')),
-  Concept(
-      id: 'primary_key',
-      name: _t('المفتاح الأساسي', 'Primary Key'),
-      prerequisites: ['relational_model']),
-  Concept(
-      id: 'foreign_key',
-      name: _t('المفتاح الخارجي', 'Foreign Key'),
-      prerequisites: ['primary_key']),
-  Concept(
-      id: 'er_modeling',
-      name: _t('نمذجة الكيانات والعلاقات', 'Entity-Relationship Modeling'),
-      prerequisites: ['relational_model']),
-  Concept(
-      id: 'functional_dependency',
-      name: _t('الاعتمادية الوظيفية', 'Functional Dependency'),
-      prerequisites: ['primary_key']),
-  Concept(
-      id: 'normalization',
-      name: _t('التطبيع', 'Normalization'),
-      prerequisites: ['functional_dependency']),
-  Concept(
-      id: 'sql_select',
-      name: _t('استعلامات SELECT الأساسية', 'Basic SELECT Queries'),
-      prerequisites: ['relational_model']),
-  Concept(
-      id: 'sql_join',
-      name: _t('ربط الجداول (JOIN)', 'Joins'),
-      prerequisites: ['sql_select', 'foreign_key']),
-  Concept(
-      id: 'sql_aggregation',
-      name: _t('التجميع (GROUP BY)', 'Aggregation (GROUP BY)'),
-      prerequisites: ['sql_select']),
-  Concept(
-      id: 'transactions_acid',
-      name: _t('المعاملات وخصائص ACID', 'Transactions and ACID'),
-      prerequisites: ['relational_model']),
-];
-
-/// The session asks about these; their direct prerequisites are included.
-const _session = ['primary_key', 'foreign_key', 'sql_select', 'sql_join'];
-const _covered = ['relational_model', ..._session];
-
-final _questions = [
-  for (final c in _session)
-    for (var n = 1; n <= 4; n++)
-      Question(
-          id: '${c}_$n',
-          version: 1,
-          conceptIds: [c],
-          optionIds: ['a', 'b', 'c', 'd']),
-];
-final _keys = [
-  for (final q in _questions)
-    AnswerKey(questionId: q.id, questionVersion: 1, correctOptionId: 'a'),
-];
-
-final _resources = [
-  for (final c in _session)
-    Resource(
-      id: 'res_${c}_practice',
-      conceptIds: [c],
-      type: ResourceType.activity,
-      language: ResourceLanguage.both,
-      title: _t('تدريب: ${_course.firstWhere((x) => x.id == c).name.ar}',
-          'Practice: ${_course.firstWhere((x) => x.id == c).name.en}'),
-    ),
-  Resource(
-    id: 'res_join_unreviewed',
-    conceptIds: ['sql_join'],
-    type: ResourceType.link,
-    language: ResourceLanguage.en,
-    title: _t('مقال غير معتمد', 'Unreviewed join article'),
-    url: 'https://unreviewed.example.org/join',
-    status: ReviewStatus.pendingReview,
-  ),
-];
-
-/// (attempts, correct) for primary_key, foreign_key, sql_select, sql_join.
-typedef _Pattern = List<(int, int)>;
-
-/// 20 distinct educational patterns.
-final List<(String, _Pattern)> _patterns = [
-  ('strong everywhere', [(3, 3), (3, 3), (3, 3), (3, 3)]),
-  ('strong, more answers', [(4, 4), (3, 3), (4, 4), (3, 3)]),
-  ('difficulty everywhere', [(2, 0), (2, 0), (2, 0), (2, 0)]),
-  ('difficulty in keys', [(2, 0), (3, 1), (2, 2), (2, 1)]),
-  ('insufficient evidence', [(1, 1), (1, 0), (0, 0), (0, 0)]),
-  ('insufficient evidence, other mix', [(1, 0), (0, 0), (1, 1), (0, 0)]),
-  ('emerging everywhere', [(2, 1), (2, 1), (2, 1), (2, 1)]),
-  ('emerging, more answers', [(3, 2), (3, 2), (2, 1), (3, 2)]),
-  ('weak prerequisite: not enough evidence', [(1, 0), (2, 0), (3, 3), (2, 0)]),
-  ('weak prerequisite: possible gap', [(2, 0), (2, 0), (3, 3), (2, 0)]),
-  ('difficulty, prerequisite mastered', [(3, 3), (2, 0), (3, 3), (2, 0)]),
-  ('difficulty, prerequisite emerging', [(2, 1), (2, 0), (2, 0), (2, 0)]),
-  ('SELECT gap under JOIN', [(3, 3), (3, 3), (2, 0), (2, 0)]),
-  ('mixed 1', [(3, 3), (2, 1), (3, 2), (2, 0)]),
-  ('mixed 2', [(2, 0), (3, 3), (2, 1), (3, 3)]),
-  ('mixed with unanswered', [(3, 3), (1, 1), (2, 1), (0, 0)]),
-  ('mixed, four answers each', [(4, 3), (4, 1), (4, 4), (4, 2)]),
-  ('all right but too few answers', [(2, 2), (2, 2), (2, 2), (2, 2)]),
-  ('mixed 3', [(3, 1), (3, 3), (3, 0), (3, 3)]),
-  ('mixed 4', [(4, 4), (2, 0), (1, 1), (2, 0)]),
-];
-
-/// Patterns answered by a second student, in the other language.
-const _twice = {0, 2, 6, 9, 12, 16};
-
-List<Response> _answers(String student, _Pattern p, Language lang) => [
-      for (var i = 0; i < _session.length; i++)
-        for (var n = 1; n <= p[i].$1; n++)
-          Response(
-            participantId: student,
-            questionId: '${_session[i]}_$n',
-            questionVersion: 1,
-            selectedOptionId: n <= p[i].$2 ? 'a' : 'b',
-            displayLanguage: lang,
-          ),
-    ];
-
-/// The instructor app's pipeline, per student.
-Map<String, ExplanationProfile> _profiles(List<Response> responses) {
-  final scored =
-      scoreResponses(responses: responses, questions: _questions, keys: _keys)
-          .scored;
-  final evidence = evidenceByParticipant(scored: scored, conceptIds: _covered);
-  return {
-    for (final e in evidence.entries)
-      e.key: () {
-        final masteries = estimateAll(e.value);
-        return buildExplanationProfile(
-          masteries: masteries,
-          findings:
-              analyzePrerequisites(masteries: masteries, concepts: _course),
-          recommendations: recommend(
-            masteries: masteries,
-            concepts: _course,
-            resources: _resources,
-            preferredLanguage: Language.ar,
-          ),
-          concepts: _course,
-        );
-      }(),
-  };
-}
+final _course = evalCourse;
+final _resources = evalResources;
+final _patterns = evalPatterns;
+const _twice = evalTwice;
+List<Response> _answers(String student, EvalPattern p, Language lang) =>
+    evalAnswers(student, p, lang);
+Map<String, ExplanationProfile> _profiles(List<Response> responses) =>
+    evalProfiles(responses);
 
 /// What the mocked model "answered" for profile number [i] (0-based).
 /// Null: the entry is missing from the answer.
@@ -232,8 +93,7 @@ void main() {
 
     // The fixture is indexed by pattern, so find each pattern's profile.
     final profileOfPattern = {
-      for (final e in patternOf.entries)
-        e.value: groups.profileOf(e.key),
+      for (final e in patternOf.entries) e.value: groups.profileOf(e.key),
     };
     final answer = jsonEncode([
       for (var i = 0; i < _patterns.length; i++)
