@@ -133,6 +133,22 @@ class _JoinScreenState extends State<JoinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF34E3B6),
+      brightness: Brightness.dark,
+    ).copyWith(surface: const Color(0xFF0B1230));
+    return Theme(
+      data: ThemeData(
+        colorScheme: colors,
+        scaffoldBackgroundColor: colors.surface,
+        fontFamily: 'NotoSans',
+        fontFamilyFallback: const ['NotoSansArabic', 'NotoSansMath'],
+      ),
+      child: Builder(builder: _buildPage),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -142,7 +158,7 @@ class _JoinScreenState extends State<JoinScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -153,6 +169,11 @@ class _JoinScreenState extends State<JoinScreen> {
                   textDirection: TextDirection.ltr,
                   child: TextField(
                     controller: _code,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineSmall?.copyWith(letterSpacing: 2),
                     textAlign: TextAlign.center,
                     textCapitalization: TextCapitalization.characters,
                     autofocus: widget.initialCode == null,
@@ -177,7 +198,16 @@ class _JoinScreenState extends State<JoinScreen> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _busy ? null : _join,
-                  child: Text(l.studentJoin),
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+                  child: _busy
+                      ? SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            semanticsLabel: l.studentJoin,
+                          ),
+                        )
+                      : Text(l.studentJoin),
                 ),
               ],
             ),
