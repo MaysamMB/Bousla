@@ -21,7 +21,9 @@ List<DraftProblem> validateDraft(
   final en = draft.prompt.en.trim();
   if (ar.isEmpty) {
     problems.add(DraftProblem.promptArabicMissing);
-  } else if (!_arabicLetter.hasMatch(ar)) {
+  } else if (ar != en && !_arabicLetter.hasMatch(ar)) {
+    // A question written in one language (no translation) has the same
+    // text in both; a separate Arabic text must be Arabic.
     problems.add(DraftProblem.promptArabicHasNoArabicLetters);
   }
   if (en.isEmpty) problems.add(DraftProblem.promptEnglishMissing);

@@ -630,5 +630,13 @@
   "@instructorSessionResCount": {"placeholders": {"count": {"type": "int"}}},
   "instructorSessionResWaiting": "{count} AI suggestions waiting for a link",
   "@instructorSessionResWaiting": {"placeholders": {"count": {"type": "int"}}},
-  "instructorSessionResAll": "All resources and AI suggestions"
+  "instructorSessionResAll": "All resources and AI suggestions",
+  "reviewAnswerLanguages": "Answer languages",
+  "reviewEditorPrompt": "Question",
+  "reviewEditorPromptHint": "In any language. Without a translation, students see it as written in both interface languages.",
+  "reviewEditorAddTranslation": "Add a translation",
+  "reviewEditorRemoveTranslation": "Remove the translation",
+  "reviewEditorTranslationAr": "Arabic translation",
+  "reviewEditorTranslationEn": "English translation",
+  "reviewEditorOptionText": "Answer"
 }

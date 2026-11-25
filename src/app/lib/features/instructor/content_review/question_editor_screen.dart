@@ -32,25 +32,37 @@ class QuestionEditorScreen extends StatefulWidget {
   State<QuestionEditorScreen> createState() => _QuestionEditorScreenState();
 }
 
+final _arabicLetter = RegExp(r'[؀-ۿ]');
+
+bool _isArabic(String text) => _arabicLetter.hasMatch(text);
+
+/// One answer: the text in any language, and its optional translation.
 class _OptionFields {
-  _OptionFields(this.id, {String ar = '', String en = ''})
-    : ar = TextEditingController(text: ar),
-      en = TextEditingController(text: en);
+  _OptionFields(this.id, {String main = '', String translation = ''})
+    : main = TextEditingController(text: main),
+      translation = TextEditingController(text: translation);
 
   final String id;
-  final TextEditingController ar;
-  final TextEditingController en;
+  final TextEditingController main;
+  final TextEditingController translation;
 
   void dispose() {
-    ar.dispose();
-    en.dispose();
+    main.dispose();
+    translation.dispose();
   }
 }
 
 class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
-  late final TextEditingController _promptAr;
-  late final TextEditingController _promptEn;
+  /// The question as the instructor writes it, in any language.
+  late final TextEditingController _prompt;
+
+  /// The optional translation, into the other language.
+  late final TextEditingController _promptTranslation;
   late final List<_OptionFields> _options;
+
+  /// The translation fields are shown. Without a translation, the same text
+  /// is stored for Arabic and English and students see it as written.
+  late bool _translate;
 
   /// The concept chosen in the dropdown, plus any further concepts the
   /// question already had (kept unchanged).
@@ -68,14 +80,28 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   void initState() {
     super.initState();
     final q = widget.question;
-    _promptAr = TextEditingController(text: q?.prompt.ar ?? '');
-    _promptEn = TextEditingController(text: q?.prompt.en ?? '');
+    // A question written in one language has the same text in both.
+    final single = q == null ||
+        (q.prompt.ar.trim() == q.prompt.en.trim() &&
+            q.options.every((o) => o.text.ar.trim() == o.text.en.trim()));
+    _translate = !single;
+    _prompt = TextEditingController(text: q?.prompt.ar ?? '');
+    _promptTranslation =
+        TextEditingController(text: single ? '' : q.prompt.en);
     _options = q == null
         ? [_OptionFields('a'), _OptionFields('b')]
         : [
             for (final o in q.options)
-              _OptionFields(o.id, ar: o.text.ar, en: o.text.en),
+              _OptionFields(
+                o.id,
+                main: o.text.ar,
+                translation: single ? '' : o.text.en,
+              ),
           ];
+    // Directions follow the text typed, so refresh on every change.
+    for (final c in [_prompt, _promptTranslation]) {
+      c.addListener(_refresh);
+    }
     final known = {for (final c in widget.concepts) c.id};
     final first = q?.conceptIds.firstOrNull;
     // The dropdown only accepts approved concepts.
@@ -87,27 +113,43 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
 
   @override
   void dispose() {
-    _promptAr.dispose();
-    _promptEn.dispose();
+    _prompt.dispose();
+    _promptTranslation.dispose();
     for (final o in _options) {
       o.dispose();
     }
     super.dispose();
   }
 
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  /// The main text is Arabic when it has Arabic letters; the translation is
+  /// then the English, and the other way round.
+  bool get _mainIsArabic => _isArabic(_prompt.text);
+
+  /// Both languages from a main text and its translation. Without a
+  /// translation (or an empty one), the main text is used for both.
+  LocalizedText _pair(String main, String translation) {
+    final t = translation.trim();
+    if (!_translate || t.isEmpty) return LocalizedText(ar: main, en: main);
+    return _mainIsArabic
+        ? LocalizedText(ar: main, en: translation)
+        : LocalizedText(ar: translation, en: main);
+  }
+
   QuestionDraft _draft() => QuestionDraft(
     id: widget.question?.id,
     conceptIds: [if (_conceptId != null) _conceptId!, ..._otherConcepts],
-    prompt: LocalizedText(ar: _promptAr.text, en: _promptEn.text),
+    prompt: _pair(_prompt.text, _promptTranslation.text),
     options: [
       for (final o in _options)
-        OptionView(
-          id: o.id,
-          text: LocalizedText(ar: o.ar.text, en: o.en.text),
-        ),
+        OptionView(id: o.id, text: _pair(o.main.text, o.translation.text)),
     ],
     correctOptionId: _correct,
-    hiddenOptionLanguages: _hidden,
+    // Hiding one language only makes sense with a translation.
+    hiddenOptionLanguages: _translate ? _hidden : const {},
   );
 
   void _addOption() => setState(
@@ -159,6 +201,13 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     final language = currentLanguage(context);
     final q = widget.question;
     final location = q?.sourceLocation;
+    // Until something is typed, assume the interface language.
+    final mainArabic = _prompt.text.trim().isEmpty
+        ? language == Language.ar
+        : _mainIsArabic;
+    final translationLabel = mainArabic
+        ? l.reviewEditorTranslationEn
+        : l.reviewEditorTranslationAr;
 
     return Scaffold(
       appBar: AppBar(
@@ -189,19 +238,35 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                 const SizedBox(height: 12),
               ],
               _BilingualField(
-                controller: _promptAr,
-                label: l.reviewEditorPromptAr,
-                direction: TextDirection.rtl,
+                key: const ValueKey('prompt'),
+                controller: _prompt,
+                label: l.reviewEditorPrompt,
+                helper: l.reviewEditorPromptHint,
                 minLines: 2,
               ),
-              const SizedBox(height: 12),
-              _BilingualField(
-                controller: _promptEn,
-                label: l.reviewEditorPromptEn,
-                direction: TextDirection.ltr,
-                minLines: 2,
+              if (_translate) ...[
+                const SizedBox(height: 12),
+                _BilingualField(
+                  key: const ValueKey('prompt-translation'),
+                  controller: _promptTranslation,
+                  label: translationLabel,
+                  minLines: 2,
+                ),
+              ],
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  key: const ValueKey('translate'),
+                  onPressed: () => setState(() => _translate = !_translate),
+                  icon: Icon(_translate ? Icons.close : Icons.translate),
+                  label: Text(
+                    _translate
+                        ? l.reviewEditorRemoveTranslation
+                        : l.reviewEditorAddTranslation,
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 4),
               DropdownButtonFormField<String>(
                 initialValue: _conceptId,
                 decoration: InputDecoration(
@@ -217,6 +282,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                 ],
                 onChanged: (value) => setState(() => _conceptId = value),
               ),
+              if (_translate) ...[
               const SizedBox(height: 12),
               HideLanguageToggles(
                 arabic: _hidden.contains(Language.ar),
@@ -233,6 +299,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                 l.reviewHiddenOptionsHint,
                 style: theme.textTheme.bodySmall,
               ),
+              ],
               const SizedBox(height: 16),
               for (var i = 0; i < _options.length; i++)
                 Card(
@@ -267,16 +334,18 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                         ),
                         const SizedBox(height: 8),
                         _BilingualField(
-                          controller: _options[i].ar,
-                          label: l.reviewEditorOptionAr,
-                          direction: TextDirection.rtl,
+                          key: ValueKey('option-${_options[i].id}'),
+                          controller: _options[i].main,
+                          label: l.reviewEditorOptionText,
                         ),
-                        const SizedBox(height: 8),
-                        _BilingualField(
-                          controller: _options[i].en,
-                          label: l.reviewEditorOptionEn,
-                          direction: TextDirection.ltr,
-                        ),
+                        if (_translate) ...[
+                          const SizedBox(height: 8),
+                          _BilingualField(
+                            key: ValueKey('option-${_options[i].id}-translation'),
+                            controller: _options[i].translation,
+                            label: translationLabel,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -323,30 +392,61 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   }
 }
 
-/// A text field whose direction follows its language, not the UI language,
-/// so Arabic text stays right-to-left even in the English interface.
-class _BilingualField extends StatelessWidget {
+/// A text field whose direction follows what is typed (Arabic letters:
+/// right-to-left), not the UI language.
+class _BilingualField extends StatefulWidget {
   const _BilingualField({
+    super.key,
     required this.controller,
     required this.label,
-    required this.direction,
+    this.helper,
     this.minLines = 1,
   });
 
   final TextEditingController controller;
   final String label;
-  final TextDirection direction;
+  final String? helper;
   final int minLines;
 
   @override
-  Widget build(BuildContext context) => TextField(
-    controller: controller,
-    textDirection: direction,
-    minLines: minLines,
-    maxLines: null,
-    decoration: InputDecoration(
-      labelText: label,
-      border: const OutlineInputBorder(),
-    ),
-  );
+  State<_BilingualField> createState() => _BilingualFieldState();
+}
+
+class _BilingualFieldState extends State<_BilingualField> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_changed);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_changed);
+    super.dispose();
+  }
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = widget.controller.text;
+    return TextField(
+      controller: widget.controller,
+      textDirection: text.trim().isEmpty
+          ? null
+          : _isArabic(text)
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+      minLines: widget.minLines,
+      maxLines: null,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        helperText: widget.helper,
+        helperMaxLines: 2,
+        border: const OutlineInputBorder(),
+      ),
+    );
+  }
 }

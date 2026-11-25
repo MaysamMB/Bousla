@@ -337,5 +337,13 @@
   "instructorSessionResMissing": "{count, plural, =1{مفهوم واحد في هذه الجلسة بلا مصدر معتمد: الطلاب الذين يحتاجونه لن يجدوا مصدراً يفتحونه. يمكنك إضافة مصدر الآن، قبل نشر الملاحظات.} =2{مفهومان في هذه الجلسة بلا مصدر معتمد: الطلاب الذين يحتاجونهما لن يجدوا مصدراً يفتحونه. يمكنك إضافة مصادر الآن، قبل نشر الملاحظات.} few{{count} مفاهيم في هذه الجلسة بلا مصدر معتمد: الطلاب الذين يحتاجونها لن يجدوا مصدراً يفتحونه. يمكنك إضافة مصادر الآن، قبل نشر الملاحظات.} other{{count} مفهوماً في هذه الجلسة بلا مصدر معتمد: الطلاب الذين يحتاجونها لن يجدوا مصدراً يفتحونه. يمكنك إضافة مصادر الآن، قبل نشر الملاحظات.}}",
   "instructorSessionResCount": "{count, plural, =0{لا يوجد مصدر معتمد} =1{مصدر معتمد واحد} =2{مصدران معتمدان} few{{count} مصادر معتمدة} other{{count} مصدراً معتمداً}}",
   "instructorSessionResWaiting": "{count} اقتراح من الذكاء الاصطناعي بانتظار رابط",
-  "instructorSessionResAll": "كل المصادر واقتراحات الذكاء الاصطناعي"
+  "instructorSessionResAll": "كل المصادر واقتراحات الذكاء الاصطناعي",
+  "reviewAnswerLanguages": "لغة الإجابات",
+  "reviewEditorPrompt": "السؤال",
+  "reviewEditorPromptHint": "بأي لغة. بدون ترجمة، يراه الطلاب كما كتبته في واجهتي اللغتين.",
+  "reviewEditorAddTranslation": "إضافة ترجمة",
+  "reviewEditorRemoveTranslation": "إزالة الترجمة",
+  "reviewEditorTranslationAr": "الترجمة العربية",
+  "reviewEditorTranslationEn": "الترجمة الإنجليزية",
+  "reviewEditorOptionText": "الإجابة"
 }
