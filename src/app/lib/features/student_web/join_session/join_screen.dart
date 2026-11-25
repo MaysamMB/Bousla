@@ -55,8 +55,7 @@ class _JoinScreenState extends State<JoinScreen> {
       if (session.status == SessionStatus.closed) {
         // Closed, but feedback may be published: the same browser keeps the
         // same anonymous participant, so it can still open its feedback.
-        final participantId =
-            session.feedbackReleased
+        final participantId = session.feedbackReleased
             ? await _releasedFeedbackFor(services, session)
             : null;
         if (!mounted) return;
@@ -138,64 +137,89 @@ class _JoinScreenState extends State<JoinScreen> {
     final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.studentJoinTitle),
+        title: Text(l.appTitle),
         actions: const [LanguageSwitcher()],
       ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Codes are typed left-to-right in both languages.
-                Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: TextField(
-                    controller: _code,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineSmall?.copyWith(letterSpacing: 2),
-                    textAlign: TextAlign.center,
-                    textCapitalization: TextCapitalization.characters,
-                    autofocus: widget.initialCode == null,
-                    decoration: InputDecoration(
-                      labelText: l.studentEnterCode,
-                      errorText: _error,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              l.studentJoinTitle,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Codes are typed left-to-right in both languages.
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: TextField(
+                              controller: _code,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              style: Theme.of(
+                                context,
+                              )
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(letterSpacing: 2),
+                              textAlign: TextAlign.center,
+                              textCapitalization: TextCapitalization.characters,
+                              autofocus: widget.initialCode == null,
+                              decoration: InputDecoration(
+                                labelText: l.studentEnterCode,
+                                errorText: _error,
+                              ),
+                              onSubmitted: (_) => _busy ? null : _join(),
+                            ),
+                          ),
+                          // Came without a link: remind them the QR code is scanned
+                          // with the phone's own camera (it opens this page with the
+                          // code filled in). Outside the LTR box, so Arabic reads RTL.
+                          if (widget.initialCode == null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              l.studentScanHint,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                    onSubmitted: (_) => _busy ? null : _join(),
                   ),
-                ),
-                // Came without a link: remind them the QR code is scanned
-                // with the phone's own camera (it opens this page with the
-                // code filled in). Outside the LTR box, so Arabic reads RTL.
-                if (widget.initialCode == null) ...[
                   const SizedBox(height: 8),
-                  Text(
-                    l.studentScanHint,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  FilledButton(
+                    onPressed: _busy ? null : _join,
+                    style:
+                        FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+                    child: _busy
+                        ? SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              semanticsLabel: l.studentJoin,
+                            ),
+                          )
+                        : Text(l.studentJoin),
                   ),
                 ],
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: _busy ? null : _join,
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-                  child: _busy
-                      ? SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            semanticsLabel: l.studentJoin,
-                          ),
-                        )
-                      : Text(l.studentJoin),
-                ),
-              ],
+              ),
             ),
           ),
         ),
