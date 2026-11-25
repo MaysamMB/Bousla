@@ -1,11 +1,11 @@
 {
-    "name": "bousla_app",
-    "short_name": "bousla_app",
+    "name": "Bousla · بوصلة",
+    "short_name": "Bousla",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B1230",
+    "theme_color": "#0B1230",
+    "description": "Bousla: answer a short quiz and see what you understand and what to learn next.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

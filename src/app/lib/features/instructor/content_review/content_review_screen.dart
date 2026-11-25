@@ -289,7 +289,15 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
           child: Scaffold(
             appBar: AppBar(
               title: Text(l.reviewTitle),
-              actions: const [LanguageSwitcher()],
+              actions: [
+                IconButton(
+                  tooltip: l.instructorResTitle,
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed('/instructor/resources'),
+                  icon: const Icon(Icons.library_books_outlined),
+                ),
+                const LanguageSwitcher(),
+              ],
               bottom: TabBar(
                 isScrollable: true,
                 tabs: [

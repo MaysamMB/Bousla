@@ -151,6 +151,56 @@ describe('approved instructors', () => {
   });
 });
 
+describe('past sessions', () => {
+  test('the owner creates a titled session and lists their sessions of a course', async () => {
+    await assertSucceeds(setDoc(doc(instructor(), 'sessions', 'NEW234'), {
+      code: 'NEW234', course_id: COURSE, owner_id: 'teacher',
+      questions: [{ question_id: 'q_ok', version: 1 }], question_keys: ['q_ok_v1'],
+      status: 'open', feedback_released: false,
+      title: { ar: 'المفتاح الأساسي', en: 'Primary Key' },
+      created_at: serverTimestamp(),
+    }));
+    const list = (db, owner) => getDocs(query(collection(db, 'sessions'),
+      where('owner_id', '==', owner), where('course_id', '==', COURSE)));
+    const mine = await assertSucceeds(list(instructor(), 'teacher'));
+    if (mine.size !== 2) throw new Error('expected 2 sessions, got ' + mine.size);
+    await assertFails(list(otherInstructor(), 'teacher'));
+    await assertFails(list(student(), 'teacher'));
+  });
+
+  test('the owner renames a session; only a short {ar, en} title', async () => {
+    const ref = (db) => doc(db, 'sessions', CODE);
+    await assertSucceeds(updateDoc(ref(instructor()), {
+      title: { ar: 'مراجعة المفاتيح', en: 'Keys review' },
+    }));
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 'x'.repeat(121), en: 'x' } }));
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 'x', en: 'x', note: 'y' } }));
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 1, en: 'x' } }));
+    await assertFails(updateDoc(ref(instructor()), { title: 'plain text' }));
+    // Renaming does not open the door to other fields.
+    await assertFails(updateDoc(ref(instructor()), { title: { ar: 'a', en: 'b' }, owner_id: 'teacher2' }));
+  });
+
+  test('nobody else renames it', async () => {
+    const t = { title: { ar: 'x', en: 'x' } };
+    await assertFails(updateDoc(doc(otherInstructor(), 'sessions', CODE), t));
+    await assertFails(updateDoc(doc(student(), 'sessions', CODE), t));
+    await assertFails(updateDoc(doc(nobody(), 'sessions', CODE), t));
+  });
+});
+
+describe('resuming an open session', () => {
+  test('the owner finds their open sessions of a course; others cannot', async () => {
+    const q = (db, owner) => query(collection(db, 'sessions'),
+      where('owner_id', '==', owner), where('course_id', '==', COURSE),
+      where('status', '==', 'open'));
+    const mine = await assertSucceeds(getDocs(q(instructor(), 'teacher')));
+    if (mine.docs.map((d) => d.id).join() !== CODE) throw new Error('expected ' + CODE);
+    await assertFails(getDocs(q(otherInstructor(), 'teacher')));
+    await assertFails(getDocs(q(student(), 'teacher')));
+  });
+});
+
 describe('course content', () => {
   test('signed-out users read nothing', async () => {
     await assertFails(getDoc(doc(nobody(), 'courses', COURSE)));

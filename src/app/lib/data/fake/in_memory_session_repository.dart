@@ -38,6 +38,7 @@ class InMemorySessionRepository implements SessionRepository {
     required String courseId,
     required String ownerId,
     required List<QuestionRef> questions,
+    LocalizedText? title,
   }) async {
     var code = generateJoinCode(_random);
     while (_sessions.values.any((s) => s.code == code)) {
@@ -51,10 +52,39 @@ class InMemorySessionRepository implements SessionRepository {
       questions: List.unmodifiable(questions),
       status: SessionStatus.open,
       feedbackReleased: false,
+      title: title,
+      createdAt: DateTime.now(),
     );
     _sessions[session.id] = session;
     _responses[session.id] = [];
     return session;
+  }
+
+  @override
+  Future<List<Session>> listSessions({
+    required String ownerId,
+    required String courseId,
+  }) async => [
+    // Insertion order is creation order; newest first.
+    for (final s in _sessions.values.toList().reversed)
+      if (s.ownerId == ownerId && s.courseId == courseId) s,
+  ];
+
+  @override
+  Future<Session?> latestOpenSession({
+    required String ownerId,
+    required String courseId,
+  }) async {
+    // Insertion order is creation order.
+    Session? latest;
+    for (final s in _sessions.values) {
+      if (s.ownerId == ownerId &&
+          s.courseId == courseId &&
+          s.status == SessionStatus.open) {
+        latest = s;
+      }
+    }
+    return latest;
   }
 
   @override
@@ -130,7 +160,15 @@ class InMemorySessionRepository implements SessionRepository {
 
   @override
   Future<void> closeSession(String sessionId) async =>
-      _update(_require(sessionId).copyWith(status: SessionStatus.closed));
+      _update(
+        _require(
+          sessionId,
+        ).copyWith(status: SessionStatus.closed, closedAt: DateTime.now()),
+      );
+
+  @override
+  Future<void> renameSession(String sessionId, LocalizedText title) async =>
+      _update(_require(sessionId).copyWith(title: title));
 
   @override
   Future<void> releaseFeedback(String sessionId) async =>

@@ -44,6 +44,13 @@ service cloud.firestore {
         && sessionDoc(sessionId).data.owner_id == request.auth.uid;
     }
 
+    // A session title: {ar, en}, both text, at most 120 characters each.
+    function validTitle(t) {
+      return t is map && t.keys().hasOnly(['ar', 'en'])
+        && t.ar is string && t.en is string
+        && t.ar.size() <= 120 && t.en.size() <= 120;
+    }
+
     function approved() {
       return resource.data.provenance.status == 'approved';
     }
@@ -111,11 +118,14 @@ service cloud.firestore {
         && ownsCourse(request.resource.data.course_id)
         && request.resource.data.status == 'open'
         && request.resource.data.feedback_released == false;
-      // The owner can only close the session and release feedback.
+      // The owner can only close the session, release feedback and rename
+      // it (a short title in Arabic and English, shown in past sessions).
       allow update: if ownsSession(sessionId)
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['status', 'feedback_released', 'closed_at'])
-        && request.resource.data.status in ['open', 'closed'];
+             .hasOnly(['status', 'feedback_released', 'closed_at', 'title'])
+        && request.resource.data.status in ['open', 'closed']
+        && (!('title' in request.resource.data)
+            || validTitle(request.resource.data.title));
       allow delete: if false;
 
       match /participants/{uid} {

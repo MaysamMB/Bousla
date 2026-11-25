@@ -131,6 +131,7 @@ class FeedbackResource {
     required this.title,
     required this.type,
     this.url,
+    this.description,
   });
 
   final String id;
@@ -138,14 +139,24 @@ class FeedbackResource {
   final ResourceType type;
   final String? url;
 
-  factory FeedbackResource.from(Resource r) =>
-      FeedbackResource(id: r.id, title: r.title, type: r.type, url: r.url);
+  /// What the resource covers, when it has one (e.g. what to do in an
+  /// activity). Older feedback documents have none.
+  final LocalizedText? description;
+
+  factory FeedbackResource.from(Resource r) => FeedbackResource(
+        id: r.id,
+        title: r.title,
+        type: r.type,
+        url: r.url,
+        description: r.description,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': _textJson(title),
         'type': type.name,
         'url': url,
+        if (description case final d?) 'description': _textJson(d),
       };
 
   factory FeedbackResource.fromJson(Map<String, dynamic> json) =>
@@ -154,6 +165,8 @@ class FeedbackResource {
         title: _text(json['title']),
         type: _byName(ResourceType.values, json['type'], ResourceType.activity),
         url: json['url'] as String?,
+        description:
+            json['description'] == null ? null : _text(json['description']),
       );
 }
 

@@ -8,13 +8,13 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
-import '../feedback/my_feedback_screen.dart';
+import '../feedback/feedback_screen.dart';
 
 /// One question at a time, in the student's chosen language (owner: student
 /// web portal). Switching language mid-way keeps the same question and
 /// options; only the text and direction change, and each answer records the
 /// language it was shown in. After the last answer it waits for the
-/// instructor to publish feedback and then opens [MyFeedbackScreen]. To do:
+/// instructor to publish feedback and then opens [FeedbackScreen]. To do:
 /// accessibility review.
 class AnsweringScreen extends StatefulWidget {
   const AnsweringScreen({
@@ -121,46 +121,45 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final language = currentLanguage(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l.appTitle),
-        actions: const [LanguageSwitcher()],
-      ),
-      body: FutureBuilder<List<QuestionView>>(
-        future: _questions,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error is TimeoutException
-                    ? l.studentConnectionSlow
-                    : l.errorGeneric,
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-          if (!snapshot.hasData)
-            return const Center(child: CircularProgressIndicator());
-          final questions = snapshot.data!;
-          if (questions.isEmpty)
-            return Center(child: Text(l.studentNoQuestions));
-          if (_index >= questions.length) {
-            return _ThankYou(
-              session: widget.session,
-              participantId: widget.participantId,
-            );
-          }
+    return FutureBuilder<List<QuestionView>>(
+      future: _questions,
+      builder: (context, snapshot) {
+        final questions = snapshot.data;
+        final Widget body;
+        Widget? submitBar;
+        if (snapshot.hasError) {
+          body = Center(
+            child: Text(
+              snapshot.error is TimeoutException
+                  ? l.studentConnectionSlow
+                  : l.errorGeneric,
+              textAlign: TextAlign.center,
+            ),
+          );
+        } else if (questions == null) {
+          body = const Center(child: CircularProgressIndicator());
+        } else if (questions.isEmpty) {
+          body = Center(child: Text(l.studentNoQuestions));
+        } else if (_index >= questions.length) {
+          body = _ThankYou(
+            sessionId: widget.session.id,
+            participantId: widget.participantId,
+          );
+        } else {
           final q = questions[_index];
-          return Center(
+          body = Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: ListView(
+                key: ValueKey(q.id),
                 padding: const EdgeInsets.all(24),
                 children: [
                   Text(
                     l.studentQuestionProgress(_index + 1, questions.length),
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: _index / questions.length),
                   const SizedBox(height: 12),
                   Text(
                     q.prompt.of(language),
@@ -176,6 +175,7 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                           ? Theme.of(context).colorScheme.primaryContainer
                           : null,
                       child: ListTile(
+                        selected: option.id == _selected,
                         leading: Icon(
                           option.id == _selected
                               ? Icons.check_circle
@@ -199,19 +199,53 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _selected == null || _busy
-                        ? null
-                        : () => _submit(q),
-                    child: Text(l.studentSubmit),
-                  ),
                 ],
               ),
             ),
           );
-        },
-      ),
+          submitBar = SafeArea(
+            top: false,
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: _selected == null || _busy
+                          ? null
+                          : () => _submit(q),
+                      child: _busy
+                          ? SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                semanticsLabel: l.studentSubmit,
+                              ),
+                            )
+                          : Text(l.studentSubmit),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l.appTitle),
+            actions: const [LanguageSwitcher()],
+          ),
+          body: body,
+          bottomNavigationBar: submitBar,
+        );
+      },
     );
   }
 }
@@ -235,13 +269,13 @@ class _OptionText extends StatelessWidget {
   );
 }
 
-/// "Thank you" after the last answer. Watches the session and, when the
-/// instructor releases feedback, opens [MyFeedbackScreen] (no reload
-/// needed).
+/// "Thank you" after the last answer. Waits for this participant's feedback
+/// ([SessionRepository.watchMyFeedback] stays null until the instructor
+/// releases it) and then opens it.
 class _ThankYou extends StatefulWidget {
-  const _ThankYou({required this.session, required this.participantId});
+  const _ThankYou({required this.sessionId, required this.participantId});
 
-  final Session session;
+  final String sessionId;
   final String participantId;
 
   @override
@@ -249,7 +283,7 @@ class _ThankYou extends StatefulWidget {
 }
 
 class _ThankYouState extends State<_ThankYou> {
-  StreamSubscription<Session>? _sub;
+  StreamSubscription<Object?>? _sub;
   var _opened = false;
 
   @override
@@ -257,15 +291,15 @@ class _ThankYouState extends State<_ThankYou> {
     super.didChangeDependencies();
     _sub ??= ServicesScope.of(context)
         .sessions
-        .watchSession(widget.session.id)
+        .watchMyFeedback(widget.sessionId, widget.participantId)
         .listen(
-      (session) {
-        if (!session.feedbackReleased || _opened || !mounted) return;
+      (feedback) {
+        if (feedback == null || _opened || !mounted) return;
         _opened = true;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => MyFeedbackScreen(
-              session: session,
+            builder: (_) => FeedbackScreen(
+              sessionId: widget.sessionId,
               participantId: widget.participantId,
             ),
           ),

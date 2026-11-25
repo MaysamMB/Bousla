@@ -8,7 +8,7 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
-import '../feedback/my_feedback_screen.dart';
+import '../feedback/feedback_screen.dart';
 
 /// Student entry point (owner: student web portal).
 ///
@@ -53,20 +53,27 @@ class _JoinScreenState extends State<JoinScreen> {
         return;
       }
       if (session.status == SessionStatus.closed) {
-        if (!session.feedbackReleased) {
-          setState(() => _error = l.studentSessionClosed);
+        // Closed, but feedback may be published: the same browser keeps the
+        // same anonymous participant, so it can still open its feedback.
+        final participantId =
+            session.feedbackReleased
+            ? await _releasedFeedbackFor(services, session)
+            : null;
+        if (!mounted) return;
+        if (participantId == null) {
+          // Released, but nothing for this browser: say where to look
+          // instead of only "closed".
+          setState(
+            () => _error = session.feedbackReleased
+                ? l.studentFeedbackNone
+                : l.studentSessionClosed,
+          );
           return;
         }
-        // Coming back after the session: show this browser's feedback. The
-        // anonymous account is the one that answered (same browser), so no
-        // new participant is created.
-        final participantId = await services.auth
-            .ensureParticipant()
-            .timeout(AnsweringScreen.timeout);
         await navigator.pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => MyFeedbackScreen(
-              session: session,
+            builder: (_) => FeedbackScreen(
+              sessionId: session.id,
               participantId: participantId,
             ),
           ),
@@ -90,6 +97,42 @@ class _JoinScreenState extends State<JoinScreen> {
     }
   }
 
+  /// The participant ID of this browser if it has released feedback in
+  /// [session], else null. Does not join (the session is closed) and does
+  /// not create a new identity: [AuthService.ensureParticipant] returns the
+  /// existing anonymous user.
+  Future<String?> _releasedFeedbackFor(
+    AppServices services,
+    Session session,
+  ) async {
+    try {
+      final participantId = await services.auth
+          .ensureParticipant()
+          .timeout(AnsweringScreen.timeout);
+      final feedback = await services.sessions
+          .watchMyFeedback(session.id, participantId)
+          .first
+          .timeout(AnsweringScreen.timeout);
+      if (feedback == null) {
+        // For diagnosis from the browser console: compare with the IDs
+        // under sessions/{code}/feedback (first characters only).
+        debugPrint(
+          'Bousla: no feedback for this browser in ${session.code} '
+          '(participant ${participantId.substring(0, 6)}…)',
+        );
+        return null;
+      }
+      return participantId;
+    } catch (e) {
+      // A real failure (connection, permission) is reported as an error,
+      // not as "no feedback for you", which would hide it.
+      debugPrint('Bousla: feedback lookup failed: $e');
+      rethrow;
+    }
+  }
+
+  // The colours come from the app theme (light, or dark with the switch in
+  // the app bar); the dark theme uses this screen's original colours.
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -101,7 +144,7 @@ class _JoinScreenState extends State<JoinScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -112,6 +155,11 @@ class _JoinScreenState extends State<JoinScreen> {
                   textDirection: TextDirection.ltr,
                   child: TextField(
                     controller: _code,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineSmall?.copyWith(letterSpacing: 2),
                     textAlign: TextAlign.center,
                     textCapitalization: TextCapitalization.characters,
                     autofocus: widget.initialCode == null,
@@ -136,7 +184,16 @@ class _JoinScreenState extends State<JoinScreen> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _busy ? null : _join,
-                  child: Text(l.studentJoin),
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+                  child: _busy
+                      ? SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            semanticsLabel: l.studentJoin,
+                          ),
+                        )
+                      : Text(l.studentJoin),
                 ),
               ],
             ),
