@@ -57,6 +57,10 @@ void main() {
     expect(find.text('Waiting (0)'), findsOneWidget);
     expect(find.text('Rejected (1)'), findsOneWidget);
     expect(find.textContaining('rejected 1'), findsOneWidget);
+    // The line counts AI drafts out of every question in the tabs (6), so
+    // it never looks like it contradicts the tab counts.
+    expect(find.textContaining('of 6 questions were drafted by AI'),
+        findsOneWidget);
 
     final all = await tester.runAsync(
       () => services.content.listQuestions(
@@ -100,6 +104,9 @@ void main() {
       ),
     ))!;
 
+    // The toggles for all questions are in a sheet.
+    await tester.tap(find.byKey(const ValueKey('answer-languages')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('hide-ar-all')));
     await tester.pumpAndSettle();
     expect(
@@ -127,6 +134,12 @@ void main() {
       (await all()).every((q) => q.hiddenOptionLanguages.isEmpty),
       isTrue,
     );
+    // The sheet shows the current state.
+    final en = tester.widget<Checkbox>(find.descendant(
+      of: find.byKey(const ValueKey('hide-en-all')),
+      matching: find.byType(Checkbox),
+    ));
+    expect(en.value, isFalse);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(
