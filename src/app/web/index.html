@@ -133,6 +133,22 @@
       setTimeout(function () { el.remove(); }, 300);
     });
   </script>
+  <script>
+    // Remove the service worker and its caches left by earlier versions
+    // (see web/flutter_bootstrap.js), so every phone loads the latest app.
+    try {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (rs) {
+          rs.forEach(function (r) { r.unregister(); });
+        }).catch(function () {});
+      }
+      if (window.caches) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (k) { if (k.indexOf('flutter') === 0) caches.delete(k); });
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
