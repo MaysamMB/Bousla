@@ -163,6 +163,11 @@ class Resource {
     required this.title,
     this.url,
     this.status = ReviewStatus.approved,
+    this.description,
+    this.source,
+    this.whereToFind,
+    this.searchQuery,
+    this.sourceLocation,
   });
 
   final String id;
@@ -173,6 +178,18 @@ class Resource {
   final String? url;
   final ReviewStatus status;
 
+  /// What the resource covers (optional).
+  final LocalizedText? description;
+
+  /// `instructor`, `ai_draft` or `team` (provenance.source), when known.
+  final String? source;
+
+  /// AI suggestions only: where to look, words to search for, and where in
+  /// the instructor's material. Never a link (see resource_suggestions.dart).
+  final LocalizedText? whereToFind;
+  final String? searchQuery;
+  final String? sourceLocation;
+
   factory Resource.fromJson(Map<String, dynamic> json) => Resource(
         id: json['id'] as String,
         conceptIds: [for (final c in json['concept_ids'] as List) c as String],
@@ -181,8 +198,25 @@ class Resource {
         title: LocalizedText.fromJson(json['title'] as Map<String, dynamic>),
         url: json['url'] as String?,
         status: _statusOf(json),
+        description: _optionalText(json['description']),
+        source: switch (json['provenance']) {
+          {'source': final String s} => s,
+          _ => null,
+        },
+        whereToFind: _optionalText(json['where_to_find']),
+        searchQuery: json['search_query'] as String?,
+        sourceLocation: switch (json['provenance']) {
+          {'source_location': final String l} => l,
+          _ => null,
+        },
       );
 }
+
+LocalizedText? _optionalText(Object? v) => switch (v) {
+      {'ar': final String ar, 'en': final String en} =>
+        LocalizedText(ar: ar, en: en),
+      _ => null,
+    };
 
 /// One student's answer to one question. [displayLanguage] is recorded for
 /// transparency only; it never affects scoring.

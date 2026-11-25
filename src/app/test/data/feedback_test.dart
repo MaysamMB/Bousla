@@ -109,6 +109,27 @@ void _contract(String name, Future<SessionRepository> Function() make) {
 }
 
 void main() {
+  test('a resource keeps its description; older documents have none', () {
+    final r = FeedbackResource.from(const Resource(
+      id: 'r1',
+      conceptIds: ['pk'],
+      type: ResourceType.activity,
+      language: ResourceLanguage.both,
+      title: LocalizedText(ar: 'نشاط', en: 'Activity'),
+      description: LocalizedText(ar: 'صمّم جدولين', en: 'Design two tables'),
+    ));
+    final back = FeedbackResource.fromJson(r.toJson());
+    expect(back.description!.ar, 'صمّم جدولين');
+    expect(back.url, isNull);
+    final old = FeedbackResource.fromJson({
+      'id': 'r2',
+      'title': {'ar': 'فيديو', 'en': 'Video'},
+      'type': 'video',
+      'url': 'https://example.edu/v',
+    });
+    expect(old.description, isNull);
+  });
+
   test('StudentFeedback survives a JSON round trip', () {
     final back = StudentFeedback.fromJson(_feedback(Language.en).toJson());
     expect(back.language, Language.en);

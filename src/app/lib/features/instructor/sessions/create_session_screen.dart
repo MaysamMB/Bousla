@@ -222,6 +222,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   label: Text(l.instructorReviewQuestions),
                 ),
                 const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed('/instructor/resources'),
+                  icon: const Icon(Icons.library_books_outlined),
+                  label: Text(l.instructorResTitle),
+                ),
+                const SizedBox(height: 12),
                 FilledButton(
                   onPressed: questions.isEmpty
                       ? null

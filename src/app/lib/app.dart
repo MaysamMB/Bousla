@@ -5,6 +5,7 @@ import 'app_services.dart';
 import 'features/home/home_screen.dart';
 import 'features/instructor/auth/instructor_gate.dart';
 import 'features/instructor/content_review/content_review_screen.dart';
+import 'features/instructor/resources/resources_screen.dart';
 import 'features/instructor/sessions/create_session_screen.dart';
 import 'features/student_web/join_session/join_screen.dart';
 import 'l10n/app_localizations.dart';
@@ -13,6 +14,7 @@ import 'l10n/app_localizations.dart';
 ///   /                 home (choose role)
 ///   /instructor       instructor: create and run a session
 ///   /instructor/review  instructor: review, edit, reject and add questions
+///   /instructor/resources  instructor: learning resources (add, AI suggestions)
 ///   /join             student: type a join code
 ///   /join/<CODE>      student: join directly (link or QR code)
 ///
@@ -144,6 +146,9 @@ class BouslaApp extends StatelessWidget {
     final Widget page = switch (segments) {
       ['instructor', 'review'] => const InstructorGate(
           child: ContentReviewScreen(),
+        ),
+      ['instructor', 'resources'] => const InstructorGate(
+          child: ResourcesScreen(),
         ),
       ['instructor', ...] => const InstructorGate(child: CreateSessionScreen()),
       ['join'] => const JoinScreen(),
