@@ -640,5 +640,13 @@
   "reviewEditorTranslationEn": "English translation",
   "reviewEditorOptionText": "Answer",
   "reviewAiShare": "{total} of {all} questions were drafted by AI: approved {approved} ({edited} after editing) · rejected {rejected} · waiting {pending}",
-  "@reviewAiShare": {"placeholders": {"total": {"type": "int"}, "all": {"type": "int"}, "approved": {"type": "int"}, "edited": {"type": "int"}, "rejected": {"type": "int"}, "pending": {"type": "int"}}}
+  "@reviewAiShare": {"placeholders": {"total": {"type": "int"}, "all": {"type": "int"}, "approved": {"type": "int"}, "edited": {"type": "int"}, "rejected": {"type": "int"}, "pending": {"type": "int"}}},
+  "instructorShareFeedback": "Share the link with students",
+  "instructorShareHint": "Bousla does not know who your students are, so it cannot notify them. Send them this message: each student's feedback is on the phone and browser they answered from.",
+  "instructorShareMessage": "Your personal feedback from this Bousla session ({code}) is ready. Open the link on the same phone and browser you answered from:",
+  "@instructorShareMessage": {"placeholders": {"code": {"type": "String"}}},
+  "instructorShareSend": "Share…",
+  "instructorShareCopy": "Copy message",
+  "instructorShareCopied": "Message copied",
+  "instructorShareClassroom": "Google Classroom"
 }
