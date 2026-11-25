@@ -84,6 +84,46 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     _content = _loadContent();
   });
 
+  /// Before creating: offer to review, edit or add questions first (the
+  /// session uses the approved questions as they are at this moment).
+  Future<void> _confirmCreate(
+    Course course,
+    List<QuestionView> questions,
+  ) async {
+    final l = AppLocalizations.of(context);
+    final choice = await showDialog<_BeforeCreate>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.instructorBeforeCreateTitle),
+        content: Text(l.instructorBeforeCreateBody(questions.length)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l.reviewCancel),
+          ),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).pop(_BeforeCreate.review),
+            icon: const Icon(Icons.fact_check_outlined),
+            label: Text(l.instructorReviewQuestions),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(_BeforeCreate.create),
+            child: Text(l.instructorCreateNow),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    switch (choice) {
+      case _BeforeCreate.review:
+        await _openReview();
+      case _BeforeCreate.create:
+        await _create(course, questions);
+      case null:
+        break;
+    }
+  }
+
   Future<void> _create(Course course, List<QuestionView> questions) async {
     final services = ServicesScope.of(context);
     // Named after its concepts, for the past sessions list.
@@ -185,7 +225,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 FilledButton(
                   onPressed: questions.isEmpty
                       ? null
-                      : () => _create(course, questions),
+                      : () => _confirmCreate(course, questions),
                   child: Text(l.instructorCreateSession),
                 ),
               ] else
@@ -360,3 +400,5 @@ class _OpenSessionCard extends StatelessWidget {
     );
   }
 }
+
+enum _BeforeCreate { review, create }

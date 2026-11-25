@@ -163,10 +163,12 @@ class _MapContent extends StatelessWidget {
 ) {
   final l = AppLocalizations.of(context);
   final scheme = Theme.of(context).colorScheme;
+  // Lighter shades on the dark theme, so they stay readable.
+  final dark = Theme.of(context).brightness == Brightness.dark;
   return switch (state) {
     MasteryState.possibleDifficulty => (
         icon: Icons.flag_outlined,
-        color: const Color(0xFFB45309), // amber-brown, readable on light
+        color: dark ? const Color(0xFFFBBF24) : const Color(0xFFB45309),
         label: l.studentStatePossibleDifficulty,
       ),
     MasteryState.emerging => (
@@ -176,7 +178,7 @@ class _MapContent extends StatelessWidget {
       ),
     MasteryState.demonstratedMastery => (
         icon: Icons.check_circle_outline,
-        color: const Color(0xFF15803D),
+        color: dark ? const Color(0xFF4ADE80) : const Color(0xFF15803D),
         label: l.studentStateDemonstratedMastery,
       ),
     MasteryState.insufficientEvidence => (

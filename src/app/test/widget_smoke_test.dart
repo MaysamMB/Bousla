@@ -38,6 +38,9 @@ void main() {
     await tester.tap(find.text("I'm an instructor"));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Create session'));
+    // The dialog asks whether to review questions first.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
     expect(find.text('Students who answered: 0 · Answers: 0'), findsOneWidget);
 

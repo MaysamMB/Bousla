@@ -41,7 +41,7 @@ Passing a course does not show *which* concept a student is missing, or whether 
 ### 4. What the class understands (45 s) — if ready (Yasmeen's task)
 - Under the counter: each concept's difficulty with its evidence (respondents, accuracy), weakest first.
 - A *possible* prerequisite signal, in cautious words ("قد يكون … سبباً محتملاً").
-- Privacy: a concept answered by fewer than 5 students is hidden. If the room gives fewer than 5 answers, say so: that is the protection working.
+- Privacy: a concept answered by fewer than 3 students shows no numbers. With 1–2 students the panel shows only a session overview (overall % correct and which concepts to start with, no numbers per concept); say so: that is the protection working.
 - Fallback: a session from the Friday rehearsal with the team as students (say it is the rehearsal session).
 
 ### 5. Each student's feedback (45 s) — if ready (Lina's task)
@@ -50,7 +50,7 @@ Passing a course does not show *which* concept a student is missing, or whether 
 - Fallback: show the template feedback only (AI explanation turned off in the release dialog).
 
 ### 6. Privacy and limits, said plainly (20 s)
-Say two sentences: "Students join anonymously for one session, answer keys are readable only by the instructor, and the class view hides groups under 5. Our limits: a free AI quota, provisional thresholds, and content still under team review."
+Say two sentences: "Students join anonymously for one session, answer keys are readable only by the instructor, and the class view shows no per-concept numbers for groups under 3. Our limits: a free AI quota, provisional thresholds, and content still under team review."
 
 Keep for questions (do not read out):
 - No longitudinal tracking is claimed without identity linking.
