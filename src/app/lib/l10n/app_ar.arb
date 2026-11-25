@@ -270,5 +270,14 @@
   "instructorRenameSave": "حفظ",
   "instructorCloseConfirm": "لن يتمكن الطلاب من الإجابة في هذه الجلسة بعد الآن. تبقى إجاباتها ونتائجها محفوظة.",
   "instructorOpenSessionFound": "لديك جلسة ما زالت مفتوحة",
-  "instructorContinueSession": "متابعة هذه الجلسة"
+  "instructorContinueSession": "متابعة هذه الجلسة",
+  "instructorSmallGroupTitle": "صورة عامة للجلسة",
+  "instructorSmallGroupBody": "أجاب {students} فقط من الطلاب، وهو أقل من {min}، لذلك لا تُعرض نتائج لكل مفهوم.",
+  "instructorSmallGroupAccuracy": "الإجابات الصحيحة في الجلسة: {correct} من {answers} ({percent}%)",
+  "instructorSmallGroupFocus": "ابدأ المراجعة بـ: {names}",
+  "instructorSmallGroupNoFocus": "لا توجد إجابات خاطئة حتى الآن.",
+  "instructorSmallGroupNote": "تقدير أولي من عدد قليل جداً من الإجابات، وليس حكماً على الصف. المفاهيم الأكثر أخطاءً أولاً.",
+  "instructorBeforeCreateTitle": "قبل إنشاء الجلسة",
+  "instructorBeforeCreateBody": "ستستخدم الجلسة الأسئلة المعتمدة ({count}) كما هي الآن. هل تريد مراجعة الأسئلة أو تعديلها أو إضافة أسئلة أولاً؟",
+  "instructorCreateNow": "إنشاء الجلسة الآن"
 }

@@ -85,19 +85,34 @@ void main() {
     );
   });
 
-  testWidgets('4 students: everything hidden, no percentages', (
+  testWidgets('3 students (the minimum): results per concept are shown', (
     tester,
   ) async {
-    final (services, session) = await _session(4);
+    final (services, session) = await _session(3);
     await _show(tester, services, session);
-    expect(find.textContaining('hidden to protect privacy'), findsWidgets);
-    expect(find.textContaining('% correct'), findsNothing);
+    expect(find.textContaining('3 answered · 0% correct'), findsWidgets);
+    expect(find.text('Session at a glance'), findsNothing);
+  });
+
+  testWidgets('2 students: a session overview, no numbers per concept', (
+    tester,
+  ) async {
+    final (services, session) = await _session(2);
+    await _show(tester, services, session);
+    expect(find.text('Session at a glance'), findsOneWidget);
+    expect(find.textContaining('Only 2 students have answered'), findsOneWidget);
+    expect(find.textContaining('Correct answers in this session: 0 of'),
+        findsOneWidget);
+    expect(find.textContaining('Start reviewing with:'), findsOneWidget);
+    // Nothing per concept.
+    expect(find.textContaining('answered ·'), findsNothing);
+    expect(find.text('Students'), findsNothing);
   });
 
   testWidgets('no answers yet: waiting message', (tester) async {
     final (services, session) = await _session(0);
     await _show(tester, services, session);
-    expect(find.textContaining('appears once at least 5'), findsOneWidget);
+    expect(find.textContaining('appears once at least 3'), findsOneWidget);
   });
 
   testWidgets('switching sessions discards previous classroom evidence', (
@@ -114,7 +129,7 @@ void main() {
     // Same widget position and services, but a different empty session.
     await _show(tester, services, second);
     expect(find.textContaining('5 answered · 0% correct'), findsNothing);
-    expect(find.textContaining('appears once at least 5'), findsOneWidget);
+    expect(find.textContaining('appears once at least 3'), findsOneWidget);
   });
 
   testWidgets('the session screen shows the panel under the counter', (
@@ -132,6 +147,9 @@ void main() {
     await tester.tap(find.text("I'm an instructor"));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Create session'));
+    // The dialog asks whether to review questions first.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
     expect(find.byType(LiveInsightsPanel), findsOneWidget);
   });

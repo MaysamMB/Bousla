@@ -547,5 +547,18 @@
   "instructorRenameSave": "Save",
   "instructorCloseConfirm": "Students will no longer be able to answer this session. Its answers and results stay saved.",
   "instructorOpenSessionFound": "You have a session that is still open",
-  "instructorContinueSession": "Continue this session"
+  "instructorContinueSession": "Continue this session",
+  "instructorSmallGroupTitle": "Session at a glance",
+  "instructorSmallGroupBody": "{students, plural, =1{Only 1 student has answered} other{Only {students} students have answered}}, fewer than {min}, so results per concept are not shown.",
+  "@instructorSmallGroupBody": {"placeholders": {"students": {"type": "int"}, "min": {"type": "int"}}},
+  "instructorSmallGroupAccuracy": "Correct answers in this session: {correct} of {answers} ({percent}%)",
+  "@instructorSmallGroupAccuracy": {"placeholders": {"correct": {"type": "int"}, "answers": {"type": "int"}, "percent": {"type": "int"}}},
+  "instructorSmallGroupFocus": "Start reviewing with: {names}",
+  "@instructorSmallGroupFocus": {"placeholders": {"names": {"type": "String"}}},
+  "instructorSmallGroupNoFocus": "No wrong answers so far.",
+  "instructorSmallGroupNote": "An early estimate from very few answers, not a judgement of the class. Concepts with the most wrong answers come first.",
+  "instructorBeforeCreateTitle": "Before you create the session",
+  "instructorBeforeCreateBody": "The session will use the {count} approved questions as they are now. Do you want to review, edit or add questions first?",
+  "@instructorBeforeCreateBody": {"placeholders": {"count": {"type": "int"}}},
+  "instructorCreateNow": "Create session now"
 }

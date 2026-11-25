@@ -383,6 +383,9 @@ void main() {
   group('instructor', () {
     Future<void> closeAndOpenDialog(WidgetTester tester) async {
       await tester.tap(find.text('Create session'));
+      // The dialog asks whether to review questions first.
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Create session now'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Close session'));
       await tester.tap(find.text('Close session'));
@@ -438,6 +441,9 @@ void main() {
       // One student answers, so there is something to explain.
       final sessionId = 'session_1';
       await tester.tap(find.text('Create session'));
+      // The dialog asks whether to review questions first.
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Create session now'));
       await tester.pumpAndSettle();
       final q = (await services.content.listQuestions('database_systems'))
           .first;

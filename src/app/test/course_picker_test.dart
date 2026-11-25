@@ -90,6 +90,9 @@ void main() {
   testWidgets('course cannot change while a session runs', (tester) async {
     await openInstructor(tester);
     await tester.tap(find.text('Create session'));
+    // The dialog asks whether to review questions first.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
     final field = tester.widget<DropdownButtonFormField<String>>(
       find.byType(DropdownButtonFormField<String>),

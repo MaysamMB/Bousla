@@ -36,6 +36,9 @@ void main() {
     final services = AppServices.inMemory(initialLocale: const Locale('en'));
     await _open(tester, services);
     await tester.tap(find.text('Create session'));
+    // The dialog asks whether to review questions first.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
     final code = (await services.sessions.latestOpenSession(
       ownerId: services.auth.instructorId!,
@@ -60,6 +63,9 @@ void main() {
     final services = AppServices.inMemory(initialLocale: const Locale('en'));
     await _open(tester, services);
     await tester.tap(find.text('Create session'));
+    // The dialog asks whether to review questions first.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
 
     await _open(tester, services); // "reload"
@@ -81,6 +87,9 @@ void main() {
     final services = AppServices.inMemory(initialLocale: const Locale('en'));
     await _open(tester, services);
     await tester.tap(find.text('Create session'));
+    // The dialog asks whether to review questions first.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Close session'));
     await tester.pumpAndSettle();

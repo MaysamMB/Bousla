@@ -128,6 +128,17 @@ class _LiveInsightsPanelState
             return _buildInsights(
               context,
               insights,
+              // Only used when fewer than the minimum group answered.
+              insights.participantCount < insights.minGroupSize
+                  ? sessionOverview(
+                      responses: snapshot.data!,
+                      questions: questions,
+                      keys: keys,
+                      coveredConceptIds: {
+                        for (final q in questions) ...q.conceptIds,
+                      },
+                    )
+                  : null,
               concepts,
               // Only concepts this session asks about: the others have no
               // answers at all, and showing them as "hidden for privacy"
@@ -145,6 +156,7 @@ class _LiveInsightsPanelState
   Widget _buildInsights(
     BuildContext context,
     ClassInsights insights,
+    SessionOverview? overview,
     List<Concept> concepts,
     Set<String> covered,
   ) {
@@ -190,6 +202,13 @@ class _LiveInsightsPanelState
               l.instructorInsightsWaiting(
                 insights.minGroupSize,
               ),
+            )
+          else if (overview != null)
+            _SmallGroupCard(
+              students: insights.participantCount,
+              minGroupSize: insights.minGroupSize,
+              overview: overview,
+              names: names,
             )
           else ...[
             ConceptOverviewCard(
@@ -544,5 +563,63 @@ class _DonutPainter extends CustomPainter {
     }
 
     return false;
+  }
+}
+
+/// Fewer than the minimum group answered: the whole session at a glance and
+/// where to start, without any number per concept.
+class _SmallGroupCard extends StatelessWidget {
+  const _SmallGroupCard({
+    required this.students,
+    required this.minGroupSize,
+    required this.overview,
+    required this.names,
+  });
+
+  final int students;
+  final int minGroupSize;
+  final SessionOverview overview;
+  final Map<String, String> names;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final separator =
+        Directionality.of(context) == TextDirection.rtl ? '، ' : ', ';
+    final focus = [
+      for (final id in overview.focusConceptIds) names[id] ?? id,
+    ];
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l.instructorSmallGroupTitle, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(l.instructorSmallGroupBody(students, minGroupSize)),
+            const SizedBox(height: 12),
+            if (overview.answers > 0)
+              Text(
+                l.instructorSmallGroupAccuracy(
+                  overview.correct,
+                  overview.answers,
+                  overview.percent,
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              focus.isEmpty
+                  ? l.instructorSmallGroupNoFocus
+                  : l.instructorSmallGroupFocus(focus.join(separator)),
+              style: theme.textTheme.titleSmall,
+            ),
+            const SizedBox(height: 12),
+            Text(l.instructorSmallGroupNote, style: theme.textTheme.bodySmall),
+          ],
+        ),
+      ),
+    );
   }
 }
