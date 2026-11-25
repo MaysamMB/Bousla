@@ -13,6 +13,8 @@ bool _isBusy(Object e) =>
     e is QuestionGenerationException && e.problem == GenerationProblem.busy;
 
 void main() {
+  setUp(dailyLimitReached.clear);
+
   late List<String> calls;
   late List<Duration> waits;
   Future<void> wait(Duration d) async => waits.add(d);
@@ -178,5 +180,44 @@ void main() {
       (error as QuestionGenerationException).problem,
       GenerationProblem.dailyQuota,
     );
+  });
+
+  test('a model whose daily limit is used up is skipped on the next call',
+      () async {
+    final used = <String>{};
+    final called = <String>[];
+    Future<String> run() => callWithModelFallback(
+          models: const ['main', 'lite'],
+          usedUp: used,
+          isBusy: (_) => true,
+          retryable: (e) =>
+              (e as QuestionGenerationException).problem !=
+              GenerationProblem.dailyQuota,
+          wait: (_) async {},
+          call: (m) async {
+            called.add(m);
+            if (m == 'main') {
+              throw const QuestionGenerationException(
+                GenerationProblem.dailyQuota,
+              );
+            }
+            return 'ok from $m';
+          },
+        );
+    expect(await run(), 'ok from lite');
+    expect(called, ['main', 'lite']);
+    called.clear();
+    expect(await run(), 'ok from lite');
+    expect(called, ['lite']); // main not tried again
+    used.add('lite');
+    await expectLater(
+      run(),
+      throwsA(isA<QuestionGenerationException>().having(
+        (e) => e.problem,
+        'problem',
+        GenerationProblem.dailyQuota,
+      )),
+    );
+    expect(called, ['lite']); // nothing sent
   });
 }
