@@ -158,7 +158,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.instructorCreateSessionTitle),
+        // Shrinks rather than cut off next to the buttons on a phone.
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(l.instructorCreateSessionTitle),
+        ),
+        titleSpacing: 0,
         actions: [
           IconButton(
             tooltip: l.instructorPastSessions,

@@ -21,11 +21,21 @@ class LanguageSwitcher extends StatelessWidget {
           icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
           onPressed: services.toggleThemeMode,
         ),
-        TextButton.icon(
-          onPressed: services.toggleLanguage,
-          icon: const Icon(Icons.translate),
-          label: Text(l.languageToggle),
-        ),
+        // On a phone the icon alone (the language is its tooltip and
+        // screen-reader label), so the app bar keeps room for the title.
+        if (MediaQuery.sizeOf(context).width < 600)
+          IconButton(
+            tooltip: l.languageToggle,
+            icon: const Icon(Icons.translate),
+            color: Theme.of(context).colorScheme.primary,
+            onPressed: services.toggleLanguage,
+          )
+        else
+          TextButton.icon(
+            onPressed: services.toggleLanguage,
+            icon: const Icon(Icons.translate),
+            label: Text(l.languageToggle),
+          ),
       ],
     );
   }
