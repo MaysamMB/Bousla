@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/widgets.dart';
 
 import 'data/fake/in_memory_content_repository.dart';
@@ -8,6 +9,7 @@ import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
 import 'data/repositories/content_repository.dart';
 import 'data/repositories/session_repository.dart';
+import 'shared/theme_mode_store.dart';
 
 /// Everything screens need from outside the UI. In-memory for
 /// development, or Firebase when configured (see main.dart).
@@ -61,6 +63,18 @@ class AppServices {
   /// The course the instructor chose (see `CoursePicker`), shared by the
   /// session and review screens. Null means the first course.
   final ValueNotifier<String?> selectedCourseId = ValueNotifier(null);
+
+  /// Light or dark, chosen with the switch next to the language button and
+  /// remembered in this browser. Light by default (projectors).
+  final ValueNotifier<ThemeMode> themeMode = ValueNotifier(
+    loadThemeModeName() == 'dark' ? ThemeMode.dark : ThemeMode.light,
+  );
+
+  void toggleThemeMode() {
+    themeMode.value =
+        themeMode.value == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    saveThemeModeName(themeMode.value.name);
+  }
 
   void toggleLanguage() => locale.value = locale.value.languageCode == 'ar'
       ? const Locale('en')

@@ -279,5 +279,7 @@
   "instructorSmallGroupNote": "تقدير أولي من عدد قليل جداً من الإجابات، وليس حكماً على الصف. المفاهيم الأكثر أخطاءً أولاً.",
   "instructorBeforeCreateTitle": "قبل إنشاء الجلسة",
   "instructorBeforeCreateBody": "ستستخدم الجلسة الأسئلة المعتمدة ({count}) كما هي الآن. هل تريد مراجعة الأسئلة أو تعديلها أو إضافة أسئلة أولاً؟",
-  "instructorCreateNow": "إنشاء الجلسة الآن"
+  "instructorCreateNow": "إنشاء الجلسة الآن",
+  "themeDark": "الوضع الداكن",
+  "themeLight": "الوضع الفاتح"
 }

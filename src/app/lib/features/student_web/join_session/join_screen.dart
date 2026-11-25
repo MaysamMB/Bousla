@@ -131,24 +131,10 @@ class _JoinScreenState extends State<JoinScreen> {
     }
   }
 
+  // The colours come from the app theme (light, or dark with the switch in
+  // the app bar); the dark theme uses this screen's original colours.
   @override
   Widget build(BuildContext context) {
-    final colors = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF34E3B6),
-      brightness: Brightness.dark,
-    ).copyWith(surface: const Color(0xFF0B1230));
-    return Theme(
-      data: ThemeData(
-        colorScheme: colors,
-        scaffoldBackgroundColor: colors.surface,
-        fontFamily: 'NotoSans',
-        fontFamilyFallback: const ['NotoSansArabic', 'NotoSansMath'],
-      ),
-      child: Builder(builder: _buildPage),
-    );
-  }
-
-  Widget _buildPage(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(

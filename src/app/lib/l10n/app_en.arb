@@ -560,5 +560,7 @@
   "instructorBeforeCreateTitle": "Before you create the session",
   "instructorBeforeCreateBody": "The session will use the {count} approved questions as they are now. Do you want to review, edit or add questions first?",
   "@instructorBeforeCreateBody": {"placeholders": {"count": {"type": "int"}}},
-  "instructorCreateNow": "Create session now"
+  "instructorCreateNow": "Create session now",
+  "themeDark": "Dark mode",
+  "themeLight": "Light mode"
 }
