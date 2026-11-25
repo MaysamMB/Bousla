@@ -307,6 +307,10 @@ class _GenerateFromMaterialDialogState
   }
 }
 
+/// The message for a failed AI request (also used for resource suggestions).
+String generationProblemText(AppLocalizations l, GenerationProblem p) =>
+    _GenerateFromMaterialDialogState.problemText(l, p);
+
 /// Short reason text for a dropped draft (a [DraftIssue] name or
 /// `app_checks`).
 String droppedReasonText(AppLocalizations l, String reason) => switch (reason) {

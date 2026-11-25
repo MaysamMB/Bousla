@@ -6,6 +6,7 @@ library;
 
 export 'src/ai/feedback_explanation.dart';
 export 'src/ai/question_drafting.dart';
+export 'src/ai/resource_suggestions.dart';
 export 'src/class_insights.dart';
 export 'src/learning_recommender.dart';
 export 'src/mastery_estimator.dart';

@@ -1,6 +1,7 @@
 import 'package:bousla_engine/bousla_engine.dart';
 
 import '../models.dart';
+import '../resource_review.dart';
 
 /// Course content, and the instructor's review of it.
 ///
@@ -92,7 +93,40 @@ abstract interface class ContentRepository {
     bool approvedOnly = true,
   });
 
+  /// Instructor only. Adds a resource (when [ResourceDraft.id] is null) or
+  /// completes / edits one. Saving approves it: the instructor wrote it or
+  /// checked the link. Throws [InvalidResourceException] when
+  /// [validateResourceDraft] fails, [ArgumentError] for an unknown ID.
+  Future<Resource> saveResource(String courseId, ResourceDraft draft);
+
+  /// Instructor only. Saves resource descriptions suggested by AI as
+  /// `ai_draft`, `pending_review`, without links. Students never see them
+  /// until the instructor adds a link and approves.
+  Future<List<Resource>> saveAiResourceSuggestions(
+    String courseId, {
+    required String modelName,
+    required List<ResourceSuggestion> suggestions,
+  });
+
+  /// Instructor only. Rejects, or restores to pending, resources. Approving
+  /// goes through [saveResource], which checks the link. Unknown IDs are
+  /// ignored.
+  Future<void> setResourcesStatus(
+    String courseId,
+    Iterable<String> ids,
+    ReviewStatus status,
+  );
+
   /// Instructor only. The Firestore implementation is protected by security
   /// rules; never call this from the student portal.
   Future<List<AnswerKey>> answerKeys(String courseId);
+}
+
+class InvalidResourceException implements Exception {
+  const InvalidResourceException(this.issues);
+
+  final List<ResourceDraftIssue> issues;
+
+  @override
+  String toString() => 'InvalidResourceException($issues)';
 }

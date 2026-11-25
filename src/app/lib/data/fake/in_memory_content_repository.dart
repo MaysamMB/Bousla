@@ -2,6 +2,7 @@ import 'package:bousla_engine/bousla_engine.dart';
 
 import '../models.dart';
 import '../question_review.dart';
+import '../resource_review.dart';
 import '../repositories/content_repository.dart';
 import 'sample_content.dart';
 
@@ -25,6 +26,7 @@ class InMemoryContentRepository implements ContentRepository {
   /// Every version of every question.
   final List<QuestionView> _questions;
   final List<Resource> _resources;
+  var _nextResource = 1;
 
   /// Keys for every question version.
   final List<AnswerKey> _keys;
@@ -270,6 +272,62 @@ class InMemoryContentRepository implements ContentRepository {
     courseId,
     _resources,
   ).where((r) => !approvedOnly || r.status == ReviewStatus.approved).toList();
+
+  @override
+  Future<Resource> saveResource(String courseId, ResourceDraft draft) async {
+    _checkCourse(courseId);
+    final approved = {
+      for (final c in _concepts)
+        if (c.status == ReviewStatus.approved) c.id,
+    };
+    final issues = validateResourceDraft(draft, approved);
+    if (issues.isNotEmpty) throw InvalidResourceException(issues);
+    final index = draft.id == null
+        ? -1
+        : _resources.indexWhere((r) => r.id == draft.id);
+    if (draft.id != null && index < 0) throw ArgumentError(draft.id);
+    final saved = resourceFromDraft(
+      draft,
+      id: draft.id ?? 'res_i_${_nextResource++}',
+      before: index < 0 ? null : _resources[index],
+    );
+    if (index < 0) {
+      _resources.add(saved);
+    } else {
+      _resources[index] = saved;
+    }
+    return saved;
+  }
+
+  @override
+  Future<List<Resource>> saveAiResourceSuggestions(
+    String courseId, {
+    required String modelName,
+    required List<ResourceSuggestion> suggestions,
+  }) async {
+    _checkCourse(courseId);
+    final saved = [
+      for (final s in suggestions)
+        resourceFromSuggestion(s, id: 'ai_res_${_nextResource++}'),
+    ];
+    _resources.addAll(saved);
+    return saved;
+  }
+
+  @override
+  Future<void> setResourcesStatus(
+    String courseId,
+    Iterable<String> ids,
+    ReviewStatus status,
+  ) async {
+    _checkCourse(courseId);
+    final set = ids.toSet();
+    for (var i = 0; i < _resources.length; i++) {
+      if (set.contains(_resources[i].id)) {
+        _resources[i] = withResourceStatus(_resources[i], status);
+      }
+    }
+  }
 
   @override
   Future<List<AnswerKey>> answerKeys(String courseId) async =>
