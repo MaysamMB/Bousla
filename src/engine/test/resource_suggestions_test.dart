@@ -89,6 +89,12 @@ void main() {
     expect(r.accepted[1].searchQuery, isNull);
   });
 
+  test('a location in the material is kept only for kind material', () {
+    final r = _parse([_entry(location: 'YouTube')], material: true);
+    expect(r.accepted.single.kind, SuggestedKind.video);
+    expect(r.accepted.single.sourceLocation, isNull);
+  });
+
   test('duplicates, the limit and broken JSON', () {
     final r = _parse([_entry(), _entry(), _entry(titleEn: 'Other')], max: 2);
     expect(r.accepted, hasLength(2));

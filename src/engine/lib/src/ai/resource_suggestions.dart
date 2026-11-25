@@ -381,7 +381,11 @@ SuggestionParseResult parseResourceSuggestions(
       description: LocalizedText(ar: ar[1], en: en[1]),
       whereToFind: LocalizedText(ar: ar[2], en: en[2]),
       searchQuery: noSearch || query.isEmpty ? null : query,
-      sourceLocation: location.isEmpty ? null : location,
+      // A place in the instructor's file only makes sense for `material`
+      // (seen live: "YouTube" given as the location of a video).
+      sourceLocation: kind == SuggestedKind.material && location.isNotEmpty
+          ? location
+          : null,
     ),
     null,
   );
