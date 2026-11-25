@@ -34,7 +34,66 @@ abstract interface class AuthService {
 
   /// The current user's UID, signing in anonymously first if needed.
   Future<String> ensureParticipant();
+
+  /// The student's own account, once they linked one for the optional
+  /// personal profile (architecture §10); null while anonymous.
+  StudentAccount? get studentAccount;
+
+  /// Links the current anonymous student to a Google account, keeping the
+  /// same UID, so the sessions answered in this browser can go into their
+  /// own profile. Throws [StudentLinkFailure].
+  Future<StudentAccount> linkStudentAccount();
 }
+
+/// A student's linked account. [label] is what to show them (their email).
+class StudentAccount {
+  const StudentAccount({required this.uid, required this.label});
+
+  final String uid;
+  final String label;
+}
+
+enum StudentLinkProblem {
+  /// The sign-in window was closed.
+  cancelled,
+
+  /// This Google account is already linked to another Bousla profile (from
+  /// another browser), so this browser's sessions cannot join it.
+  accountInUse,
+
+  /// Google sign-in is not enabled in the Firebase console.
+  notEnabled,
+  network,
+
+  /// Nothing to link: the student has not answered in this browser.
+  noSession,
+  unknown,
+}
+
+class StudentLinkFailure implements Exception {
+  const StudentLinkFailure(this.problem, [this.detail]);
+
+  final StudentLinkProblem problem;
+  final String? detail;
+
+  @override
+  String toString() => 'StudentLinkFailure($problem, $detail)';
+}
+
+StudentLinkProblem studentLinkProblemFromCode(String code) => switch (code) {
+      'popup-closed-by-user' ||
+      'cancelled-popup-request' ||
+      'user-cancelled' =>
+        StudentLinkProblem.cancelled,
+      'credential-already-in-use' ||
+      'provider-already-linked' ||
+      'email-already-in-use' ||
+      'account-exists-with-different-credential' =>
+        StudentLinkProblem.accountInUse,
+      'operation-not-allowed' => StudentLinkProblem.notEnabled,
+      'network-request-failed' => StudentLinkProblem.network,
+      _ => StudentLinkProblem.unknown,
+    };
 
 /// Development implementation: a fixed instructor, no network.
 class InMemoryAuthService implements AuthService {
@@ -63,6 +122,19 @@ class InMemoryAuthService implements AuthService {
 
   @override
   Future<String> ensureParticipant() async => 'participant';
+
+  /// Linked in this tab (development and tests).
+  StudentAccount? _student;
+
+  @override
+  StudentAccount? get studentAccount => _student;
+
+  @override
+  Future<StudentAccount> linkStudentAccount() async =>
+      _student = const StudentAccount(
+        uid: 'participant',
+        label: 'student@example.com',
+      );
 }
 
 /// Why an instructor could not sign in or create an account.

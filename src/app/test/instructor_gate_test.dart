@@ -8,6 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Requires sign-in and fails with a chosen problem.
 class _FailingAuth implements AuthService {
+  @override
+  StudentAccount? get studentAccount => null;
+
+  @override
+  Future<StudentAccount> linkStudentAccount() =>
+      throw const StudentLinkFailure(StudentLinkProblem.unknown);
+
   _FailingAuth(this.problem);
 
   final AuthProblem problem;
