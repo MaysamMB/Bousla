@@ -32,6 +32,8 @@ class GeminiResourceSuggester implements ResourceSuggester {
     required List<Concept> concepts,
     int perConcept = 2,
     MaterialFile? material,
+    String? request,
+    ClassResourceFocus? focus,
   }) async {
     if (material != null && material.bytes.length > MaterialFile.maxBytes) {
       throw const QuestionGenerationException(GenerationProblem.fileTooLarge);
@@ -42,6 +44,8 @@ class GeminiResourceSuggester implements ResourceSuggester {
       ],
       perConcept: perConcept,
       withMaterial: material != null,
+      request: request,
+      focus: focus,
     );
     final parts = <Part>[
       TextPart(instructions),

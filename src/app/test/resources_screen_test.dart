@@ -21,6 +21,8 @@ class _FakeSuggester implements ResourceSuggester {
     required List<Concept> concepts,
     int perConcept = 2,
     MaterialFile? material,
+    String? request,
+    ClassResourceFocus? focus,
   }) async {
     asked = concepts;
     return const SuggestionParseResult(
