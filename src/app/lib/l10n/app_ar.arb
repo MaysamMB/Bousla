@@ -375,7 +375,7 @@
   "studentProfileErrFailed": "تعذّر الحفظ. حاول مرة أخرى.",
   "studentProfileTitle": "ملفي",
   "studentProfileSignedInAs": "مسجّل باسم {label}",
-  "studentProfileNone": "لا يوجد ملف شخصي في هذا المتصفح. يمكنك إنشاؤه من صفحة ملاحظاتك بعد جلسة.",
+  "studentProfileNone": "لا يوجد ملف شخصي في هذا المتصفح بعد. بعد أن تجيب في جلسة وينشر المدرّس الملاحظات، ستجد في آخر صفحة ملاحظاتك «احفظ تقدّمك (اختياري)».",
   "studentProfileProgressTitle": "تقدّمي",
   "studentProfileProgressNote": "تقديرات من الجلسات التي أضفتها، من الأقدم إلى الأحدث. ليست حكماً نهائياً.",
   "studentProfileSessionsTitle": "جلساتي",

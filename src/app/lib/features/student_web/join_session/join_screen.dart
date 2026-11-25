@@ -139,7 +139,17 @@ class _JoinScreenState extends State<JoinScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.appTitle),
-        actions: const [LanguageSwitcher()],
+        actions: [
+          // The student's optional personal profile (created from their
+          // feedback page; the page explains this when there is none yet).
+          IconButton(
+            key: const ValueKey('open-profile'),
+            tooltip: l.studentProfileTitle,
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.of(context).pushNamed('/me'),
+          ),
+          const LanguageSwitcher(),
+        ],
       ),
       body: Stack(
         fit: StackFit.expand,

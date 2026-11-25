@@ -671,7 +671,7 @@
   "studentProfileTitle": "My profile",
   "studentProfileSignedInAs": "Signed in as {label}",
   "@studentProfileSignedInAs": {"placeholders": {"label": {"type": "String"}}},
-  "studentProfileNone": "There is no profile in this browser. You can create one from your feedback page after a session.",
+  "studentProfileNone": "There is no profile in this browser yet. After you answer in a session and your instructor publishes feedback, you will find \"Keep your progress (optional)\" at the end of your feedback page.",
   "studentProfileProgressTitle": "My progress",
   "studentProfileProgressNote": "Estimates from the sessions you added, oldest first. Not a final judgement.",
   "studentProfileSessionsTitle": "My sessions",
