@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// The Bousla mark from the identity (find-your-bousla.base44.app): a
 /// direction star (amber up, teal down) inside an open ring. Drawn, not an
 /// image, so it is sharp at any size and follows light/dark: on dark the
-/// ring is signal teal, on light a faint midnight with the dark teal star.
+/// ring is signal teal, on light dark teal (the identity's faint midnight
+/// ring read as grey on light screens).
 class BouslaMark extends StatelessWidget {
   const BouslaMark({super.key, this.size = 56});
 
@@ -27,7 +28,6 @@ class _MarkPainter extends CustomPainter {
 
   final bool dark;
 
-  static const _midnight = Color(0xFF0B1230);
   static const _signalTeal = Color(0xFF34E3B6);
   static const _darkTeal = Color(0xFF0E9E86);
   static const _amber = Color(0xFFFFB020);
@@ -54,7 +54,7 @@ class _MarkPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..color = dark
             ? _signalTeal.withValues(alpha: 0.5)
-            : _midnight.withValues(alpha: 0.18),
+            : _darkTeal.withValues(alpha: 0.4),
     );
 
     final up = Path()
@@ -83,4 +83,50 @@ class _MarkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_MarkPainter old) => old.dark != dark;
+}
+
+/// The mark large and faint behind a screen's content, with a soft teal
+/// glow (as on the splash screen). Decoration only: no taps, hidden from
+/// screen readers. Put it first in a [Stack] that fills the screen.
+class BouslaWatermark extends StatelessWidget {
+  const BouslaWatermark({super.key, this.alignment = Alignment.center});
+
+  /// Where the mark sits: e.g. in the empty space above a form.
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final teal = theme.colorScheme.primary;
+    final dark = theme.brightness == Brightness.dark;
+    return IgnorePointer(
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(alignment.x, alignment.y),
+              radius: 0.8,
+              colors: [
+                teal.withValues(alpha: dark ? 0.14 : 0.10),
+                teal.withValues(alpha: 0),
+              ],
+            ),
+          ),
+          child: Align(
+            alignment: alignment,
+            child: Opacity(
+              opacity: dark ? 0.08 : 0.10,
+              child: LayoutBuilder(
+                builder: (context, box) => BouslaMark(
+                  size: (box.biggest.shortestSide *
+                          (alignment == Alignment.center ? 0.85 : 0.7))
+                      .clamp(160, 420),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

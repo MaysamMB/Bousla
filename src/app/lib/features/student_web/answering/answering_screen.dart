@@ -330,34 +330,8 @@ class _ThankYouState extends State<_ThankYou> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // A soft teal glow and the Bousla mark, large and faint behind the
-        // message: decoration only, hidden from screen readers.
-        IgnorePointer(
-          child: ExcludeSemantics(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0, -0.15),
-                  radius: 0.8,
-                  colors: [
-                    teal.withValues(alpha: 0.14),
-                    teal.withValues(alpha: 0),
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Opacity(
-                  opacity: theme.brightness == Brightness.dark ? 0.08 : 0.07,
-                  child: LayoutBuilder(
-                    builder: (context, box) => BouslaMark(
-                      size: (box.biggest.shortestSide * 0.85).clamp(160, 420),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        // The Bousla mark, large and faint behind the message.
+        const BouslaWatermark(),
         Center(
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: animate ? 0 : 1, end: 1),
