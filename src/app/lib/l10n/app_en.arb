@@ -621,5 +621,14 @@
   "@instructorResSuggestDuplicates": {"placeholders": {"count": {"type": "int"}}},
   "instructorResSuggestAllDuplicates": "Every suggestion matches a resource the course already has. Try other concepts or a description.",
   "instructorResSuggestNothing": "No usable suggestions this time. Try again or with fewer concepts.",
-  "instructorResSuggestStart": "Suggest"
+  "instructorResSuggestStart": "Suggest",
+  "instructorSessionResTitle": "Resources for this session",
+  "instructorSessionResAllCovered": "Every concept in this session has at least one approved resource. Students get them as next steps when you publish feedback.",
+  "instructorSessionResMissing": "{count, plural, =1{1 concept in this session has no approved resource: students who need it will get no resource to open. You can add one now, before publishing feedback.} other{{count} concepts in this session have no approved resource: students who need them will get no resource to open. You can add them now, before publishing feedback.}}",
+  "@instructorSessionResMissing": {"placeholders": {"count": {"type": "int"}}},
+  "instructorSessionResCount": "{count, plural, =0{No approved resource} =1{1 approved resource} other{{count} approved resources}}",
+  "@instructorSessionResCount": {"placeholders": {"count": {"type": "int"}}},
+  "instructorSessionResWaiting": "{count} AI suggestions waiting for a link",
+  "@instructorSessionResWaiting": {"placeholders": {"count": {"type": "int"}}},
+  "instructorSessionResAll": "All resources and AI suggestions"
 }

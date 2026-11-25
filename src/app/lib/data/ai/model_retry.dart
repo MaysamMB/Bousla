@@ -1,5 +1,12 @@
 import 'question_generator.dart';
 
+/// Models whose free daily limit was reached while this page is open (the
+/// limit is per model and project). They are skipped until the page is
+/// reloaded, so each press does not spend a failed request and a few
+/// seconds on them (seen live on 25 Nov: gemini-3.8-flash used up, the
+/// fallback still answering).
+final dailyLimitReached = <String>{};
+
 /// Calls [call] with each model in [models] in turn, retrying while the
 /// service is temporarily busy (it was during the first live test on
 /// 24 Nov: "This model is currently experiencing high demand").
@@ -21,8 +28,18 @@ Future<T> callWithModelFallback<T>({
   Duration? Function(Object error)? retryAfter,
   bool Function(Object error)? retryable,
   Future<void> Function(Duration) wait = Future<void>.delayed,
+  Set<String>? usedUp,
 }) async {
   assert(models.isNotEmpty);
+  final skip = usedUp ?? dailyLimitReached;
+  final usable = [
+    for (final m in models)
+      if (!skip.contains(m)) m,
+  ];
+  if (usable.isEmpty) {
+    throw const QuestionGenerationException(GenerationProblem.dailyQuota);
+  }
+  models = usable;
   Object? firstBusy;
   for (var m = 0; m < models.length; m++) {
     final attempts = m == 0 ? 1 + delays.length : 1;
@@ -35,7 +52,10 @@ Future<T> callWithModelFallback<T>({
         firstBusy ??= e;
         if (!busy) break; // fallback model unusable: try the next one
         // e.g. a used-up daily limit: go straight to the next model.
-        if (retryable != null && !retryable(e)) break;
+        if (retryable != null && !retryable(e)) {
+          skip.add(models[m]);
+          break;
+        }
         // The service may say how long to wait ("Please retry in 17s",
         // seen live with a 5-requests-per-minute free tier); waiting less
         // only spends more of the same quota.

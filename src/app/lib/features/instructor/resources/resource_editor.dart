@@ -17,6 +17,7 @@ class ResourceEditor extends StatefulWidget {
     required this.courseId,
     required this.concepts,
     this.resource,
+    this.initialConceptIds = const [],
   });
 
   final String courseId;
@@ -26,6 +27,10 @@ class ResourceEditor extends StatefulWidget {
 
   /// Null for a new resource.
   final Resource? resource;
+
+  /// Concepts already chosen for a new resource (e.g. the one a session
+  /// needs a resource for).
+  final List<String> initialConceptIds;
 
   @override
   State<ResourceEditor> createState() => _ResourceEditorState();
@@ -52,7 +57,7 @@ class _ResourceEditorState extends State<ResourceEditor> {
     _type = r?.type ?? ResourceType.video;
     _language = r?.language ?? ResourceLanguage.ar;
     _languageChosen = r != null;
-    _concepts = {...?r?.conceptIds};
+    _concepts = {...?r?.conceptIds, if (r == null) ...widget.initialConceptIds};
     _url = TextEditingController(text: r?.url ?? '');
     _title = TextEditingController();
   }
