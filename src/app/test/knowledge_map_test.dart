@@ -157,8 +157,12 @@ void main() {
       find.text('قد يكون «مفهوم pk» سبباً محتملاً، تستحسن مراجعته أولاً.'),
       findsOneWidget,
     );
-    // No attempts: the state only, no "0 of 0".
-    expect(find.text('لا توجد أدلة كافية بعد'), findsWidgets);
+    // No attempts: the state with "no question", not "0 of 0".
+    expect(
+      find.text('لا توجد أدلة كافية بعد · لم تكن عنه أسئلة في هذه الجلسة'),
+      findsWidgets,
+    );
+    expect(find.textContaining('0 من 0'), findsNothing);
   });
 
   testWidgets('map in English fits a small phone with large text', (

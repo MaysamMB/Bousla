@@ -280,7 +280,11 @@ class InMemoryContentRepository implements ContentRepository {
       for (final c in _concepts)
         if (c.status == ReviewStatus.approved) c.id,
     };
-    final issues = validateResourceDraft(draft, approved);
+    final issues = validateResourceDraft(
+      draft,
+      approved,
+      existing: _forCourse(courseId, _resources),
+    );
     if (issues.isNotEmpty) throw InvalidResourceException(issues);
     final index = draft.id == null
         ? -1

@@ -143,6 +143,7 @@
     "reviewAiErrorNetwork":  "لم يصل رد من Gemini في الوقت المحدد. تحقّق من الاتصال وحاول مرة أخرى.",
     "errorGeneric":  "حدث خطأ. حاول مرة أخرى.",
     "studentMapTitle":  "خريطتك المعرفية لهذه الجلسة",
+    "studentMapNoQuestions": "لم تكن عنه أسئلة في هذه الجلسة",
     "studentMapNote":  "مبنية فقط على إجاباتك في هذه الجلسة. هذه تقديرات وليست حكماً نهائياً.",
     "studentMapFoundations":  "الأساسيات",
     "studentMapLevel":  "المستوى {level}",
@@ -322,6 +323,13 @@
   "instructorResPerConcept": "عدد الاقتراحات لكل مفهوم",
   "instructorResPickOptional": "إرفاق مادة المساق (اختياري)",
   "instructorResSuggestDone": "حُفظ {saved} اقتراح للمراجعة · استُبعد {dropped} بالفحص ({links} لأنها تحتوي روابط)",
+  "instructorResErrUrlDuplicate": "لمورد آخر في هذا المقرر الرابط نفسه.",
+  "instructorResRequestLabel": "ما الذي يجب أن تغطيه الموارد؟ (اختياري)",
+  "instructorResRequestHint": "مثال: فيديوهات قصيرة للطلاب الذين يخلطون بين المفتاح الأساسي والمفتاح الخارجي. دون وصف، توجّه نتائجُ آخر جلسة الاقتراحات. لا تكتب أسماء الطلاب.",
+  "instructorResFocusFrom": "دون وصف، تتبع الاقتراحات نتائج «{session}»: {concepts}. اختيرت هذه المفاهيم أدناه، ويمكنك تغييرها.",
+  "instructorResFocusNone": "لا توجد نتائج جلسة توجّه الاقتراحات بعد: ستغطي المفاهيم المختارة أدناه.",
+  "instructorResSuggestDuplicates": "تُرك {count} لأن في المقرر موردًا بالعنوان نفسه.",
+  "instructorResSuggestAllDuplicates": "كل الاقتراحات تطابق موارد موجودة في المقرر. جرّب مفاهيم أخرى أو أضف وصفًا.",
   "instructorResSuggestNothing": "لا توجد اقتراحات صالحة هذه المرة. حاول مرة أخرى أو بمفاهيم أقل.",
   "instructorResSuggestStart": "اقترح"
 }
