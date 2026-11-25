@@ -9,12 +9,25 @@
 // Nothing here is mocked: no answer, no fixture, no fallback text counted
 // as AI.
 //
-// Run from src/engine, with a Gemini API key (Google AI Studio):
+// Two ways to reach the same Gemini models, run from src/engine:
 //
-//   GEMINI_API_KEY=... dart run tool/gemini_explanation_eval.dart --out <dir>
+// 1. Like the app, through Firebase AI Logic, with the project's
+//    firebase.env.json (FIREBASE_PROJECT_ID, FIREBASE_API_KEY,
+//    FIREBASE_APP_ID); the same endpoint, key header and app ID header as
+//    package:firebase_ai. If App Check is enforced for AI Logic, Google
+//    refuses requests from outside the browser app: that is reported as an
+//    execution failure.
 //
-// Without GEMINI_API_KEY no key header is sent (an environment network
-// secret may add it). If no model answers (key, quota, network), every case
+//      dart run tool/gemini_explanation_eval.dart \
+//        --firebase-env ../app/firebase.env.json --out <dir>
+//
+// 2. With a Gemini Developer API key (Google AI Studio):
+//
+//      GEMINI_API_KEY=... dart run tool/gemini_explanation_eval.dart --out <dir>
+//
+// Keys and settings are read, never printed, logged or written to the
+// report (error messages are scrubbed of the key). Without either, no key
+// header is sent (an environment network secret may add it). If no model answers (key, quota, network), every case
 // is an EXECUTION FAILURE: not accepted, not rejected, and no rate is given.
 //
 // Options: --model (default gemini-3.8-flash), --fallback-model (default
@@ -29,7 +42,52 @@ import 'package:bousla_engine/bousla_engine.dart';
 
 import '../test/support/explanation_eval_cases.dart';
 
-const _endpoint = 'https://generativelanguage.googleapis.com/v1beta/models';
+const _developerApi = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+/// Where requests go and how they are authenticated. Never printed.
+class _Target {
+  const _Target({
+    required this.base,
+    required this.via,
+    this.key,
+    this.appId,
+  });
+
+  /// `<base>/<model>:generateContent`.
+  final String base;
+
+  /// Shown in the report: which route was used (no secret).
+  final String via;
+  final String? key;
+  final String? appId;
+
+  String scrub(String text) {
+    final k = key;
+    return k == null || k.isEmpty ? text : text.replaceAll(k, '<key>');
+  }
+}
+
+/// The app's route (package:firebase_ai, Google AI backend): Firebase AI
+/// Logic with the project's web API key.
+_Target _firebaseTarget(String path) {
+  final json = jsonDecode(File(path).readAsStringSync()) as Map;
+  String need(String name) {
+    final v = json[name];
+    if (v is! String || v.trim().isEmpty) {
+      throw FormatException('$name is missing in $path');
+    }
+    return v.trim();
+  }
+
+  final project = need('FIREBASE_PROJECT_ID');
+  return _Target(
+    base: 'https://firebasevertexai.googleapis.com/v1beta/projects/'
+        '$project/models',
+    via: 'Firebase AI Logic (project $project), as in the app',
+    key: need('FIREBASE_API_KEY'),
+    appId: json['FIREBASE_APP_ID'] as String?,
+  );
+}
 
 /// The guard (1–5) behind an issue, or null for issues that are not guards.
 int? guardNumber(ExplanationIssue i) => switch (i) {
@@ -53,14 +111,18 @@ class _Call {
 
 /// One generateContent request. Never retried here more than the app does:
 /// one attempt per model.
-Future<_Call> _generate(String model, String prompt, String? key) async {
+Future<_Call> _generate(String model, String prompt, _Target t) async {
   final client = HttpClient()..connectionTimeout = const Duration(seconds: 30);
   try {
     final req = await client
-        .postUrl(Uri.parse('$_endpoint/$model:generateContent'))
+        .postUrl(Uri.parse('${t.base}/$model:generateContent'))
         .timeout(const Duration(seconds: 30));
     req.headers.contentType = ContentType.json;
+    final key = t.key;
     if (key != null && key.isNotEmpty) req.headers.set('x-goog-api-key', key);
+    if (t.appId case final id? when id.isNotEmpty) {
+      req.headers.set('X-Firebase-AppId', id);
+    }
     req.write(jsonEncode({
       'contents': [
         {
@@ -82,7 +144,7 @@ Future<_Call> _generate(String model, String prompt, String? key) async {
       return _Call(
         model: model,
         status: res.statusCode,
-        error: body.length > 600 ? '${body.substring(0, 600)}…' : body,
+        error: t.scrub(body.length > 600 ? '${body.substring(0, 600)}…' : body),
       );
     }
     final json = jsonDecode(body) as Map<String, dynamic>;
@@ -105,7 +167,7 @@ Future<_Call> _generate(String model, String prompt, String? key) async {
     }
     return _Call(model: model, status: 200, text: text);
   } on Object catch (e) {
-    return _Call(model: model, error: e.toString());
+    return _Call(model: model, error: t.scrub(e.toString()));
   } finally {
     client.close(force: true);
   }
@@ -121,7 +183,27 @@ Future<void> main(List<String> args) async {
   final fallback = _arg(args, '--fallback-model', 'gemini-3.5-flash-lite')!;
   final out = Directory(_arg(args, '--out', 'gemini_eval_report')!)
     ..createSync(recursive: true);
-  final key = Platform.environment['GEMINI_API_KEY'];
+  final firebaseEnv = _arg(args, '--firebase-env', null);
+  final _Target target;
+  if (firebaseEnv != null) {
+    try {
+      target = _firebaseTarget(firebaseEnv);
+    } on Object catch (e) {
+      stderr.writeln('Cannot read the Firebase settings: '
+          '${e is FormatException ? e.message : e.runtimeType}');
+      exitCode = 64;
+      return;
+    }
+  } else {
+    final key = Platform.environment['GEMINI_API_KEY'];
+    target = _Target(
+      base: _developerApi,
+      via: key == null || key.isEmpty
+          ? 'Gemini Developer API, no key set'
+          : 'Gemini Developer API (GEMINI_API_KEY)',
+      key: key,
+    );
+  }
 
   // The app's pipeline: 26 students → 20 unique anonymous profiles.
   final (responses, patternOf) = evalStudents();
@@ -136,9 +218,9 @@ Future<void> main(List<String> args) async {
 
   // ONE request for the whole class; the fallback model only if the first
   // one gave no answer (as in the app).
-  final calls = <_Call>[await _generate(model, prompt, key)];
+  final calls = <_Call>[await _generate(model, prompt, target)];
   if (!calls.last.ok && fallback.isNotEmpty) {
-    calls.add(await _generate(fallback, prompt, key));
+    calls.add(await _generate(fallback, prompt, target));
   }
   final answered = calls.where((c) => c.ok).firstOrNull;
   final now = DateTime.now().toUtc().toIso8601String();
@@ -153,6 +235,8 @@ Future<void> main(List<String> args) async {
     ..writeln()
     ..writeln('Run: $now. Cases: ${evalPatterns.length} profiles '
         '(${patternOf.length} students), one request.')
+    ..writeln()
+    ..writeln('Route: ${target.via}.')
     ..writeln()
     ..writeln('Requests:')
     ..writeAll(callLines.map((l) => '$l\n'))
@@ -235,6 +319,7 @@ Future<void> main(List<String> args) async {
   File('${out.path}/report.json').writeAsStringSync(
     const JsonEncoder.withIndent('  ').convert({
       'run_at': now,
+      'route': target.via,
       'requests': [
         for (final c in calls)
           {'model': c.model, 'ok': c.ok, 'status': c.status, 'error': c.error},
