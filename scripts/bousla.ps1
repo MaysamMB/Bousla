@@ -78,6 +78,8 @@ switch ($Command) {
     Ensure-Npm
     Run $App 'flutter' @('pub', 'get')
     Run $App 'flutter' @('build', 'web', '--no-web-resources-cdn', '--dart-define-from-file=firebase.env.json')
+    # No offline copy of the app on phones (see scripts/flutter_service_worker.js).
+    Copy-Item (Join-Path $PSScriptRoot 'flutter_service_worker.js') (Join-Path $App 'build/web/flutter_service_worker.js') -Force
     Write-Host 'Reminder: the rules require approved instructors (Firestore -> instructors/{UID}). See firebase/README.md.' -ForegroundColor Yellow
     Run $Fb 'npx' @('firebase', 'deploy', '--only', 'hosting,firestore:rules')
     Write-Host 'Done: https://bousla-educathon.web.app  (press Ctrl+Shift+R in the browser)' -ForegroundColor Green

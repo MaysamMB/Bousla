@@ -40,6 +40,8 @@ case "$cmd" in
     check_env "$ENV_FILE"; ensure_npm
     run "$APP" flutter pub get
     run "$APP" flutter build web --no-web-resources-cdn --dart-define-from-file=firebase.env.json
+    # No offline copy of the app on phones (see scripts/flutter_service_worker.js).
+    cp "$ROOT/scripts/flutter_service_worker.js" "$APP/build/web/flutter_service_worker.js"
     echo "Reminder: the rules require approved instructors (Firestore -> instructors/{UID}). See firebase/README.md."
     run "$FB" npx firebase deploy --only hosting,firestore:rules
     echo "Done: https://bousla-educathon.web.app  (press Ctrl+Shift+R in the browser)" ;;
