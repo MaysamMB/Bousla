@@ -16,7 +16,9 @@ class HomeScreen extends StatelessWidget {
         actions: const [LanguageSwitcher()],
       ),
       body: WatermarkedBody(
-        child: Center(
+        child: Align(
+          // Lower half: the watermark sits in the empty space above.
+          alignment: const Alignment(0, 0.5),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Padding(
