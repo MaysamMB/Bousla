@@ -3,6 +3,9 @@ import 'package:bousla_engine/bousla_engine.dart';
 import '../feedback.dart';
 import '../models.dart';
 
+/// Longest session title per language (checked by the security rules too).
+const maxSessionTitleLength = 120;
+
 /// Sessions, participation and responses.
 ///
 /// Implementations: [InMemorySessionRepository] (development) and a Firestore
@@ -13,6 +16,22 @@ abstract interface class SessionRepository {
     required String courseId,
     required String ownerId,
     required List<QuestionRef> questions,
+    LocalizedText? title,
+  });
+
+  /// Instructor only: all sessions of [courseId] owned by [ownerId], newest
+  /// first (open and closed), for the past sessions list.
+  Future<List<Session>> listSessions({
+    required String ownerId,
+    required String courseId,
+  });
+
+  /// Instructor only: the most recently created session of [courseId] owned
+  /// by [ownerId] that is still open, or null. Lets the session screen come
+  /// back to a running session after a page reload instead of losing it.
+  Future<Session?> latestOpenSession({
+    required String ownerId,
+    required String courseId,
   });
 
   /// Finds a session by its join code (case-insensitive). Null if none.
@@ -42,6 +61,10 @@ abstract interface class SessionRepository {
   Stream<List<Response>> watchResponses(String sessionId);
 
   Future<void> closeSession(String sessionId);
+
+  /// Instructor only: a new title (each language at most
+  /// [maxSessionTitleLength] characters, as the security rules require).
+  Future<void> renameSession(String sessionId, LocalizedText title);
 
   Future<void> releaseFeedback(String sessionId);
 

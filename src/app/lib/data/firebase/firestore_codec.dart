@@ -175,7 +175,10 @@ Map<String, dynamic> sessionToJson(Session s) => {
       ],
       'status': s.status.name,
       'feedback_released': s.feedbackReleased,
+      if (s.title case final t?) 'title': _text(t),
     };
+
+DateTime? _time(Object? value) => value is Timestamp ? value.toDate() : null;
 
 Session sessionFromDoc(String id, Map<String, dynamic> data) => Session(
       id: id,
@@ -193,6 +196,13 @@ Session sessionFromDoc(String id, Map<String, dynamic> data) => Session(
           ? SessionStatus.closed
           : SessionStatus.open,
       feedbackReleased: data['feedback_released'] == true,
+      title: data['title'] is Map
+          ? LocalizedText.fromJson(
+              Map<String, dynamic>.from(data['title'] as Map),
+            )
+          : null,
+      createdAt: _time(data['created_at']),
+      closedAt: _time(data['closed_at']),
     );
 
 Map<String, dynamic> responseToJson(Response r) => {

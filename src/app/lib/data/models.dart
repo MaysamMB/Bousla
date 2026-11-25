@@ -300,6 +300,9 @@ class Session {
     required this.questions,
     required this.status,
     required this.feedbackReleased,
+    this.title,
+    this.createdAt,
+    this.closedAt,
   });
 
   final String id;
@@ -312,7 +315,18 @@ class Session {
   final SessionStatus status;
   final bool feedbackReleased;
 
-  Session copyWith({SessionStatus? status, bool? feedbackReleased}) => Session(
+  /// Shown in the instructor's past sessions, in both languages (made from
+  /// the session's concepts when it is created). Null for older sessions.
+  final LocalizedText? title;
+  final DateTime? createdAt;
+  final DateTime? closedAt;
+
+  Session copyWith({
+    SessionStatus? status,
+    bool? feedbackReleased,
+    DateTime? closedAt,
+    LocalizedText? title,
+  }) => Session(
     id: id,
     code: code,
     courseId: courseId,
@@ -320,6 +334,9 @@ class Session {
     questions: questions,
     status: status ?? this.status,
     feedbackReleased: feedbackReleased ?? this.feedbackReleased,
+    title: title ?? this.title,
+    createdAt: createdAt,
+    closedAt: closedAt ?? this.closedAt,
   );
 }
 

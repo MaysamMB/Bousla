@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import '../models.dart';
+import 'model_json.dart';
 
 /// A concept the model may link a question to (approved concepts only).
 class DraftingConcept {
@@ -187,7 +188,7 @@ DraftParseResult parseQuestionDrafts(
 }) {
   final Object? decoded;
   try {
-    decoded = jsonDecode(_stripCodeFence(modelText));
+    decoded = jsonDecode(stripCodeFence(modelText));
   } on FormatException {
     return const DraftParseResult(
       accepted: [],
@@ -343,13 +344,6 @@ int _stableHash(String s) {
     h = (h * 0x01000193) & 0xffffffff;
   }
   return h;
-}
-
-/// Models sometimes wrap JSON in a ```json fence despite the schema.
-String _stripCodeFence(String text) {
-  final t = text.trim();
-  final fence = RegExp(r'^```(?:json)?\s*([\s\S]*?)\s*```$');
-  return fence.firstMatch(t)?.group(1) ?? t;
 }
 
 String _normalize(String s) =>

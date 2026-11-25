@@ -167,22 +167,22 @@ class _MapContent extends StatelessWidget {
     MasteryState.possibleDifficulty => (
         icon: Icons.flag_outlined,
         color: const Color(0xFFB45309), // amber-brown, readable on light
-        label: l.studentMapStateDifficulty,
+        label: l.studentStatePossibleDifficulty,
       ),
     MasteryState.emerging => (
         icon: Icons.trending_up,
         color: scheme.primary,
-        label: l.studentMapStateEmerging,
+        label: l.studentStateEmerging,
       ),
     MasteryState.demonstratedMastery => (
         icon: Icons.check_circle_outline,
         color: const Color(0xFF15803D),
-        label: l.studentMapStateMastery,
+        label: l.studentStateDemonstratedMastery,
       ),
     MasteryState.insufficientEvidence => (
         icon: Icons.help_outline,
         color: scheme.outline,
-        label: l.studentMapStateInsufficient,
+        label: l.studentStateInsufficientEvidence,
       ),
   };
 }
@@ -230,7 +230,7 @@ class _ConceptCard extends StatelessWidget {
               concept.attempts == 0
                   ? style.label
                   : '${style.label} · '
-                      '${l.studentMapEvidence(concept.correct, concept.attempts)}',
+                      '${l.studentFeedbackEvidence(concept.correct, concept.attempts)}',
               style: theme.textTheme.bodyMedium?.copyWith(color: style.color),
             ),
             if (buildsOn.isNotEmpty)

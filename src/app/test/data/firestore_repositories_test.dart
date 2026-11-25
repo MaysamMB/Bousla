@@ -277,6 +277,74 @@ void main() {
       );
     });
 
+    test('listSessions: titled sessions of the owner and course, newest first',
+        () async {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      final titled = await sessions.createSession(
+        courseId: _course,
+        ownerId: _teacher,
+        questions: const [QuestionRef('db_pk_001', 1)],
+        title: const LocalizedText(ar: 'المفتاح الأساسي', en: 'Primary Key'),
+      );
+      await sessions.closeSession(session.id);
+      final list =
+          await sessions.listSessions(ownerId: _teacher, courseId: _course);
+      expect([for (final s in list) s.id], [titled.id, session.id]);
+      expect(list.first.title?.ar, 'المفتاح الأساسي');
+      expect(list.first.createdAt, isNotNull);
+      expect(list.last.status, SessionStatus.closed);
+      expect(list.last.closedAt, isNotNull);
+      expect(list.last.title, isNull);
+      expect(
+        await sessions.listSessions(ownerId: 'other', courseId: _course),
+        isEmpty,
+      );
+    });
+
+    test('renameSession stores the new title', () async {
+      await sessions.renameSession(
+        session.id,
+        const LocalizedText(ar: 'مراجعة', en: 'Review'),
+      );
+      final again = (await sessions.findByCode(session.code))!;
+      expect((again.title?.ar, again.title?.en), ('مراجعة', 'Review'));
+      expect(again.status, SessionStatus.open);
+    });
+
+    test('latestOpenSession: newest open session of the owner and course',
+        () async {
+      expect(
+        (await sessions.latestOpenSession(ownerId: _teacher, courseId: _course))
+            ?.id,
+        session.id,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      final second = await sessions.createSession(
+        courseId: _course,
+        ownerId: _teacher,
+        questions: const [QuestionRef('db_pk_001', 1)],
+      );
+      expect(
+        (await sessions.latestOpenSession(ownerId: _teacher, courseId: _course))
+            ?.id,
+        second.id,
+      );
+      await sessions.closeSession(second.id);
+      expect(
+        (await sessions.latestOpenSession(ownerId: _teacher, courseId: _course))
+            ?.id,
+        session.id,
+      );
+      expect(
+        await sessions.latestOpenSession(ownerId: 'other', courseId: _course),
+        isNull,
+      );
+      expect(
+        await sessions.latestOpenSession(ownerId: _teacher, courseId: 'x'),
+        isNull,
+      );
+    });
+
     Response answer(String participant,
             {String q = 'db_pk_001', Language lang = Language.ar}) =>
         Response(
