@@ -100,6 +100,9 @@ void main() {
       ),
     ))!;
 
+    // The toggles for all questions are in a sheet.
+    await tester.tap(find.byKey(const ValueKey('answer-languages')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('hide-ar-all')));
     await tester.pumpAndSettle();
     expect(
@@ -127,6 +130,12 @@ void main() {
       (await all()).every((q) => q.hiddenOptionLanguages.isEmpty),
       isTrue,
     );
+    // The sheet shows the current state.
+    final en = tester.widget<Checkbox>(find.descendant(
+      of: find.byKey(const ValueKey('hide-en-all')),
+      matching: find.byType(Checkbox),
+    ));
+    expect(en.value, isFalse);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(

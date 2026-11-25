@@ -247,6 +247,67 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     if (saved == true && mounted) _reload();
   }
 
+  /// Hide the Arabic or the English answers in every question, in a sheet
+  /// (it used to take three rows above the list on a phone).
+  Future<void> _answerLanguages(_ReviewData data) async {
+    final l = AppLocalizations.of(context);
+    var arabic = _hiddenInAll(data.questions, Language.ar);
+    var english = _hiddenInAll(data.questions, Language.en);
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheet) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.reviewAnswerLanguages,
+                  style: Theme.of(sheetContext).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                HideLanguageToggles(
+                  forAllQuestions: true,
+                  arabic: arabic,
+                  english: english,
+                  onChanged: (language, hidden) {
+                    // Students always see one language: hiding one shows
+                    // the other (same rule as the repository).
+                    setSheet(() {
+                      final ar = language == Language.ar;
+                      if (hidden) {
+                        arabic = ar;
+                        english = !ar;
+                      } else if (ar) {
+                        arabic = false;
+                      } else {
+                        english = false;
+                      }
+                    });
+                    _setHidden(
+                      data.course.id,
+                      [for (final q in data.questions) q.id],
+                      language,
+                      hidden,
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l.reviewHiddenOptionsHint,
+                  style: Theme.of(sheetContext).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -288,7 +349,12 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
           length: 3,
           child: Scaffold(
             appBar: AppBar(
-              title: Text(l.reviewTitle),
+              // Shrinks rather than cut off on a phone next to the buttons.
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(l.reviewTitle),
+              ),
               actions: [
                 IconButton(
                   tooltip: l.instructorResTitle,
@@ -322,46 +388,31 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
                     ),
                   ),
                 _StatsBanner(stats: aiReviewStats(data.questions)),
-                if (ServicesScope.of(context).questionGenerator != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: FilledButton.tonalIcon(
-                        onPressed: () => _generateFromMaterial(data),
-                        icon: const Icon(Icons.auto_awesome),
-                        label: Text(l.reviewAiGenerate),
-                      ),
-                    ),
-                  ),
-                // Applies to every question of the course, in all tabs.
+                // One compact row: AI drafting, and the answer languages
+                // for all questions (in a sheet, rarely changed).
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      HideLanguageToggles(
-                        forAllQuestions: true,
-                        arabic: _hiddenInAll(data.questions, Language.ar),
-                        english: _hiddenInAll(data.questions, Language.en),
-                        onChanged: (language, hidden) => _setHidden(
-                          courseId,
-                          [for (final q in data.questions) q.id],
-                          language,
-                          hidden,
+                      if (ServicesScope.of(context).questionGenerator != null)
+                        FilledButton.tonalIcon(
+                          onPressed: () => _generateFromMaterial(data),
+                          icon: const Icon(Icons.auto_awesome),
+                          label: Text(l.reviewAiGenerate),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          l.reviewHiddenOptionsHint,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('answer-languages'),
+                        onPressed: () => _answerLanguages(data),
+                        icon: const Icon(Icons.translate),
+                        label: Text(l.reviewAnswerLanguages),
                       ),
                     ],
                   ),
                 ),
-                const Divider(height: 16),
+                const Divider(height: 12),
                 Expanded(
                   child: TabBarView(
                     children: [
@@ -497,27 +548,38 @@ class _StatsBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    // One short line; the notice is behind the (i), or shown in full while
+    // there are no AI drafts yet.
     return Container(
       width: double.infinity,
       color: theme.colorScheme.surfaceContainerHighest,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 4, 4),
+      child: Row(
         children: [
-          Text(l.reviewAiNotice, style: theme.textTheme.bodyMedium),
-          if (stats.total > 0) ...[
-            const SizedBox(height: 4),
-            Text(
-              l.reviewStats(
-                stats.total,
-                stats.approvedAsIs,
-                stats.approvedEdited,
-                stats.rejected,
-                stats.pending,
-              ),
+          Expanded(
+            child: Text(
+              stats.total > 0
+                  ? l.reviewStats(
+                      stats.total,
+                      stats.approvedAsIs,
+                      stats.approvedEdited,
+                      stats.rejected,
+                      stats.pending,
+                    )
+                  : l.reviewAiNotice,
               style: theme.textTheme.bodySmall,
             ),
-          ],
+          ),
+          if (stats.total > 0)
+            Tooltip(
+              message: l.reviewAiNotice,
+              triggerMode: TooltipTriggerMode.tap,
+              showDuration: const Duration(seconds: 6),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.info_outline, size: 20),
+              ),
+            ),
         ],
       ),
     );
@@ -698,6 +760,8 @@ class _QuestionCard extends StatelessWidget {
     ];
     final reason = question.rejectionReason;
     final location = question.sourceLocation;
+    bool hidden(Language lang) => question.hiddenOptionLanguages.contains(lang);
+    final scheme = theme.colorScheme;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -720,6 +784,28 @@ class _QuestionCard extends StatelessWidget {
                     question.prompt.of(language),
                     style: theme.textTheme.titleMedium,
                   ),
+                ),
+                // Rarely used per question: hide the answers in one
+                // language (the "all questions" switch is in the sheet).
+                PopupMenuButton<Language>(
+                  key: ValueKey('more-${question.id}'),
+                  tooltip: l.reviewAnswerLanguages,
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (lang) => onHideChanged(lang, !hidden(lang)),
+                  itemBuilder: (_) => [
+                    CheckedPopupMenuItem(
+                      key: ValueKey('hide-ar-${question.id}'),
+                      value: Language.ar,
+                      checked: hidden(Language.ar),
+                      child: Text(l.reviewHideArabicOptions),
+                    ),
+                    CheckedPopupMenuItem(
+                      key: ValueKey('hide-en-${question.id}'),
+                      value: Language.en,
+                      checked: hidden(Language.en),
+                      child: Text(l.reviewHideEnglishOptions),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -753,13 +839,24 @@ class _QuestionCard extends StatelessWidget {
               ),
             const SizedBox(height: 8),
             Wrap(
-              spacing: 8,
-              runSpacing: 4,
+              spacing: 6,
+              runSpacing: 6,
               children: [
-                for (final name in conceptNames) _Tag(name),
-                _Tag(sourceText(l, question.source)),
-                if (question.edited) _Tag(l.reviewEdited),
-                _Tag(l.reviewVersion(question.version)),
+                for (final name in conceptNames)
+                  _Tag(name, color: scheme.primary),
+                _Tag(
+                  sourceText(l, question.source),
+                  color: question.source == ContentSource.aiDraft
+                      ? scheme.tertiary
+                      : scheme.outline,
+                ),
+                if (question.edited)
+                  _Tag(l.reviewEdited, color: scheme.outline),
+                _Tag(l.reviewVersion(question.version), color: scheme.outline),
+                if (hidden(Language.ar))
+                  _Tag(l.reviewHideArabicOptions, color: scheme.secondary),
+                if (hidden(Language.en))
+                  _Tag(l.reviewHideEnglishOptions, color: scheme.secondary),
               ],
             ),
             if (location != null) ...[
@@ -776,12 +873,7 @@ class _QuestionCard extends StatelessWidget {
                 style: theme.textTheme.bodySmall,
               ),
             ],
-            HideLanguageToggles(
-              arabic: question.hiddenOptionLanguages.contains(Language.ar),
-              english: question.hiddenOptionLanguages.contains(Language.en),
-              onChanged: onHideChanged,
-            ),
-            const SizedBox(height: 8),
+            const Divider(height: 24),
             Wrap(
               alignment: WrapAlignment.end,
               spacing: 8,
@@ -796,16 +888,25 @@ class _QuestionCard extends StatelessWidget {
 }
 
 class _Tag extends StatelessWidget {
-  const _Tag(this.text);
+  const _Tag(this.text, {required this.color});
 
   final String text;
+  final Color color;
 
+  /// A small tinted pill, lighter than a Chip (two rows of chips used to
+  /// fill a phone screen).
   @override
-  Widget build(BuildContext context) => Chip(
-    label: Text(text),
-    visualDensity: VisualDensity.compact,
-    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-  );
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color),
+        ),
+      );
 }
 
 /// Result of the reject dialog. Null (dialog dismissed) means "cancel".
