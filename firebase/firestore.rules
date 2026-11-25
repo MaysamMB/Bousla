@@ -181,9 +181,44 @@ service cloud.firestore {
       }
     }
 
-    // Persistent profiles (staged, after account linking).
+    // ---------------------------------------------------------- profiles
+    // Optional personal learning profile (architecture §10). A student who
+    // agrees links their anonymous account to Google, keeping the same UID,
+    // and keeps their own session results. Only that student, signed in
+    // (not anonymous), can read, add to or delete it. No rule here gives
+    // instructors any access, and profiles cannot be listed.
+    function isOwnerSignedIn(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
     match /profiles/{uid} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow get, delete: if isOwnerSignedIn(uid);
+      // Only the consent record: the version of the text agreed to, and when.
+      allow create, update: if isOwnerSignedIn(uid)
+        && request.resource.data.keys()
+             .hasOnly(['consent_version', 'consented_at', 'created_at'])
+        && request.resource.data.consent_version is int
+        && request.resource.data.consented_at == request.time;
+
+      // One document per session, copied from the student's own released
+      // feedback: only a session whose feedback was released and where this
+      // student really has feedback, so nothing can be invented. Not edited
+      // afterwards; the student may remove it.
+      match /sessions/{code} {
+        allow get, list, delete: if isOwnerSignedIn(uid);
+        allow create: if isOwnerSignedIn(uid)
+          && exists(/databases/$(database)/documents/profiles/$(uid))
+          && sessionDoc(code).data.feedback_released == true
+          && exists(/databases/$(database)/documents/sessions/$(code)/feedback/$(uid))
+          && request.resource.data.keys()
+               .hasOnly(['course_id', 'title', 'concepts', 'added_at'])
+          && request.resource.data.course_id == sessionDoc(code).data.course_id
+          && request.resource.data.concepts is list
+          && request.resource.data.added_at == request.time;
+        allow update: if false;
+      }
     }
   }
 }

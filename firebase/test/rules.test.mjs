@@ -37,6 +37,9 @@ const otherInstructor = () =>
 const student = (uid = 'student1') =>
   env.authenticatedContext(uid, { firebase: { sign_in_provider: 'anonymous' } }).firestore();
 const nobody = () => env.unauthenticatedContext().firestore();
+// A student who linked their anonymous account to Google (same UID).
+const linked = (uid = 'student1') =>
+  env.authenticatedContext(uid, { firebase: { sign_in_provider: 'google.com' } }).firestore();
 // Signed in with a password but not in the instructors list.
 const unapproved = () =>
   env.authenticatedContext('stranger', { firebase: { sign_in_provider: 'password' } }).firestore();
@@ -370,5 +373,83 @@ describe('feedback and aggregates', () => {
   test('aggregates are for the owner only', async () => {
     await assertSucceeds(setDoc(doc(instructor(), 'sessions', CODE, 'aggregates', 'summary'), { n: 1 }));
     await assertFails(getDoc(doc(student(), 'sessions', CODE, 'aggregates', 'summary')));
+  });
+});
+
+describe('personal profiles', () => {
+  const consent = () => ({
+    consent_version: 1,
+    consented_at: serverTimestamp(),
+    created_at: serverTimestamp(),
+  });
+  const saved = (overrides = {}) => ({
+    course_id: COURSE,
+    title: { ar: 'المفاتيح', en: 'Keys' },
+    concepts: [{ id: 'primary_key', state: 'emerging', attempts: 2, correct: 1 }],
+    added_at: serverTimestamp(),
+    ...overrides,
+  });
+  const release = () =>
+    env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await updateDoc(doc(db, 'sessions', CODE), { status: 'closed', feedback_released: true });
+      await setDoc(doc(db, 'sessions', CODE, 'feedback', 'student1'), { concepts: [] });
+    });
+
+  test('an anonymous student cannot create a profile', async () => {
+    await assertFails(setDoc(doc(student(), 'profiles', 'student1'), consent()));
+  });
+
+  test('a linked student creates, reads and deletes only their own', async () => {
+    await assertSucceeds(setDoc(doc(linked(), 'profiles', 'student1'), consent()));
+    await assertSucceeds(getDoc(doc(linked(), 'profiles', 'student1')));
+    await assertFails(getDoc(doc(linked('student2'), 'profiles', 'student1')));
+    await assertFails(setDoc(doc(linked('student2'), 'profiles', 'student1'), consent()));
+    await assertSucceeds(deleteDoc(doc(linked(), 'profiles', 'student1')));
+  });
+
+  test('only the consent record, with the server time', async () => {
+    await assertFails(setDoc(doc(linked(), 'profiles', 'student1'), { ...consent(), name: 'Sara' }));
+    await assertFails(setDoc(doc(linked(), 'profiles', 'student1'),
+      { ...consent(), consented_at: new Date(2020, 1, 1) }));
+  });
+
+  test('instructors cannot read profiles, and nobody can list them', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      setDoc(doc(ctx.firestore(), 'profiles', 'student1'), { consent_version: 1 }));
+    await assertFails(getDoc(doc(instructor(), 'profiles', 'student1')));
+    await assertFails(getDocs(collection(instructor(), 'profiles')));
+    await assertFails(getDocs(collection(linked(), 'profiles')));
+    await assertFails(getDocs(collection(instructor(), 'profiles', 'student1', 'sessions')));
+  });
+
+  test('a session is saved only once its feedback is released for that student', async () => {
+    await setDoc(doc(linked(), 'profiles', 'student1'), consent());
+    await assertFails(setDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE), saved()));
+    await release();
+    await assertSucceeds(setDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE), saved()));
+    await assertSucceeds(getDocs(collection(linked(), 'profiles', 'student1', 'sessions')));
+    // Not edited afterwards; removed by the student.
+    await assertFails(updateDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE), { concepts: [] }));
+    await assertSucceeds(deleteDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE)));
+  });
+
+  test('no session without feedback for this student, a profile, or the right course', async () => {
+    await release();
+    // No profile (no consent) yet.
+    await assertFails(setDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE), saved()));
+    await setDoc(doc(linked(), 'profiles', 'student1'), consent());
+    await assertFails(setDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE),
+      saved({ course_id: 'other_course' })));
+    await assertFails(setDoc(doc(linked(), 'profiles', 'student1', 'sessions', CODE),
+      saved({ extra: true })));
+    // Another student with no feedback in this session.
+    await setDoc(doc(linked('student2'), 'profiles', 'student2'), consent());
+    await assertFails(setDoc(doc(linked('student2'), 'profiles', 'student2', 'sessions', CODE), saved()));
+  });
+
+  test('a linked student still joins and answers as before', async () => {
+    await assertSucceeds(setDoc(doc(linked(), 'sessions', CODE, 'participants', 'student1'),
+      { joined_at: serverTimestamp() }));
   });
 });
