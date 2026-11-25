@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../app_services.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/bousla_mark.dart';
 import '../../../shared/text_direction.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
@@ -321,22 +322,86 @@ class _ThankYouState extends State<_ThankYou> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(l.studentAllDone, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            Text(
-              l.studentFeedbackWaiting,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+    final theme = Theme.of(context);
+    final teal = theme.colorScheme.primary;
+    // One gentle entrance, as on the splash screen (no spinning, nothing
+    // long); none when the phone asks for reduced motion.
+    final animate = !MediaQuery.of(context).disableAnimations;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // A soft teal glow and the Bousla mark, large and faint behind the
+        // message: decoration only, hidden from screen readers.
+        IgnorePointer(
+          child: ExcludeSemantics(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(0, -0.15),
+                  radius: 0.8,
+                  colors: [
+                    teal.withValues(alpha: 0.14),
+                    teal.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+              child: Center(
+                child: Opacity(
+                  opacity: theme.brightness == Brightness.dark ? 0.08 : 0.07,
+                  child: LayoutBuilder(
+                    builder: (context, box) => BouslaMark(
+                      size: (box.biggest.shortestSide * 0.85).clamp(160, 420),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ],
+          ),
         ),
-      ),
+        Center(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: animate ? 0 : 1, end: 1),
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOutCubic,
+            builder: (context, t, child) => Opacity(
+              opacity: t,
+              child: Transform.translate(
+                offset: Offset(0, 16 * (1 - t)),
+                child: child,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check_circle_rounded, size: 72, color: teal),
+                  const SizedBox(height: 20),
+                  Text(
+                    l.studentAllDone,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Text(
+                      l.studentFeedbackWaiting,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -6,6 +6,7 @@ import '../../../app_services.dart';
 import '../../../data/join_code.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/bousla_mark.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
 import '../feedback/feedback_screen.dart';
@@ -157,6 +158,8 @@ class _JoinScreenState extends State<JoinScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          const Center(child: BouslaMark(size: 64)),
+                          const SizedBox(height: 16),
                           Semantics(
                             header: true,
                             child: Text(
@@ -184,6 +187,10 @@ class _JoinScreenState extends State<JoinScreen> {
                               decoration: InputDecoration(
                                 labelText: l.studentEnterCode,
                                 errorText: _error,
+                                // Messages such as "open the link on the
+                                // phone you answered from" must be read in
+                                // full, not cut after one line.
+                                errorMaxLines: 4,
                               ),
                               onSubmitted: (_) => _busy ? null : _join(),
                             ),
