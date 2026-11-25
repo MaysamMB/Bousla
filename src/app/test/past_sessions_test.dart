@@ -99,6 +99,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Create session'));
+
+    // The dialog asks whether to review questions first.
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
     final created = (await services.sessions.listSessions(
       ownerId: services.auth.instructorId!,

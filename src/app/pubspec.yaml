@@ -34,25 +34,27 @@ flutter:
   generate: true
 
   # Bundled fonts (SIL Open Font License, see assets/fonts/OFL.txt), so text
-  # never depends on downloading fonts at the venue. Used together through
-  # fontFamily + fontFamilyFallback in lib/app.dart:
-  #   NotoSans        Latin letters and punctuation (subset)
-  #   NotoSansArabic  Arabic (has no Latin letters)
-  #   NotoSansMath    arrows and math operators only, e.g. "A → B" (subset)
+  # never depends on downloading fonts at the venue. The Bousla identity
+  # (find-your-bousla.base44.app/assets): Sora for Latin words and numbers,
+  # IBM Plex Sans Arabic for Arabic. Used through fontFamily +
+  # fontFamilyFallback in lib/app.dart:
+  #   Sora               Latin letters, digits, punctuation
+  #   IBMPlexSansArabic  Arabic
+  #   NotoSansMath       arrows and math operators only, e.g. "A → B" (subset)
   fonts:
-    - family: NotoSans
+    - family: Sora
       fonts:
-        - asset: assets/fonts/NotoSans-Regular.ttf
-        - asset: assets/fonts/NotoSans-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/NotoSans-Bold.ttf
+        - asset: assets/fonts/Sora-Regular.ttf
+        - asset: assets/fonts/Sora-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Sora-Bold.ttf
           weight: 700
-    - family: NotoSansArabic
+    - family: IBMPlexSansArabic
       fonts:
-        - asset: assets/fonts/NotoSansArabic-Regular.ttf
-        - asset: assets/fonts/NotoSansArabic-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+        - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
           weight: 700
     - family: NotoSansMath
       fonts:

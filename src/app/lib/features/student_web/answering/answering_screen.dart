@@ -121,46 +121,45 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final language = currentLanguage(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l.appTitle),
-        actions: const [LanguageSwitcher()],
-      ),
-      body: FutureBuilder<List<QuestionView>>(
-        future: _questions,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error is TimeoutException
-                    ? l.studentConnectionSlow
-                    : l.errorGeneric,
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-          if (!snapshot.hasData)
-            return const Center(child: CircularProgressIndicator());
-          final questions = snapshot.data!;
-          if (questions.isEmpty)
-            return Center(child: Text(l.studentNoQuestions));
-          if (_index >= questions.length) {
-            return _ThankYou(
-              sessionId: widget.session.id,
-              participantId: widget.participantId,
-            );
-          }
+    return FutureBuilder<List<QuestionView>>(
+      future: _questions,
+      builder: (context, snapshot) {
+        final questions = snapshot.data;
+        final Widget body;
+        Widget? submitBar;
+        if (snapshot.hasError) {
+          body = Center(
+            child: Text(
+              snapshot.error is TimeoutException
+                  ? l.studentConnectionSlow
+                  : l.errorGeneric,
+              textAlign: TextAlign.center,
+            ),
+          );
+        } else if (questions == null) {
+          body = const Center(child: CircularProgressIndicator());
+        } else if (questions.isEmpty) {
+          body = Center(child: Text(l.studentNoQuestions));
+        } else if (_index >= questions.length) {
+          body = _ThankYou(
+            sessionId: widget.session.id,
+            participantId: widget.participantId,
+          );
+        } else {
           final q = questions[_index];
-          return Center(
+          body = Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: ListView(
+                key: ValueKey(q.id),
                 padding: const EdgeInsets.all(24),
                 children: [
                   Text(
                     l.studentQuestionProgress(_index + 1, questions.length),
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: _index / questions.length),
                   const SizedBox(height: 12),
                   Text(
                     q.prompt.of(language),
@@ -176,6 +175,7 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                           ? Theme.of(context).colorScheme.primaryContainer
                           : null,
                       child: ListTile(
+                        selected: option.id == _selected,
                         leading: Icon(
                           option.id == _selected
                               ? Icons.check_circle
@@ -199,19 +199,53 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _selected == null || _busy
-                        ? null
-                        : () => _submit(q),
-                    child: Text(l.studentSubmit),
-                  ),
                 ],
               ),
             ),
           );
-        },
-      ),
+          submitBar = SafeArea(
+            top: false,
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: _selected == null || _busy
+                          ? null
+                          : () => _submit(q),
+                      child: _busy
+                          ? SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                semanticsLabel: l.studentSubmit,
+                              ),
+                            )
+                          : Text(l.studentSubmit),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l.appTitle),
+            actions: const [LanguageSwitcher()],
+          ),
+          body: body,
+          bottomNavigationBar: submitBar,
+        );
+      },
     );
   }
 }

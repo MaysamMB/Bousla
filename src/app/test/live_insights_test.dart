@@ -81,8 +81,8 @@ void main() {
     expect(signal.participantsWithPossibleGap, 5);
   });
 
-  test('4 students: every concept hidden, no signals', () {
-    final insights = _run(_answers(4, 'b'));
+  test('2 students (under the minimum of 3): every concept hidden', () {
+    final insights = _run(_answers(2, 'b'));
 
     expect(
       insights.concepts.every((c) => c.suppressed),
@@ -127,5 +127,28 @@ void main() {
         4,
       );
     }
+  });
+
+  test('session overview: right answers overall, most wrong concepts first',
+      () {
+    // Student 0 wrong everywhere, student 1 right everywhere.
+    final responses = [..._answers(1, 'b'), ..._answers(1, 'a', offset: 1)];
+    final o = sessionOverview(
+      responses: responses,
+      questions: _questions,
+      keys: _keys,
+    );
+    expect(o.answers, responses.length);
+    expect(o.correct, responses.length ~/ 2);
+    expect(o.percent, 50);
+    expect(o.focusConceptIds, isNotEmpty);
+    expect(o.focusConceptIds.length, lessThanOrEqualTo(3));
+    final allRight = sessionOverview(
+      responses: _answers(2, 'a'),
+      questions: _questions,
+      keys: _keys,
+    );
+    expect(allRight.focusConceptIds, isEmpty);
+    expect(allRight.percent, 100);
   });
 }

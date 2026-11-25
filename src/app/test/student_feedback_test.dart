@@ -383,6 +383,9 @@ void main() {
   group('instructor', () {
     Future<void> closeAndOpenDialog(WidgetTester tester) async {
       await tester.tap(find.text('Create session'));
+      // The dialog asks whether to review questions first.
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Create session now'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Close session'));
       await tester.tap(find.text('Close session'));
@@ -403,7 +406,7 @@ void main() {
       await closeAndOpenDialog(tester);
 
       expect(find.text('Add an AI explanation'), findsOneWidget);
-      final toggle = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
+      final toggle = tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Add an AI explanation'));
       expect(toggle.onChanged, isNull);
       expect(toggle.value, isFalse);
 
@@ -438,6 +441,9 @@ void main() {
       // One student answers, so there is something to explain.
       final sessionId = 'session_1';
       await tester.tap(find.text('Create session'));
+      // The dialog asks whether to review questions first.
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Create session now'));
       await tester.pumpAndSettle();
       final q = (await services.content.listQuestions('database_systems'))
           .first;
@@ -458,7 +464,7 @@ void main() {
       await tester.tap(find.text('Publish feedback'));
       await tester.pumpAndSettle();
 
-      final toggle = find.byType(SwitchListTile);
+      final toggle = find.widgetWithText(SwitchListTile, 'Add an AI explanation');
       expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
       await tester.tap(toggle);
       await tester.pumpAndSettle();
