@@ -684,5 +684,8 @@
   "studentProfileCancel": "Cancel",
   "studentProfileDeleted": "Your profile was deleted.",
   "studentProfileSignOut": "Sign out",
-  "studentProfileContinueSignIn": "Continue signing in with Google"
+  "studentProfileContinueSignIn": "Continue signing in with Google",
+  "studentProfileExistingTitle": "You already have a Bousla profile",
+  "studentProfileExistingBody": "This Google account is linked to a Bousla profile you created in another browser or on another device. You can sign in to that profile and add this session to it. This browser then uses your account, and your next sessions are saved to it directly.",
+  "studentProfileExistingContinue": "Sign in and add the session"
 }

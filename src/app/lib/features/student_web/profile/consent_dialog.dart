@@ -52,3 +52,29 @@ Future<bool?> showProfileConsent(BuildContext context) => showDialog<bool>(
         );
       },
     );
+
+/// The Google account chosen already has a profile from another browser:
+/// sign in to it and add this session? True to go ahead.
+Future<bool?> showExistingProfileDialog(BuildContext context) =>
+    showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return AlertDialog(
+          key: const ValueKey('existing-profile'),
+          icon: const Icon(Icons.person_search_outlined),
+          title: Text(l.studentProfileExistingTitle),
+          content: Text(l.studentProfileExistingBody),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l.studentProfileCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l.studentProfileExistingContinue),
+            ),
+          ],
+        );
+      },
+    );

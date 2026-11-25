@@ -39,6 +39,7 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   Stream<StudentFeedback?>? _feedback;
   var _languageApplied = false;
+  StudentFeedback? _last;
 
   @override
   void didChangeDependencies() {
@@ -70,6 +71,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       body: StreamBuilder<StudentFeedback?>(
         stream: _feedback,
         builder: (context, snapshot) {
+          // After the student signs in to their existing profile, this
+          // browser's anonymous feedback can no longer be read: keep showing
+          // what was already shown.
+          if (snapshot.hasError && _last != null) {
+            return FeedbackView(
+              feedback: _last!,
+              footer: SaveProgressCard(
+                sessionId: widget.sessionId,
+                feedback: _last!,
+              ),
+            );
+          }
           if (snapshot.hasError) {
             return Center(
               child: Text(l.errorGeneric, textAlign: TextAlign.center),
@@ -90,6 +103,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
             );
           }
+          _last = feedback;
           _applyLanguage(feedback);
           return FeedbackView(
             feedback: feedback,

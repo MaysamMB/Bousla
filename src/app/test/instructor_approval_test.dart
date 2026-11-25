@@ -15,6 +15,10 @@ class _PendingAuth implements AuthService {
   Future<StudentAccount> linkStudentAccount() =>
       throw const StudentLinkFailure(StudentLinkProblem.unknown);
 
+  @override
+  Future<StudentAccount> switchToLinkedStudentAccount() =>
+      throw const StudentLinkFailure(StudentLinkProblem.unknown);
+
   var approved = false;
   var signedOut = false;
 

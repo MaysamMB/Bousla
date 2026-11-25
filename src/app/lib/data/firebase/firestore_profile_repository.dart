@@ -9,6 +9,8 @@ import '../repositories/profile_repository.dart';
 ///
 ///   profiles/{uid}                  consent_version, consented_at, created_at
 ///   profiles/{uid}/sessions/{code}  course_id, title, concepts, added_at
+///                                   (+ handover_id, from another browser)
+///   profile_handovers/{random}      session_id, from_uid, created_at
 ///
 /// firebase/firestore.rules lets only the student, with a linked account,
 /// read or change these, and only add a session whose feedback was released
@@ -39,10 +41,28 @@ class FirestoreProfileRepository implements ProfileRepository {
       });
 
   @override
-  Future<void> saveSession(String uid, Session session, StudentFeedback feedback) =>
-      _sessions(uid).doc(session.id).set(
-            savedSessionToJson(savedSessionFrom(session, feedback)),
-          );
+  Future<void> saveSession(
+    String uid,
+    Session session,
+    StudentFeedback feedback, {
+    String? handoverId,
+  }) =>
+      _sessions(uid).doc(session.id).set({
+        ...savedSessionToJson(savedSessionFrom(session, feedback)),
+        if (handoverId != null) 'handover_id': handoverId,
+      });
+
+  @override
+  Future<String> createHandover(String sessionId, String fromUid) async {
+    // A random id, known only to this browser.
+    final doc = _db.collection('profile_handovers').doc();
+    await doc.set({
+      'session_id': sessionId,
+      'from_uid': fromUid,
+      'created_at': FieldValue.serverTimestamp(),
+    });
+    return doc.id;
+  }
 
   @override
   Future<List<SavedSession>> sessions(String uid) async {

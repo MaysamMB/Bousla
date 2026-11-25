@@ -65,51 +65,120 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
         _ => l.studentProfileErrFailed,
       };
 
+  /// This browser's handover, once the Google account turned out to have a
+  /// profile from another browser (see [_linkOrSwitch]).
+  String? _handoverId;
+
+  /// The student chose to sign in to that profile but the window did not
+  /// open (blocked or closed): the next tap opens it straight away.
+  var _awaitingSwitch = false;
+
+  /// Links this browser to Google; if that Google account already has a
+  /// profile (another browser), offers to sign in to it and hand this
+  /// session over. Null when the student declined.
+  Future<StudentAccount?> _linkOrSwitch(AppServices services) async {
+    try {
+      return await services.auth.linkStudentAccount();
+    } on StudentLinkFailure catch (e) {
+      if (e.problem != StudentLinkProblem.accountInUse) rethrow;
+    }
+    // Still anonymous here: only this browser can hand its feedback over.
+    final me = await services.auth.ensureParticipant();
+    _handoverId = await services.profiles.createHandover(widget.sessionId, me);
+    if (!mounted) return null;
+    setState(() => _busy = false);
+    final go = await showExistingProfileDialog(context);
+    if (go != true) {
+      _handoverId = null;
+      return null;
+    }
+    if (mounted) setState(() => _busy = true);
+    _awaitingSwitch = true;
+    final account = await services.auth.switchToLinkedStudentAccount();
+    _awaitingSwitch = false;
+    return account;
+  }
+
   Future<void> _save() async {
     final services = ServicesScope.of(context);
     final l = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     try {
+      // Read now: after a switch to another account this browser's
+      // anonymous identity is gone.
+      final session = services.sessions.watchSession(widget.sessionId).first
+        ..ignore(); // Awaited below; not needed when the student stops.
       var account = services.auth.studentAccount;
-      if (_agreedAwaitingSignIn && account == null) {
-        // Straight from this tap, so the browser allows the window.
-        account = await services.auth.linkStudentAccount();
+      // The student already agreed in an earlier tap.
+      var agreed = _agreedAwaitingSignIn || _awaitingSwitch;
+      // A Google window straight from this tap (Safari blocks it otherwise).
+      if (_awaitingSwitch) {
+        account = await services.auth.switchToLinkedStudentAccount();
+        _awaitingSwitch = false;
+      } else if (_agreedAwaitingSignIn && account == null) {
+        account = await _linkOrSwitch(services);
+        if (account == null) return;
       }
-      final consented = account == null || _agreedAwaitingSignIn
-          ? null
-          : await services.profiles.consentVersion(account.uid);
-      final needsConsent =
-          consented == null || consented < profileConsentVersion;
-      // Consent before anything is linked or stored, and again when the
-      // text changed. No spinner while the student reads it.
-      if (needsConsent && !_agreedAwaitingSignIn) {
-        if (!mounted) return;
-        final agreed = await showProfileConsent(context);
-        if (agreed != true) return;
+      if (!agreed) {
+        final consented = account == null
+            ? null
+            : await services.profiles.consentVersion(account.uid);
+        // Consent before anything is linked or stored, and again when the
+        // text changed. No spinner while the student reads it.
+        if (consented == null || consented < profileConsentVersion) {
+          if (!mounted) return;
+          if (await showProfileConsent(context) != true) return;
+          agreed = true;
+        }
       }
       if (mounted) setState(() => _busy = true);
-      account ??= await services.auth.linkStudentAccount();
-      if (needsConsent) await services.profiles.create(account.uid);
-      final session =
-          await services.sessions.watchSession(widget.sessionId).first;
-      await services.profiles.saveSession(account.uid, session, widget.feedback);
+      account ??= await _linkOrSwitch(services);
+      if (account == null) return;
+      if (agreed) {
+        final consented = await services.profiles.consentVersion(account.uid);
+        if (consented == null || consented < profileConsentVersion) {
+          await services.profiles.create(account.uid);
+        }
+      }
+      await services.profiles.saveSession(
+        account.uid,
+        await session,
+        widget.feedback,
+        handoverId: _handoverId,
+      );
       if (mounted) {
         setState(() {
           _saved = true;
           _agreedAwaitingSignIn = false;
+          _handoverId = null;
         });
       }
     } on StudentLinkFailure catch (e) {
+      final retry = e.problem == StudentLinkProblem.popupBlocked ||
+          e.problem == StudentLinkProblem.cancelled;
+      if (_awaitingSwitch && retry) {
+        // The handover is written; the next tap opens the window again.
+        if (mounted) setState(() {});
+        return;
+      }
       if (e.problem == StudentLinkProblem.popupBlocked) {
         if (mounted) setState(() => _agreedAwaitingSignIn = true);
         return;
       }
+      _reset();
       messenger.showSnackBar(SnackBar(content: Text(_problemText(l, e.problem))));
     } catch (_) {
+      // E.g. the handover is older than 10 minutes: start again.
+      _reset();
       messenger.showSnackBar(SnackBar(content: Text(l.studentProfileErrFailed)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  void _reset() {
+    _handoverId = null;
+    _awaitingSwitch = false;
   }
 
   void _open() => Navigator.of(context).push(
@@ -164,7 +233,7 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
                             )
                           : const Icon(Icons.bookmark_add_outlined),
                       label: Text(
-                        _agreedAwaitingSignIn
+                        _agreedAwaitingSignIn || _awaitingSwitch
                             ? l.studentProfileContinueSignIn
                             : l.studentProfileSaveAction,
                       ),
