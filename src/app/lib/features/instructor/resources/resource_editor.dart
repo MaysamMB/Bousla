@@ -117,6 +117,7 @@ class _ResourceEditorState extends State<ResourceEditor> {
       ResourceDraftIssue.titleMissing => l.instructorResErrTitle,
       ResourceDraftIssue.urlMissing => l.instructorResErrUrl,
       ResourceDraftIssue.urlInvalid => l.instructorResErrUrlInvalid,
+      ResourceDraftIssue.duplicateLink => l.instructorResErrUrlDuplicate,
     };
   }
 
@@ -192,6 +193,7 @@ class _ResourceEditorState extends State<ResourceEditor> {
                   errorText: _error(l, const [
                     ResourceDraftIssue.urlMissing,
                     ResourceDraftIssue.urlInvalid,
+                    ResourceDraftIssue.duplicateLink,
                   ]),
                   border: const OutlineInputBorder(),
                 ),

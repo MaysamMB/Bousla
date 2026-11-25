@@ -611,6 +611,15 @@
   "instructorResPickOptional": "Attach course material (optional)",
   "instructorResSuggestDone": "{saved} suggestions saved for review · {dropped} dropped by the checks ({links} because they contained links)",
   "@instructorResSuggestDone": {"placeholders": {"saved": {"type": "int"}, "dropped": {"type": "int"}, "links": {"type": "int"}}},
+  "instructorResErrUrlDuplicate": "Another resource of this course already has this link.",
+  "instructorResRequestLabel": "What should the resources cover? (optional)",
+  "instructorResRequestHint": "For example: short videos for students who confuse primary and foreign keys. Without a description, the latest session's results guide the suggestions. Do not write students' names.",
+  "instructorResFocusFrom": "Without a description, the suggestions follow the results of “{session}”: {concepts}. These concepts are chosen below; you can change them.",
+  "@instructorResFocusFrom": {"placeholders": {"session": {"type": "String"}, "concepts": {"type": "String"}}},
+  "instructorResFocusNone": "No session results to guide the suggestions yet: they cover the concepts chosen below.",
+  "instructorResSuggestDuplicates": "{count} skipped: the course already has a resource with that title.",
+  "@instructorResSuggestDuplicates": {"placeholders": {"count": {"type": "int"}}},
+  "instructorResSuggestAllDuplicates": "Every suggestion matches a resource the course already has. Try other concepts or a description.",
   "instructorResSuggestNothing": "No usable suggestions this time. Try again or with fewer concepts.",
   "instructorResSuggestStart": "Suggest"
 }

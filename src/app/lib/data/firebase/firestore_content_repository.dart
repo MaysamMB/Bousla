@@ -389,7 +389,11 @@ class FirestoreContentRepository implements ContentRepository {
       for (final c in await listConcepts(courseId))
         if (c.status == ReviewStatus.approved) c.id,
     };
-    final issues = validateResourceDraft(draft, approved);
+    final issues = validateResourceDraft(
+      draft,
+      approved,
+      existing: await listResources(courseId, approvedOnly: false),
+    );
     if (issues.isNotEmpty) throw InvalidResourceException(issues);
     final col = _items(courseId, 'resources');
     Resource? before;
