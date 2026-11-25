@@ -166,11 +166,20 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
         return;
       }
       _reset();
-      messenger.showSnackBar(SnackBar(content: Text(_problemText(l, e.problem))));
-    } catch (_) {
+      final text = _problemText(l, e.problem);
+      // The code tells us what went wrong when the reason is not known.
+      messenger.showSnackBar(SnackBar(
+        content: Text(e.problem == StudentLinkProblem.unknown && e.detail != null
+            ? '$text (${e.detail})'
+            : text),
+      ));
+    } catch (e) {
       // E.g. the handover is older than 10 minutes: start again.
       _reset();
-      messenger.showSnackBar(SnackBar(content: Text(l.studentProfileErrFailed)));
+      debugPrint('Saving to the profile failed: $e');
+      messenger.showSnackBar(SnackBar(
+        content: Text('${l.studentProfileErrFailed} (${_errorCode(e)})'),
+      ));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -244,4 +253,14 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
       ),
     );
   }
+}
+
+/// A short code for an unexpected error (Firebase errors have one, e.g.
+/// "permission-denied"), shown so a failure can be diagnosed.
+String _errorCode(Object e) {
+  try {
+    final code = (e as dynamic).code;
+    if (code is String && code.isNotEmpty) return code;
+  } catch (_) {}
+  return e.runtimeType.toString();
 }
