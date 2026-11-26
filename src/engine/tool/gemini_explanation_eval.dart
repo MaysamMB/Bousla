@@ -86,9 +86,29 @@ class _Target {
   }
 }
 
+/// A text file as saved on Windows too: UTF-8 with or without a byte order
+/// mark, or UTF-16 (what Windows PowerShell 5.1 writes with `>` or
+/// Out-File). Read as plain UTF-8, such a file would give a wrong token.
+String _readText(String path) {
+  final b = File(path).readAsBytesSync();
+  String utf16(int start, bool littleEndian) {
+    final units = <int>[
+      for (var i = start; i + 1 < b.length; i += 2)
+        littleEndian ? b[i] | (b[i + 1] << 8) : (b[i] << 8) | b[i + 1],
+    ];
+    return String.fromCharCodes(units);
+  }
+
+  if (b.length >= 2 && b[0] == 0xFF && b[1] == 0xFE) return utf16(2, true);
+  if (b.length >= 2 && b[0] == 0xFE && b[1] == 0xFF) return utf16(2, false);
+  final start =
+      b.length >= 3 && b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF ? 3 : 0;
+  return utf8.decode(b.sublist(start));
+}
+
 /// A secret kept alone in a file (trimmed). Never printed.
 String _readSecretFile(String path, String what) {
-  final v = File(path).readAsStringSync().trim();
+  final v = _readText(path).trim();
   if (v.isEmpty) throw FormatException('$what file is empty');
   return v;
 }
@@ -129,7 +149,7 @@ Future<(String?, String?)> _exchangeDebugToken(
 /// The app's route (package:firebase_ai, Google AI backend): Firebase AI
 /// Logic with the project's web API key.
 _Target _firebaseTarget(String path, {String? debugToken}) {
-  final json = jsonDecode(File(path).readAsStringSync()) as Map;
+  final json = jsonDecode(_readText(path)) as Map;
   String need(String name) {
     final v = json[name];
     if (v is! String || v.trim().isEmpty) {
