@@ -1,4 +1,3 @@
-import 'package:bousla_app/app.dart';
 import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/models.dart';
 import 'package:bousla_app/features/instructor/sessions/live_insights_panel.dart';
@@ -46,8 +45,9 @@ Future<(AppServices, Session)> fixture(int gaps) async {
   return (services, session);
 }
 
-Future<void> showPanel(WidgetTester tester, AppServices services,
-    Session session, {String locale = 'en'}) async {
+Future<void> showPanel(
+    WidgetTester tester, AppServices services, Session session,
+    {String locale = 'en'}) async {
   tester.view.physicalSize = const Size(1280, 3000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -66,14 +66,19 @@ Future<void> showPanel(WidgetTester tester, AppServices services,
 }
 
 void main() {
-  testWidgets('three shared gaps: a real, cautious FK/PK signal', (tester) async {
+  testWidgets('three shared gaps: a real, cautious FK/PK signal',
+      (tester) async {
     final (services, session) = await fixture(3);
     await showPanel(tester, services, session);
     expect(find.text('Prerequisites worth reviewing'), findsOneWidget);
-    expect(find.text('3 of the 3 students with a possible difficulty in '
-        'Foreign Key also show one in Primary Key.'), findsOneWidget);
-    expect(find.text('Primary Key may be a contributing cause: consider '
-        'reviewing it with the class.'), findsOneWidget);
+    expect(
+        find.text('3 of the 3 students with a possible difficulty in '
+            'Foreign Key also show one in Primary Key.'),
+        findsOneWidget);
+    expect(
+        find.text('Primary Key may be a contributing cause: consider '
+            'reviewing it with the class.'),
+        findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -92,7 +97,9 @@ void main() {
     final title = find.text('متطلبات سابقة تستحق المراجعة');
     expect(title, findsOneWidget);
     expect(Directionality.of(tester.element(title)), TextDirection.rtl);
-    expect(find.text('قد يكون المفتاح الأساسي سبباً محتملاً، ويُقترح مراجعته مع الصف.'),
+    expect(
+        find.text(
+            'قد يكون المفتاح الأساسي سبباً محتملاً، ويُقترح مراجعته مع الصف.'),
         findsOneWidget);
     // The current design hides detailed signals in presentation mode.
     await tester.tap(find.byType(Switch));
