@@ -53,7 +53,7 @@ Passing a course does not show *which* concept a student is missing, or whether 
 - **Close the session → Release feedback.** Phones switch to personal feedback: state per concept with "X of Y correct", next steps with approved resources in the student's language, a short explanation labelled "AI-generated".
 - Next steps show the resources approved in the resources screen, the student's language first: the link made in part 2 can appear here.
 - **Show my knowledge map** opens the session map (foundations first), which the student can save to the phone.
-- Say: the AI explains engine results; it never changes a score or a state, and if it fails, a fixed template is shown instead.
+- Say: the AI explains engine results; it never changes a score or a state, and if it fails, a fixed template is shown instead. Measured on 26 Nov: on 20 synthetic student profiles, 20 of 20 Gemini explanations passed all five safety checks (one real run; not a general quality claim).
 - Fallback: show the template feedback only (AI explanation turned off in the release dialog). If a phone says there is no feedback for it, open the same link again on that phone (feedback belongs to the browser that answered); this was seen once on the live site and is still being checked.
 
 ### 6. Privacy and limits, said plainly (20 s)
