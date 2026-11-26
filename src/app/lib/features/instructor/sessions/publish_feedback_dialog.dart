@@ -4,6 +4,7 @@ import '../../../app_services.dart';
 import '../../../data/feedback_publisher.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
+import 'share_feedback.dart';
 
 /// Opens the "Publish feedback" dialog for a closed [session]. Returns the
 /// result when feedback was published, null when cancelled.
@@ -87,6 +88,9 @@ class _PublishFeedbackDialogState extends State<PublishFeedbackDialog> {
               const SizedBox(height: 8),
               Text(l.instructorPublishGuardReplaced(result.guardRejected)),
             ],
+            const SizedBox(height: 16),
+            // Students cannot be notified: let the instructor send the link.
+            ShareFeedbackButton(session: widget.session),
           ],
         ),
         actions: [

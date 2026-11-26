@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../resources/session_resources_card.dart';
+import 'share_feedback.dart';
 import '../course_picker.dart';
 import 'live_insights_panel.dart';
 import 'publish_feedback_dialog.dart';
@@ -331,6 +332,10 @@ class _PastSessionScreenState extends State<PastSessionScreen> {
                     icon: const Icon(Icons.lock_outline),
                     label: Text(l.instructorCloseSession),
                   ),
+                  const SizedBox(height: 24),
+                ],
+                if (session.feedbackReleased) ...[
+                  ShareFeedbackButton(session: session),
                   const SizedBox(height: 24),
                 ],
                 // Resources can still be added until feedback is published.

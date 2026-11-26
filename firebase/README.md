@@ -183,6 +183,35 @@ they are locked out of their own course until added.
 On the emulators: `.\bousla approve EMAIL` (`tools/approve_instructor.mjs`,
 refuses any project that is not a `demo-` emulator project).
 
+## Student profiles (optional, Google sign-in)
+
+A student may keep their results in a personal profile ("Keep your
+progress" at the end of their feedback). They read a consent text first,
+then sign in with Google; the anonymous account is linked, so the UID and
+this browser's sessions stay theirs. The rules (`profiles/{uid}`) let only
+that student, with a linked account, read, add to or delete it; instructors
+have no access.
+
+**Enable it on the real project (once):** Firebase console →
+**Authentication → Sign-in method → Add new provider → Google → Enable**,
+choose a support email, save. `bousla-educathon.web.app` is already an
+authorised domain. Without this step the app says Google sign-in is not
+enabled, and nothing is stored.
+
+**Safari (iPhone):** Safari blocks the sign-in window when it runs on
+another domain (`…firebaseapp.com`), and saving fails. So sign-in runs on
+the site's own domain (done 26 Nov):
+
+1. `src/app/firebase.env.json`: `"FIREBASE_AUTH_DOMAIN": "bousla-educathon.web.app"`.
+2. Google Cloud console → **APIs & Services → Credentials → OAuth 2.0
+   Client IDs → Web client (auto created by Google Service)** →
+   **Authorized redirect URIs** → add
+   `https://bousla-educathon.web.app/__/auth/handler` (keep the
+   `firebaseapp.com` one) → Save.
+3. `.\bousla deploy`.
+
+On the emulators, Google sign-in opens the emulator's own test window.
+
 ## Data layout
 
 ```
@@ -196,7 +225,9 @@ sessions/{CODE}                            document ID = join code
 sessions/{CODE}/participants/{uid}
 sessions/{CODE}/responses/{uid}_{id}_v{n}  written once, while open
 sessions/{CODE}/aggregates/summary         owner only (later)
-sessions/{CODE}/feedback/{uid}             that student, after release (later)
+sessions/{CODE}/feedback/{uid}             that student, after release
+profiles/{uid}                             student's consent record (owner only)
+profiles/{uid}/sessions/{CODE}             a saved session (owner only)
 ```
 
 ## Venue network
