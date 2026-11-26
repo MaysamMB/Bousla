@@ -1,0 +1,8 @@
+# Repository-wide: keep the Dart analyzer out of npm packages.
+# firebase-tools (in firebase/node_modules) ships a Dart template,
+# server.dart, whose packages are not installed; VS Code showed its errors
+# as if they were ours. src/app has its own analysis_options.yaml.
+analyzer:
+  exclude:
+    - firebase/node_modules/**
+    - "**/node_modules/**"
