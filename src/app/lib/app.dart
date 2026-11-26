@@ -8,6 +8,7 @@ import 'features/instructor/content_review/content_review_screen.dart';
 import 'features/instructor/resources/resources_screen.dart';
 import 'features/instructor/sessions/create_session_screen.dart';
 import 'features/student_web/join_session/join_screen.dart';
+import 'features/student_web/profile/profile_screen.dart';
 import 'l10n/app_localizations.dart';
 
 /// Routes:
@@ -17,6 +18,7 @@ import 'l10n/app_localizations.dart';
 ///   /instructor/resources  instructor: learning resources (add, AI suggestions)
 ///   /join             student: type a join code
 ///   /join/<CODE>      student: join directly (link or QR code)
+///   /me               student: their optional personal profile
 ///
 /// On the web the default URL strategy uses a hash, so a join link looks like
 /// https://<host>/#/join/ABC123.
@@ -152,6 +154,7 @@ class BouslaApp extends StatelessWidget {
         ),
       ['instructor', ...] => const InstructorGate(child: CreateSessionScreen()),
       ['join'] => const JoinScreen(),
+      ['me'] => const ProfileScreen(),
       ['join', final code, ...] => JoinScreen(initialCode: code),
       _ => const HomeScreen(),
     };

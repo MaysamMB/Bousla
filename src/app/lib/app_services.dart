@@ -9,6 +9,7 @@ import 'data/ai/teaching_draft_generator.dart';
 import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
 import 'data/repositories/content_repository.dart';
+import 'data/repositories/profile_repository.dart';
 import 'data/repositories/session_repository.dart';
 import 'shared/theme_mode_store.dart';
 
@@ -24,8 +25,10 @@ class AppServices {
     this.feedbackExplainer,
     this.teachingDraftGenerator,
     this.resourceSuggester,
+    ProfileRepository? profiles,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
+        profiles = profiles ?? InMemoryProfileRepository(),
         locale = ValueNotifier(initialLocale);
 
   factory AppServices.inMemory({Locale initialLocale = const Locale('ar')}) =>
@@ -41,6 +44,10 @@ class AppServices {
 
   /// Instructor sign-in and anonymous student participation.
   final AuthService auth;
+
+  /// The optional personal learning profile of a student who linked an
+  /// account (architecture §10).
+  final ProfileRepository profiles;
 
   /// True in the offline demo mode (built without Firebase settings): data
   /// lives in this browser tab only and is lost on reload. The app shows a

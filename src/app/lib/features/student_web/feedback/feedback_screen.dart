@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/open_link.dart' as shared;
 import '../../../shared/widgets/language_switcher.dart';
+import '../profile/save_progress_card.dart';
 import '../knowledge_map/knowledge_map_screen.dart';
 
 /// A student's personal feedback for one session (owner: student web
@@ -38,6 +39,7 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   Stream<StudentFeedback?>? _feedback;
   var _languageApplied = false;
+  StudentFeedback? _last;
 
   @override
   void didChangeDependencies() {
@@ -69,6 +71,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       body: StreamBuilder<StudentFeedback?>(
         stream: _feedback,
         builder: (context, snapshot) {
+          // After the student signs in to their existing profile, this
+          // browser's anonymous feedback can no longer be read: keep showing
+          // what was already shown.
+          if (snapshot.hasError && _last != null) {
+            return FeedbackView(
+              feedback: _last!,
+              footer: SaveProgressCard(
+                sessionId: widget.sessionId,
+                feedback: _last!,
+              ),
+            );
+          }
           if (snapshot.hasError) {
             return Center(
               child: Text(l.errorGeneric, textAlign: TextAlign.center),
@@ -89,8 +103,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
             );
           }
+          _last = feedback;
           _applyLanguage(feedback);
-          return FeedbackView(feedback: feedback);
+          return FeedbackView(
+            feedback: feedback,
+            // Optional: keep this session in the student's own profile.
+            footer: SaveProgressCard(
+              sessionId: widget.sessionId,
+              feedback: feedback,
+            ),
+          );
         },
       ),
     );
@@ -103,9 +125,13 @@ class FeedbackView extends StatelessWidget {
     super.key,
     required this.feedback,
     this.openLink = shared.openLink,
+    this.footer,
   });
 
   final StudentFeedback feedback;
+
+  /// Shown last (the "keep your progress" card on the feedback screen).
+  final Widget? footer;
 
   /// Opens a resource's link (the shared [shared.openLink]; replaced in
   /// tests).
@@ -260,6 +286,10 @@ class FeedbackView extends StatelessWidget {
                 ),
               ),
             ),
+            if (footer case final f?) ...[
+              const SizedBox(height: 16),
+              f,
+            ],
           ],
         ),
       ),

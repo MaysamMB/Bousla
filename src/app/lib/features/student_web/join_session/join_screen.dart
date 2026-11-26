@@ -6,6 +6,7 @@ import '../../../app_services.dart';
 import '../../../data/join_code.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/bousla_mark.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
 import '../feedback/feedback_screen.dart';
@@ -138,91 +139,113 @@ class _JoinScreenState extends State<JoinScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.appTitle),
-        actions: const [LanguageSwitcher()],
+        actions: [
+          // The student's optional personal profile (created from their
+          // feedback page; the page explains this when there is none yet).
+          IconButton(
+            key: const ValueKey('open-profile'),
+            tooltip: l.studentProfileTitle,
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.of(context).pushNamed('/me'),
+          ),
+          const LanguageSwitcher(),
+        ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Semantics(
-                            header: true,
-                            child: Text(
-                              l.studentJoinTitle,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Codes are typed left-to-right in both languages.
-                          Directionality(
-                            textDirection: TextDirection.ltr,
-                            child: TextField(
-                              controller: _code,
-                              autocorrect: false,
-                              enableSuggestions: false,
-                              style: Theme.of(
-                                context,
-                              )
-                                  .textTheme
-                                  .headlineSmall
-                                  ?.copyWith(letterSpacing: 2),
-                              textAlign: TextAlign.center,
-                              textCapitalization: TextCapitalization.characters,
-                              autofocus: widget.initialCode == null,
-                              decoration: InputDecoration(
-                                labelText: l.studentEnterCode,
-                                errorText: _error,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // The Bousla mark, large and faint in the empty space above
+          // the form (clear of the code field and its messages).
+          const BouslaWatermark(alignment: Alignment(0, -0.62)),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Flexible(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Semantics(
+                                header: true,
+                                child: Text(
+                                  l.studentJoinTitle,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
                               ),
-                              onSubmitted: (_) => _busy ? null : _join(),
-                            ),
+                              const SizedBox(height: 12),
+                              // Codes are typed left-to-right in both languages.
+                              Directionality(
+                                textDirection: TextDirection.ltr,
+                                child: TextField(
+                                  controller: _code,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                  style: Theme.of(
+                                    context,
+                                  )
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(letterSpacing: 2),
+                                  textAlign: TextAlign.center,
+                                  textCapitalization: TextCapitalization.characters,
+                                  autofocus: widget.initialCode == null,
+                                  decoration: InputDecoration(
+                                    labelText: l.studentEnterCode,
+                                    errorText: _error,
+                                    // Messages such as "open the link on the
+                                    // phone you answered from" must be read in
+                                    // full, not cut after one line.
+                                    errorMaxLines: 4,
+                                  ),
+                                  onSubmitted: (_) => _busy ? null : _join(),
+                                ),
+                              ),
+                              // Came without a link: remind them the QR code is scanned
+                              // with the phone's own camera (it opens this page with the
+                              // code filled in). Outside the LTR box, so Arabic reads RTL.
+                              if (widget.initialCode == null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  l.studentScanHint,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ],
                           ),
-                          // Came without a link: remind them the QR code is scanned
-                          // with the phone's own camera (it opens this page with the
-                          // code filled in). Outside the LTR box, so Arabic reads RTL.
-                          if (widget.initialCode == null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              l.studentScanHint,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      FilledButton(
+                        onPressed: _busy ? null : _join,
+                        style:
+                            FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+                        child: _busy
+                            ? SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  semanticsLabel: l.studentJoin,
+                                ),
+                              )
+                            : Text(l.studentJoin),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  FilledButton(
-                    onPressed: _busy ? null : _join,
-                    style:
-                        FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-                    child: _busy
-                        ? SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              semanticsLabel: l.studentJoin,
-                            ),
-                          )
-                        : Text(l.studentJoin),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

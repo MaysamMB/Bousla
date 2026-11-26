@@ -9,6 +9,7 @@ import 'package:bousla_app/l10n/app_localizations.dart';
 import 'package:bousla_engine/bousla_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:bousla_app/shared/widgets/bousla_mark.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Answers never reach the server: the request hangs.
@@ -108,6 +109,8 @@ void main() {
     await _show(tester, services, session, 'p1');
     expect(
         find.text('Thank you! Your answers were submitted.'), findsOneWidget);
+    // The faint Bousla mark behind the message, hidden from screen readers.
+    expect(find.byType(BouslaMark), findsOneWidget);
   });
 
   testWidgets('a hanging request shows a message instead of freezing', (

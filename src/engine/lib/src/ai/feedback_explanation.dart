@@ -657,7 +657,7 @@ LocalizedText templateExplanation(ExplanationProfile profile) {
 
   final mastered = names(inState(MasteryState.demonstratedMastery));
   if (mastered != null) {
-    ar.add('أظهرت فهمًا جيدًا لـ ${mastered.$1}.');
+    ar.add('أظهرت فهمًا جيدًا لمفهوم ${mastered.$1}.');
     en.add('You showed good understanding of ${mastered.$2}.');
   }
 
@@ -678,7 +678,7 @@ LocalizedText templateExplanation(ExplanationProfile profile) {
   final forming = names(inState(MasteryState.emerging));
   if (forming != null) {
     ar.add(
-        'فهمك لـ ${forming.$1} في طور التكوّن، وقد يساعدك التدريب على تثبيته.');
+        'فهمك لمفهوم ${forming.$1} في طور التكوّن، وقد يساعدك التدريب على تثبيته.');
     en.add(
       'Your understanding of ${forming.$2} is still forming, and practice may help.',
     );

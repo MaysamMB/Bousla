@@ -8,6 +8,17 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// A signed-in instructor account whose approval can be switched on.
 class _PendingAuth implements AuthService {
+  @override
+  StudentAccount? get studentAccount => null;
+
+  @override
+  Future<StudentAccount> linkStudentAccount() =>
+      throw const StudentLinkFailure(StudentLinkProblem.unknown);
+
+  @override
+  Future<StudentAccount> switchToLinkedStudentAccount() =>
+      throw const StudentLinkFailure(StudentLinkProblem.unknown);
+
   var approved = false;
   var signedOut = false;
 
