@@ -1,6 +1,6 @@
 # Bousla — Architecture
 
-> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Since then (24 Nov): QR code, AI level 1 question drafting, and student feedback with AI level 2 explanations (guards + template fallback; tested, not yet run against Gemini). Not yet implemented: classroom insights screen, knowledge map, the instructor teaching suggestion of AI level 2. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
+> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Since then (24 Nov): QR code, AI level 1 question drafting, and student feedback with AI level 2 explanations (guards + template fallback; tested, not yet run against Gemini). Classroom insights, knowledge map and instructor AI teaching suggestions were subsequently implemented. Instructor rehearsal and targeted tests on 26 Nov are documented in `docs/qa/Bousla_QA_2026-11-26.md`; live Gemini teaching and physical projector checks remain open. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
 
 ## 1. Components
 
@@ -210,7 +210,7 @@ Implementation notes (24 Nov): the session document ID **is** the join code, so 
 **MVP decision (Option A, confirmed by the team on 22 Nov 2026):** the engine runs in the **instructor app**.
 
 1. Students submit option IDs only. They never receive answer keys.
-2. The instructor app reads responses and keys, runs the engine, and writes `aggregates/summary` live.
+2. The instructor app reads responses and keys and computes live classroom insights in memory. The session history recomputes insights from stored responses; the `aggregates/summary` path is reserved for possible persisted aggregates.
 3. When the instructor ends the session (or presses "release feedback"), the app writes one `feedback/{uid}` document per student.
 
 Trade-offs: free, simple, no answer-key exposure; but personal feedback appears after release, and the instructor app must be open during the session.
@@ -228,7 +228,7 @@ Pure functions over models. Starter thresholds are provisional, configurable, an
 | Demonstrated mastery | ≥ 3 responses and accuracy ≥ 75% |
 | Emerging / uncertain | anything else |
 
-Modules: `question_concept_mapper`, `mastery_estimator`, `prerequisite_analyzer` (flags a prerequisite as a *possible* contributing gap only when the prerequisite itself shows difficulty or insufficient evidence; otherwise suggests more assessment), `class_insights`, `learning_recommender`, `career_gap_analyzer` (later).
+Modules: `question_concept_mapper`, `mastery_estimator`, `prerequisite_analyzer` (flags a prerequisite as a *possible* contributing gap only when the prerequisite itself shows possible difficulty; insufficient evidence is a separate state requiring more assessment), `class_insights`, `learning_recommender`, `career_gap_analyzer` (later).
 
 Every output carries its evidence (number of responses, accuracy) so the UI can show *why*. AI never changes these results.
 
@@ -236,7 +236,9 @@ Implementation details (`src/engine`):
 - **Scoring** compares option IDs per question version. Unknown questions/versions, unknown options, missing keys and duplicate answers are returned as *ignored with a reason*, never silently dropped. For duplicates, the first answer counts.
 - **Concept evidence:** a question mapped to several concepts counts for each. Concepts with no answers stay visible with zero attempts.
 - **Prerequisites:** only direct prerequisites of a concept in possible difficulty are classified: *possible contributing gap* (prerequisite also struggling), *needs more evidence*, *uncertain* (emerging), or *unlikely cause* (demonstrated mastery).
-- **Class insights:** a concept with fewer than `minGroupSize` (default 5) respondents is suppressed (no counts, no accuracy) and its prerequisite signals are hidden. Output never contains participant IDs.
+- **Class insights:** the engine default `minGroupSize` is 5, but the instructor app explicitly sets it to **3**. The UI hides per-concept numbers when fewer than 3 participants answered that concept. The engine output contains no participant IDs. For 1–2 participants the UI shows overall correct/total and percentage and up to three concept names with the most wrong answers, without per-concept numbers. With one participant, the overall result is that participant's result; this is not a guarantee of anonymity.
+- **Prerequisite signal visibility:** the instructor UI requires at least 3 participants with a shared possible gap, both concepts visible, and shows at most three signals. Wording is tentative, not causal proof. The detailed signal section is hidden in presentation mode; use the normal view to demonstrate it.
+- **Instructor QA:** presentation mode enlarges summary typography and hides detailed charts and AI teaching drafts. Teaching actions have rule-based tactics and an optional guarded Gemini draft. Past sessions display stored response evidence and support a bilingual title rename. Targeted local widget tests passed 10/10 on 26 Nov; see the QA report for live-test limitations.
 - **Recommendations:** prerequisite gaps first (foundations first), then concepts in difficulty, then emerging concepts below mastery accuracy, then "assess more" for unassessed prerequisites. Emerging concepts answered at mastery accuracy (just too few answers) get no practice recommendation. Approved resources only; student's language first, then bilingual, then the other language.
 
 ## 9. AI in two levels
