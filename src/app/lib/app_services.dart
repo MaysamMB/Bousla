@@ -78,9 +78,10 @@ class AppServices {
   final ValueNotifier<String?> selectedCourseId = ValueNotifier(null);
 
   /// Light or dark, chosen with the switch next to the language button and
-  /// remembered in this browser. Light by default (projectors).
+  /// remembered in this browser. Dark by default (the identity's night
+  /// look, like the loading screen); switch to light on a projector.
   final ValueNotifier<ThemeMode> themeMode = ValueNotifier(
-    loadThemeModeName() == 'dark' ? ThemeMode.dark : ThemeMode.light,
+    loadThemeModeName() == 'light' ? ThemeMode.light : ThemeMode.dark,
   );
 
   void toggleThemeMode() {
