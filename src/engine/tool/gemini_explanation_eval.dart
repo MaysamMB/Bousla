@@ -14,16 +14,25 @@
 // 1. Like the app, through Firebase AI Logic, with the project's
 //    firebase.env.json (FIREBASE_PROJECT_ID, FIREBASE_API_KEY,
 //    FIREBASE_APP_ID); the same endpoint, key header and app ID header as
-//    package:firebase_ai. If App Check is enforced for AI Logic, Google
-//    refuses requests from outside the browser app: that is reported as an
+//    package:firebase_ai. If App Check is enforced for AI Logic (it is on
+//    bousla-educathon), Google refuses requests from outside the browser
+//    app unless an App Check DEBUG token is given: create one in the
+//    Firebase console (App Check → Apps → the web app → Manage debug
+//    tokens), put it alone in a file, and pass that file. It is exchanged
+//    for a short-lived App Check token (Firebase's official route for
+//    trusted test environments); without it, the refusal is reported as an
 //    execution failure.
 //
 //      dart run tool/gemini_explanation_eval.dart \
-//        --firebase-env ../app/firebase.env.json --out <dir>
+//        --firebase-env ../app/firebase.env.json \
+//        --appcheck-debug-token-file <file> --out <dir>
 //
-// 2. With a Gemini Developer API key (Google AI Studio):
+// 2. With a Gemini Developer API key (Google AI Studio), from the
+//    environment or from a file holding only the key:
 //
 //      GEMINI_API_KEY=... dart run tool/gemini_explanation_eval.dart --out <dir>
+//      dart run tool/gemini_explanation_eval.dart --gemini-key-file <file> \
+//        --out <dir>
 //
 // Keys and settings are read, never printed, logged or written to the
 // report (error messages are scrubbed of the key). Without either, no key
@@ -46,11 +55,12 @@ const _developerApi = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 /// Where requests go and how they are authenticated. Never printed.
 class _Target {
-  const _Target({
+  _Target({
     required this.base,
     required this.via,
     this.key,
     this.appId,
+    this.secrets = const [],
   });
 
   /// `<base>/<model>:generateContent`.
@@ -61,16 +71,85 @@ class _Target {
   final String? key;
   final String? appId;
 
+  /// Short-lived App Check token (from a debug token), when given.
+  String? appCheckToken;
+
+  /// Other secret values that must never be written (e.g. a debug token).
+  final List<String> secrets;
+
   String scrub(String text) {
-    final k = key;
-    return k == null || k.isEmpty ? text : text.replaceAll(k, '<key>');
+    var out = text;
+    for (final s in [key, appCheckToken, ...secrets]) {
+      if (s != null && s.isNotEmpty) out = out.replaceAll(s, '<secret>');
+    }
+    return out;
+  }
+}
+
+/// A text file as saved on Windows too: UTF-8 with or without a byte order
+/// mark, or UTF-16 (what Windows PowerShell 5.1 writes with `>` or
+/// Out-File). Read as plain UTF-8, such a file would give a wrong token.
+String _readText(String path) {
+  final b = File(path).readAsBytesSync();
+  String utf16(int start, bool littleEndian) {
+    final units = <int>[
+      for (var i = start; i + 1 < b.length; i += 2)
+        littleEndian ? b[i] | (b[i + 1] << 8) : (b[i] << 8) | b[i + 1],
+    ];
+    return String.fromCharCodes(units);
+  }
+
+  if (b.length >= 2 && b[0] == 0xFF && b[1] == 0xFE) return utf16(2, true);
+  if (b.length >= 2 && b[0] == 0xFE && b[1] == 0xFF) return utf16(2, false);
+  final start =
+      b.length >= 3 && b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF ? 3 : 0;
+  return utf8.decode(b.sublist(start));
+}
+
+/// A secret kept alone in a file (trimmed). Never printed.
+String _readSecretFile(String path, String what) {
+  final v = _readText(path).trim();
+  if (v.isEmpty) throw FormatException('$what file is empty');
+  return v;
+}
+
+/// Exchanges an App Check debug token for an App Check token (Firebase's
+/// route for trusted test environments). Returns null and an error text
+/// (scrubbed) when Firebase refuses it.
+Future<(String?, String?)> _exchangeDebugToken(
+  _Target t,
+  String project,
+  String debugToken,
+) async {
+  final client = HttpClient()..connectionTimeout = const Duration(seconds: 30);
+  try {
+    final req = await client.postUrl(Uri.parse(
+      'https://firebaseappcheck.googleapis.com/v1/projects/$project/apps/'
+      '${t.appId}:exchangeDebugToken',
+    ));
+    req.headers.contentType = ContentType.json;
+    req.headers.set('x-goog-api-key', t.key!);
+    req.write(jsonEncode({'debugToken': debugToken}));
+    final res = await req.close().timeout(const Duration(seconds: 30));
+    final body = await res.transform(utf8.decoder).join();
+    if (res.statusCode != 200) {
+      return (null, t.scrub('HTTP ${res.statusCode}: $body'));
+    }
+    final token = (jsonDecode(body) as Map)['token'];
+    return token is String && token.isNotEmpty
+        ? (token, null)
+        : (null, 'no token in the answer');
+  } on Object catch (e) {
+    return (null, t.scrub(e.toString()));
+  } finally {
+    client.close(force: true);
   }
 }
 
 /// The app's route (package:firebase_ai, Google AI backend): Firebase AI
 /// Logic with the project's web API key.
-_Target _firebaseTarget(String path) {
-  final json = jsonDecode(File(path).readAsStringSync()) as Map;
+_Target _firebaseTarget(String path, {String? debugToken}) {
+  final json = jsonDecode(_readText(path)) as Map;
   String need(String name) {
     final v = json[name];
     if (v is! String || v.trim().isEmpty) {
@@ -85,7 +164,8 @@ _Target _firebaseTarget(String path) {
         '$project/models',
     via: 'Firebase AI Logic (project $project), as in the app',
     key: need('FIREBASE_API_KEY'),
-    appId: json['FIREBASE_APP_ID'] as String?,
+    appId: need('FIREBASE_APP_ID'),
+    secrets: [if (debugToken != null) debugToken],
   );
 }
 
@@ -122,6 +202,9 @@ Future<_Call> _generate(String model, String prompt, _Target t) async {
     if (key != null && key.isNotEmpty) req.headers.set('x-goog-api-key', key);
     if (t.appId case final id? when id.isNotEmpty) {
       req.headers.set('X-Firebase-AppId', id);
+    }
+    if (t.appCheckToken case final token? when token.isNotEmpty) {
+      req.headers.set('X-Firebase-AppCheck', token);
     }
     req.write(jsonEncode({
       'contents': [
@@ -184,25 +267,41 @@ Future<void> main(List<String> args) async {
   final out = Directory(_arg(args, '--out', 'gemini_eval_report')!)
     ..createSync(recursive: true);
   final firebaseEnv = _arg(args, '--firebase-env', null);
+  final debugFile = _arg(args, '--appcheck-debug-token-file', null);
+  final keyFile = _arg(args, '--gemini-key-file', null);
   final _Target target;
-  if (firebaseEnv != null) {
-    try {
-      target = _firebaseTarget(firebaseEnv);
-    } on Object catch (e) {
-      stderr.writeln('Cannot read the Firebase settings: '
-          '${e is FormatException ? e.message : e.runtimeType}');
-      exitCode = 64;
-      return;
+  String? appCheckProblem;
+  try {
+    if (firebaseEnv != null) {
+      final debugToken = debugFile == null
+          ? null
+          : _readSecretFile(debugFile, 'App Check debug token');
+      target = _firebaseTarget(firebaseEnv, debugToken: debugToken);
+      if (debugToken != null) {
+        final project = target.base.split('/projects/')[1].split('/').first;
+        final (token, problem) =
+            await _exchangeDebugToken(target, project, debugToken);
+        target.appCheckToken = token;
+        appCheckProblem = problem;
+      }
+    } else {
+      final key = keyFile != null
+          ? _readSecretFile(keyFile, 'Gemini API key')
+          : Platform.environment['GEMINI_API_KEY'];
+      target = _Target(
+        base: _developerApi,
+        via: key == null || key.isEmpty
+            ? 'Gemini Developer API, no key set'
+            : 'Gemini Developer API (key from '
+                '${keyFile != null ? 'a file' : 'GEMINI_API_KEY'})',
+        key: key,
+      );
     }
-  } else {
-    final key = Platform.environment['GEMINI_API_KEY'];
-    target = _Target(
-      base: _developerApi,
-      via: key == null || key.isEmpty
-          ? 'Gemini Developer API, no key set'
-          : 'Gemini Developer API (GEMINI_API_KEY)',
-      key: key,
-    );
+  } on Object catch (e) {
+    stderr.writeln('Cannot read the settings: '
+        '${e is FormatException ? e.message : e.runtimeType}');
+    exitCode = 64;
+    return;
   }
 
   // The app's pipeline: 26 students → 20 unique anonymous profiles.
@@ -236,8 +335,13 @@ Future<void> main(List<String> args) async {
     ..writeln('Run: $now. Cases: ${evalPatterns.length} profiles '
         '(${patternOf.length} students), one request.')
     ..writeln()
-    ..writeln('Route: ${target.via}.')
+    ..writeln('Route: ${target.via}'
+        '${target.appCheckToken != null ? ', with an App Check token from a debug token' : ''}.')
     ..writeln()
+    ..writeAll([
+      if (appCheckProblem != null)
+        'App Check debug token refused: $appCheckProblem\n\n',
+    ])
     ..writeln('Requests:')
     ..writeAll(callLines.map((l) => '$l\n'))
     ..writeln();

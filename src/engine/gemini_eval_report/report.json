@@ -1,0 +1,260 @@
+{
+  "run_at": "2026-11-26T21:42:55.507559Z",
+  "route": "Firebase AI Logic (project bousla-educathon), as in the app",
+  "requests": [
+    {
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "status": 500,
+      "error": "{\n  \"error\": {\n    \"code\": 500,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"INTERNAL\"\n  }\n}\n"
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "ok": true,
+      "status": 200,
+      "error": null
+    }
+  ],
+  "cases": [
+    {
+      "case": 1,
+      "pattern": "strong everywhere",
+      "profile_id": "p1",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهمًا جيدًا في استعلامات SELECT الأساسية (Basic SELECT Queries) وربط الجداول (JOIN) والمفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model). استمر في هذا الأداء الرائع.",
+      "text_en": "You showed good understanding in Basic SELECT Queries, Joins, Primary Key, and Foreign Key. There is not enough evidence yet for Relational Model. Keep up the great work."
+    },
+    {
+      "case": 2,
+      "pattern": "strong, more answers",
+      "profile_id": "p3",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لقد أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) واستعلامات SELECT الأساسية (Basic SELECT Queries). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model). عمل ممتاز.",
+      "text_en": "You showed good understanding in Primary Key, Foreign Key, Joins, and Basic SELECT Queries. There is not enough evidence yet for Relational Model. Excellent work."
+    },
+    {
+      "case": 3,
+      "pattern": "difficulty everywhere",
+      "profile_id": "p18",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "قد يحتاج المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) واستعلامات SELECT الأساسية (Basic SELECT Queries) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries) وتدريب: المفتاح الخارجي (Practice: Foreign Key). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "Primary Key, Foreign Key, Joins, and Basic SELECT Queries may need review, and Practice: Primary Key, Practice: Basic SELECT Queries, and Practice: Foreign Key could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 4,
+      "pattern": "difficulty in keys",
+      "profile_id": "p19",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "فهمك لاستعلامات SELECT الأساسية (Basic SELECT Queries) وربط الجداول (JOIN) لا يزال في طور التكوين. قد يحتاج المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "Your understanding of Basic SELECT Queries and Joins is still forming. Primary Key and Foreign Key may need review, and Practice: Primary Key, Practice: Foreign Key, and Practice: Joins could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 5,
+      "pattern": "insufficient evidence",
+      "profile_id": "p11",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لا يوجد دليل كافٍ بعد للمفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) والنموذج العلائقي (Relational Model) وربط الجداول (JOIN) واستعلامات SELECT الأساسية (Basic SELECT Queries). واصل المحاولة.",
+      "text_en": "There is not enough evidence yet for Primary Key, Foreign Key, Relational Model, Joins, and Basic SELECT Queries. Keep trying."
+    },
+    {
+      "case": 6,
+      "pattern": "insufficient evidence, other mix",
+      "profile_id": "p10",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لا يوجد دليل كافٍ بعد للمفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) والنموذج العلائقي (Relational Model) وربط الجداول (JOIN) واستعلامات SELECT الأساسية (Basic SELECT Queries). ننتظر المزيد من المشاركة.",
+      "text_en": "There is not enough evidence yet for Primary Key, Foreign Key, Relational Model, Joins, and Basic SELECT Queries. We look forward to more participation."
+    },
+    {
+      "case": 7,
+      "pattern": "emerging everywhere",
+      "profile_id": "p7",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "فهمك لكل من المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) واستعلامات SELECT الأساسية (Basic SELECT Queries) وربط الجداول (JOIN) لا يزال في طور التكوين، وقد يساعدك تدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model).",
+      "text_en": "Your understanding of Primary Key, Foreign Key, Basic SELECT Queries, and Joins is still forming, and Practice: Foreign Key, Practice: Primary Key, and Practice: Joins could help. There is not enough evidence yet for Relational Model."
+    },
+    {
+      "case": 8,
+      "pattern": "emerging, more answers",
+      "profile_id": "p9",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "فهمك للمفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) واستعلامات SELECT الأساسية (Basic SELECT Queries) وربط الجداول (JOIN) لا يزال في طور التكوين، وقد يساعدك تدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model).",
+      "text_en": "Your understanding of Primary Key, Foreign Key, Basic SELECT Queries, and Joins is still forming, and Practice: Foreign Key, Practice: Primary Key, and Practice: Joins could help. There is not enough evidence yet for Relational Model."
+    },
+    {
+      "case": 9,
+      "pattern": "weak prerequisite: not enough evidence",
+      "profile_id": "p16",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهماً جيداً في استعلامات SELECT الأساسية (Basic SELECT Queries). قد يحتاج المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Basic SELECT Queries. Primary Key, Foreign Key, and Joins may need review, and Practice: Foreign Key and Practice: Joins could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 10,
+      "pattern": "weak prerequisite: possible gap",
+      "profile_id": "p17",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهماً جيداً في استعلامات SELECT الأساسية (Basic SELECT Queries). قد يحتاج المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Basic SELECT Queries. Primary Key, Foreign Key, and Joins may need review, and Practice: Primary Key, Practice: Foreign Key, and Practice: Joins could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 11,
+      "pattern": "difficulty, prerequisite mastered",
+      "profile_id": "p13",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لقد أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key) واستعلامات SELECT الأساسية (Basic SELECT Queries). قد يحتاج المفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Primary Key and Basic SELECT Queries. Foreign Key and Joins may need review, and Practice: Foreign Key and Practice: Joins could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 12,
+      "pattern": "difficulty, prerequisite emerging",
+      "profile_id": "p15",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "فهمك للمفتاح الأساسي (Primary Key) لا يزال في طور التكوين، بينما قد يحتاج المفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) واستعلامات SELECT الأساسية (Basic SELECT Queries) إلى مراجعة، وقد يساعدك تدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries) وتدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "Your understanding of Primary Key is still forming, while Foreign Key, Joins, and Basic SELECT Queries may need review, and Practice: Basic SELECT Queries, Practice: Foreign Key, and Practice: Joins could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 13,
+      "pattern": "SELECT gap under JOIN",
+      "profile_id": "p2",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لقد أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key). قد تحتاج استعلامات SELECT الأساسية (Basic SELECT Queries) وربط الجداول (JOIN) إلى بعض المراجعة، وقد يساعدك تدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يزال هناك دليل غير كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Primary Key and Foreign Key. Basic SELECT Queries and Joins may need review, and Practice: Basic SELECT Queries and Practice: Joins could help. There is still not enough evidence for Relational Model."
+    },
+    {
+      "case": 14,
+      "pattern": "mixed 1",
+      "profile_id": "p6",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key). فهمك للمفتاح الخارجي (Foreign Key) واستعلامات SELECT الأساسية (Basic SELECT Queries) لا يزال في طور التكوين، بينما قد يحتاج ربط الجداول (JOIN) إلى مراجعة، وقد يساعدك تدريب: ربط الجداول (JOIN) (Practice: Joins) وتدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Primary Key. Your understanding of Foreign Key and Basic SELECT Queries is still forming, while Joins may need review, and Practice: Joins, Practice: Foreign Key, and Practice: Basic SELECT Queries could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 15,
+      "pattern": "mixed 2",
+      "profile_id": "p4",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لقد أظهرت فهماً جيداً في المفتاح الخارجي (Foreign Key) وربط الجداول (JOIN). فهمك لاستعلامات SELECT الأساسية (Basic SELECT Queries) لا يزال في طور التكوين، بينما قد يحتاج المفتاح الأساسي (Primary Key) إلى مراجعة، وقد يساعدك تدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Foreign Key and Joins. Your understanding of Basic SELECT Queries is still forming, while Primary Key may need review, and Practice: Primary Key and Practice: Basic SELECT Queries could help. There is not enough evidence yet for Relational Model."
+    },
+    {
+      "case": 16,
+      "pattern": "mixed with unanswered",
+      "profile_id": "p12",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key). فهمك لاستعلامات SELECT الأساسية (Basic SELECT Queries) والمفتاح الخارجي (Foreign Key) لا يزال في طور التكوين، وقد يساعدك تدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model) وربط الجداول (JOIN).",
+      "text_en": "You showed good understanding in Primary Key. Your understanding of Basic SELECT Queries and Foreign Key is still forming, and Practice: Basic SELECT Queries could help. There is not enough evidence yet for Relational Model and Joins."
+    },
+    {
+      "case": 17,
+      "pattern": "mixed, four answers each",
+      "profile_id": "p20",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key) واستعلامات SELECT الأساسية (Basic SELECT Queries). فهمك لربط الجداول (JOIN) لا يزال في طور التكوين، بينما قد يحتاج المفتاح الخارجي (Foreign Key) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Primary Key and Basic SELECT Queries. Your understanding of Joins is still forming, while Foreign Key may need review, and Practice: Foreign Key and Practice: Joins could help. There is not enough evidence for Relational Model."
+    },
+    {
+      "case": 18,
+      "pattern": "all right but too few answers",
+      "profile_id": "p8",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "فهمك للمفتاح الأساسي (Primary Key) والمفتاح الخارجي (Foreign Key) واستعلامات SELECT الأساسية (Basic SELECT Queries) وربط الجداول (JOIN) لا يزال في طور التكوين. لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model). واصل التقدم.",
+      "text_en": "Your understanding of Primary Key, Foreign Key, Basic SELECT Queries, and Joins is still forming. There is not enough evidence yet for Relational Model. Keep making progress."
+    },
+    {
+      "case": 19,
+      "pattern": "mixed 3",
+      "profile_id": "p5",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "لقد أظهرت فهماً جيداً في المفتاح الخارجي (Foreign Key) وربط الجداول (JOIN). قد يحتاج المفتاح الأساسي (Primary Key) واستعلامات SELECT الأساسية (Basic SELECT Queries) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الأساسي (Practice: Primary Key) وتدريب: استعلامات SELECT الأساسية (Practice: Basic SELECT Queries). لا يوجد دليل كافٍ بعد للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Foreign Key and Joins. Primary Key and Basic SELECT Queries may need review, and Practice: Primary Key and Practice: Basic SELECT Queries could help. There is not enough evidence yet for Relational Model."
+    },
+    {
+      "case": 20,
+      "pattern": "mixed 4",
+      "profile_id": "p14",
+      "request_completed": true,
+      "result": "accepted",
+      "guards": [],
+      "issues": [],
+      "fallback_used": false,
+      "text_ar": "أظهرت فهماً جيداً في المفتاح الأساسي (Primary Key). قد يحتاج المفتاح الخارجي (Foreign Key) وربط الجداول (JOIN) واستعلامات SELECT الأساسية (Basic SELECT Queries) إلى بعض المراجعة، وقد يساعدك تدريب: المفتاح الخارجي (Practice: Foreign Key) وتدريب: ربط الجداول (JOIN) (Practice: Joins). لا يوجد دليل كافٍ للنموذج العلائقي (Relational Model).",
+      "text_en": "You showed good understanding in Primary Key. Foreign Key, Joins, and Basic SELECT Queries may need review, and Practice: Foreign Key and Practice: Joins could help. There is not enough evidence for Relational Model."
+    }
+  ]
+}
