@@ -59,6 +59,13 @@ class _ExistingBlockedOnceAuth extends InMemoryAuthService {
   }
 }
 
+/// The instructor dashboard was used in this browser: no anonymous student.
+class _InstructorSignedInAuth extends InMemoryAuthService {
+  @override
+  Future<StudentAccount> linkStudentAccount() => throw const StudentLinkFailure(
+      StudentLinkProblem.instructorSignedIn, 'not-anonymous');
+}
+
 Future<(AppServices, Session)> _setUp({AuthService? auth}) async {
   final services = auth == null
       ? AppServices.inMemory(initialLocale: const Locale('en'))
@@ -137,7 +144,8 @@ void main() {
     expect(await services.profiles.hasSession(_me, session.id), isTrue);
   });
 
-  testWidgets('a Google account with a profile from another browser: '
+  testWidgets(
+      'a Google account with a profile from another browser: '
       'cancel keeps nothing, continue adds this session to it', (tester) async {
     final auth = InMemoryAuthService()..existingStudentUid = 'elsewhere';
     final (services, session) = await _setUp(auth: auth);
@@ -155,7 +163,8 @@ void main() {
     await _settle(tester);
     await tester.pumpAndSettle();
     expect(services.auth.studentAccount, isNull);
-    expect(await services.profiles.hasSession('elsewhere', session.id), isFalse);
+    expect(
+        await services.profiles.hasSession('elsewhere', session.id), isFalse);
 
     await tester.tap(find.text('Add this session to my profile'));
     await tester.pumpAndSettle();
@@ -171,7 +180,8 @@ void main() {
     expect(await services.profiles.hasSession(_me, session.id), isFalse);
   });
 
-  testWidgets('the window to the existing profile is blocked: the next tap '
+  testWidgets(
+      'the window to the existing profile is blocked: the next tap '
       'opens it, with no dialog in between', (tester) async {
     final auth = _ExistingBlockedOnceAuth();
     final (services, session) = await _setUp(auth: auth);
@@ -251,5 +261,20 @@ void main() {
     expect(find.text('This session is in your profile.'), findsOneWidget);
     expect(auth.tries, 2);
     expect(await services.profiles.hasSession(_me, session.id), isTrue);
+  });
+
+  testWidgets('an instructor signed in to this browser: a message that says so',
+      (tester) async {
+    final (services, session) = await _setUp(auth: _InstructorSignedInAuth());
+    await _show(tester, services, session);
+    await tester.tap(find.text('Add this session to my profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I agree, create my profile'));
+    await _settle(tester);
+    await tester.pump();
+    expect(find.textContaining('signed in to an instructor account'),
+        findsOneWidget);
+    expect(find.text('Add this session to my profile'), findsOneWidget);
+    expect(await services.profiles.hasSession(_me, session.id), isFalse);
   });
 }

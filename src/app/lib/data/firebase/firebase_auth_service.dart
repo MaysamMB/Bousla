@@ -13,12 +13,11 @@ class FirebaseAuthService implements AuthService {
 
   // Instructors sign in with email and password. A student who linked a
   // Google account for their profile is not an instructor candidate.
-  static String? _instructorUid(User? user) =>
-      user == null ||
-              user.isAnonymous ||
-              !user.providerData.any((p) => p.providerId == 'password')
-          ? null
-          : user.uid;
+  static String? _instructorUid(User? user) => user == null ||
+          user.isAnonymous ||
+          !user.providerData.any((p) => p.providerId == 'password')
+      ? null
+      : user.uid;
 
   @override
   bool get requiresSignIn => true;
@@ -82,8 +81,14 @@ class FirebaseAuthService implements AuthService {
   @override
   Future<StudentAccount> linkStudentAccount() async {
     final user = _auth.currentUser;
-    if (user == null || !user.isAnonymous) {
-      throw const StudentLinkFailure(StudentLinkProblem.noSession);
+    if (user == null) {
+      throw const StudentLinkFailure(StudentLinkProblem.noSession, 'no-user');
+    }
+    if (!user.isAnonymous) {
+      // E.g. the instructor dashboard was used in this browser: the answers
+      // were given as that account, which cannot be linked to Google here.
+      throw const StudentLinkFailure(
+          StudentLinkProblem.instructorSignedIn, 'not-anonymous');
     }
     try {
       // A Google window; the UID stays the same, so this browser's answers
