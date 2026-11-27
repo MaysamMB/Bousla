@@ -1,0 +1,440 @@
+{
+ "id": "database_developer",
+ "title": {
+  "ar": "مطوّر قواعد بيانات",
+  "en": "Database developer"
+ },
+ "source": {
+  "kind": "esco",
+  "name": "ESCO, skills of the occupation \"database developer\" (European Commission); collected from the ESCO portal by the Bousla team on 27 Nov 2026; Arabic names translated by the team; ESCO version not recorded",
+  "url": "https://esco.ec.europa.eu/en/classification/occupation_main",
+  "retrieved": "2026-11-27"
+ },
+ "mapping_note": "Which Bousla concepts give evidence for which ESCO skill is the Bousla team's mapping (not part of ESCO).",
+ "concept_names": {
+  "relational_model": {
+   "ar": "النموذج العلائقي",
+   "en": "Relational Model"
+  },
+  "er_modeling": {
+   "ar": "نمذجة الكيانات والعلاقات",
+   "en": "Entity-Relationship Modeling"
+  },
+  "functional_dependency": {
+   "ar": "الاعتمادية الوظيفية",
+   "en": "Functional Dependency"
+  },
+  "normalization": {
+   "ar": "التطبيع",
+   "en": "Normalization"
+  },
+  "sql_select": {
+   "ar": "استعلامات SELECT الأساسية",
+   "en": "Basic SELECT Queries"
+  },
+  "sql_join": {
+   "ar": "ربط الجداول (JOIN)",
+   "en": "Joins"
+  },
+  "sql_aggregation": {
+   "ar": "التجميع (GROUP BY)",
+   "en": "Aggregation (GROUP BY)"
+  },
+  "transactions_acid": {
+   "ar": "المعاملات وخصائص ACID",
+   "en": "Transactions and ACID"
+  },
+  "primary_key": {
+   "ar": "المفتاح الأساسي",
+   "en": "Primary Key"
+  },
+  "foreign_key": {
+   "ar": "المفتاح الخارجي",
+   "en": "Foreign Key"
+  }
+ },
+ "skills": [
+  {
+   "id": "create-data-models",
+   "essential": true,
+   "name": {
+    "ar": "إنشاء نماذج البيانات",
+    "en": "create data models"
+   },
+   "concepts": [
+    "relational_model",
+    "er_modeling",
+    "functional_dependency",
+    "normalization"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/create-data-models",
+   "local_count": 6
+  },
+  {
+   "id": "query-languages",
+   "essential": true,
+   "name": {
+    "ar": "لغات الاستعلام",
+    "en": "query languages"
+   },
+   "concepts": [
+    "sql_select",
+    "sql_join",
+    "sql_aggregation"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/query-languages",
+   "local_count": 9
+  },
+  {
+   "id": "data-extraction,-transformation-and-loading-tools",
+   "essential": true,
+   "name": {
+    "ar": "أدوات استخراج وتحويل وتحميل البيانات (ETL)",
+    "en": "data extraction, transformation and loading tools"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-extraction,-transformation-and-loading-tools",
+   "local_count": 2
+  },
+  {
+   "id": "test-ict-queries",
+   "essential": true,
+   "name": {
+    "ar": "اختبار استعلامات تكنولوجيا المعلومات والاتصالات",
+    "en": "test ICT queries"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/test-ict-queries"
+  },
+  {
+   "id": "write-database-documentation",
+   "essential": true,
+   "name": {
+    "ar": "كتابة وثائق قواعد البيانات",
+    "en": "write database documentation"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/write-database-documentation",
+   "local_count": 2
+  },
+  {
+   "id": "database-management-systems",
+   "essential": true,
+   "name": {
+    "ar": "أنظمة إدارة قواعد البيانات (DBMS)",
+    "en": "database management systems"
+   },
+   "concepts": [
+    "relational_model",
+    "transactions_acid"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/database-management-systems",
+   "local_count": 10
+  },
+  {
+   "id": "apply-information-security-policies",
+   "essential": true,
+   "name": {
+    "ar": "تطبيق سياسات أمن المعلومات",
+    "en": "apply information security policies"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/apply-information-security-policies",
+   "local_count": 3
+  },
+  {
+   "id": "balance-database-resources",
+   "essential": true,
+   "name": {
+    "ar": "موازنة موارد قواعد البيانات",
+    "en": "balance database resources"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/balance-database-resources",
+   "local_count": 3
+  },
+  {
+   "id": "collect-customer-feedback-on-applications",
+   "essential": true,
+   "name": {
+    "ar": "جمع ملاحظات العملاء حول التطبيقات",
+    "en": "collect customer feedback on applications"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/collect-customer-feedback-on-applications"
+  },
+  {
+   "id": "data-quality-assessment",
+   "essential": true,
+   "name": {
+    "ar": "تقييم جودة البيانات",
+    "en": "data quality assessment"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-quality-assessment",
+   "local_count": 3
+  },
+  {
+   "id": "data-storage",
+   "essential": true,
+   "name": {
+    "ar": "تخزين البيانات",
+    "en": "data storage"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-storage"
+  },
+  {
+   "id": "database-development-tools",
+   "essential": true,
+   "name": {
+    "ar": "أدوات تطوير قواعد البيانات",
+    "en": "database development tools"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/database-development-tools",
+   "local_count": 1
+  },
+  {
+   "id": "estimate-duration-of-work",
+   "essential": true,
+   "name": {
+    "ar": "تقدير مدة العمل",
+    "en": "estimate duration of work"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/estimate-duration-of-work"
+  },
+  {
+   "id": "identify-customer-requirements",
+   "essential": true,
+   "name": {
+    "ar": "تحديد متطلبات العملاء",
+    "en": "identify customer requirements"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/identify-customer-requirements"
+  },
+  {
+   "id": "interpret-technical-texts",
+   "essential": true,
+   "name": {
+    "ar": "تفسير النصوص التقنية",
+    "en": "interpret technical texts"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/interpret-technical-texts"
+  },
+  {
+   "id": "perform-backups",
+   "essential": true,
+   "name": {
+    "ar": "إجراء النسخ الاحتياطي",
+    "en": "perform backups"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/perform-backups",
+   "local_count": 1
+  },
+  {
+   "id": "report-analysis-results",
+   "essential": true,
+   "name": {
+    "ar": "الإبلاغ عن نتائج التحليل",
+    "en": "report analysis results"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/report-analysis-results"
+  },
+  {
+   "id": "resource-description-framework-query-language",
+   "essential": true,
+   "name": {
+    "ar": "لغة استعلام إطار وصف الموارد (SPARQL)",
+    "en": "resource description framework query language"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/resource-description-framework-query-language"
+  },
+  {
+   "id": "use-an-application-specific-interface",
+   "essential": true,
+   "name": {
+    "ar": "استخدام واجهة خاصة بالتطبيق",
+    "en": "use an application-specific interface"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/use-an-application-specific-interface"
+  },
+  {
+   "id": "use-databases",
+   "essential": true,
+   "name": {
+    "ar": "استخدام قواعد البيانات",
+    "en": "use databases"
+   },
+   "concepts": [
+    "relational_model",
+    "primary_key",
+    "foreign_key",
+    "sql_select"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/use-databases"
+  },
+  {
+   "id": "abap",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة ABAP",
+    "en": "ABAP"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/abap"
+  },
+  {
+   "id": "ajax",
+   "essential": false,
+   "name": {
+    "ar": "تقنية AJAX",
+    "en": "AJAX"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/ajax",
+   "local_count": 1
+  },
+  {
+   "id": "apl",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة APL",
+    "en": "APL"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/apl"
+  },
+  {
+   "id": "asp.net",
+   "essential": false,
+   "name": {
+    "ar": "إطار عمل ASP.NET",
+    "en": "ASP.NET"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/asp.net"
+  },
+  {
+   "id": "ajax-framework",
+   "essential": false,
+   "name": {
+    "ar": "إطار عمل أجاكس (Ajax Framework)",
+    "en": "Ajax Framework"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/ajax-framework"
+  },
+  {
+   "id": "assembly-(computer-programming)",
+   "essential": false,
+   "name": {
+    "ar": "لغة التجميع (Assembly)",
+    "en": "Assembly (computer programming)"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/assembly-(computer-programming)"
+  },
+  {
+   "id": "c#",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة سي شارب (C#)",
+    "en": "C#"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/c#",
+   "local_count": 1
+  },
+  {
+   "id": "c++",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة سي بلس بلس (C++)",
+    "en": "C++"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/c++"
+  },
+  {
+   "id": "ca-datacom/db",
+   "essential": false,
+   "name": {
+    "ar": "نظام قواعد بيانات CA Datacom/DB",
+    "en": "CA Datacom/DB"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/ca-datacom/db"
+  },
+  {
+   "id": "cobol",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة كوبول (COBOL)",
+    "en": "COBOL"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/cobol"
+  },
+  {
+   "id": "coffeescript",
+   "essential": false,
+   "name": {
+    "ar": "لغة كوفي سكريبت (CoffeeScript)",
+    "en": "CoffeeScript"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/coffeescript"
+  },
+  {
+   "id": "common-lisp",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة Common Lisp",
+    "en": "Common Lisp"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/common-lisp"
+  },
+  {
+   "id": "db2",
+   "essential": false,
+   "name": {
+    "ar": "نظام قواعد بيانات IBM DB2",
+    "en": "DB2"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/db2"
+  },
+  {
+   "id": "erlang",
+   "essential": false,
+   "name": {
+    "ar": "لغة البرمجة إرلانج (Erlang)",
+    "en": "Erlang"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/erlang"
+  }
+ ],
+ "local_adverts": {
+  "total": 10,
+  "published_from": "2026-06-15",
+  "published_to": "2026-11-20",
+  "collected": "2026-11-27",
+  "sites": [
+   "Jobs.ps",
+   "LinkedIn Jobs"
+  ],
+  "labellers": 1,
+  "status": "preliminary",
+  "note": "Collected by hand by the Bousla team; each advert counts once per skill. Data: data/careers/local_adverts_2026-06_2026-11.csv."
+ }
+}

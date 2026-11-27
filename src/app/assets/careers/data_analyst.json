@@ -1,0 +1,602 @@
+{
+ "id": "data_analyst",
+ "title": {
+  "ar": "محلّل بيانات",
+  "en": "Data analyst"
+ },
+ "source": {
+  "kind": "esco",
+  "name": "ESCO, skills of the occupation \"data analyst\" (European Commission); collected from the ESCO portal by the Bousla team on 27 Nov 2026; Arabic names translated by the team; ESCO version not recorded",
+  "url": "https://esco.ec.europa.eu/en/classification/occupation_main",
+  "retrieved": "2026-11-27"
+ },
+ "mapping_note": "Which Bousla concepts give evidence for which ESCO skill is the Bousla team's mapping (not part of ESCO).",
+ "concept_names": {
+  "sql_select": {
+   "ar": "استعلامات SELECT الأساسية",
+   "en": "Basic SELECT Queries"
+  },
+  "sql_join": {
+   "ar": "ربط الجداول (JOIN)",
+   "en": "Joins"
+  },
+  "sql_aggregation": {
+   "ar": "التجميع (GROUP BY)",
+   "en": "Aggregation (GROUP BY)"
+  },
+  "relational_model": {
+   "ar": "النموذج العلائقي",
+   "en": "Relational Model"
+  },
+  "er_modeling": {
+   "ar": "نمذجة الكيانات والعلاقات",
+   "en": "Entity-Relationship Modeling"
+  },
+  "functional_dependency": {
+   "ar": "الاعتمادية الوظيفية",
+   "en": "Functional Dependency"
+  },
+  "normalization": {
+   "ar": "التطبيع",
+   "en": "Normalization"
+  },
+  "primary_key": {
+   "ar": "المفتاح الأساسي",
+   "en": "Primary Key"
+  },
+  "foreign_key": {
+   "ar": "المفتاح الخارجي",
+   "en": "Foreign Key"
+  }
+ },
+ "skills": [
+  {
+   "id": "perform-data-cleansing",
+   "essential": true,
+   "name": {
+    "ar": "تنفيذ تنقية البيانات",
+    "en": "perform data cleansing"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/perform-data-cleansing",
+   "local_count": 1
+  },
+  {
+   "id": "query-languages",
+   "essential": true,
+   "name": {
+    "ar": "لغات الاستعلام",
+    "en": "query languages"
+   },
+   "concepts": [
+    "sql_select",
+    "sql_join",
+    "sql_aggregation"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/query-languages",
+   "local_count": 5
+  },
+  {
+   "id": "apply-statistical-analysis-techniques",
+   "essential": true,
+   "name": {
+    "ar": "تطبيق تقنيات التحليل الإحصائي",
+    "en": "apply statistical analysis techniques"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/apply-statistical-analysis-techniques",
+   "local_count": 2
+  },
+  {
+   "id": "visual-presentation-techniques",
+   "essential": true,
+   "name": {
+    "ar": "تقنيات العرض البصري",
+    "en": "visual presentation techniques"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/visual-presentation-techniques",
+   "local_count": 1
+  },
+  {
+   "id": "data-quality-assessment",
+   "essential": true,
+   "name": {
+    "ar": "تقييم جودة البيانات",
+    "en": "data quality assessment"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-quality-assessment",
+   "local_count": 3
+  },
+  {
+   "id": "interpret-current-data",
+   "essential": true,
+   "name": {
+    "ar": "تفسير البيانات الحالية",
+    "en": "interpret current data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/interpret-current-data"
+  },
+  {
+   "id": "analyse-big-data",
+   "essential": true,
+   "name": {
+    "ar": "تحليل البيانات الضخمة",
+    "en": "analyse big data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/analyse-big-data"
+  },
+  {
+   "id": "business-analytics",
+   "essential": true,
+   "name": {
+    "ar": "تحليلات الأعمال",
+    "en": "business analytics"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/business-analytics"
+  },
+  {
+   "id": "business-intelligence",
+   "essential": true,
+   "name": {
+    "ar": "ذكاء الأعمال",
+    "en": "business intelligence"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/business-intelligence",
+   "local_count": 2
+  },
+  {
+   "id": "collect-ict-data",
+   "essential": true,
+   "name": {
+    "ar": "جمع بيانات تكنولوجيا المعلومات والاتصالات",
+    "en": "collect ICT data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/collect-ict-data",
+   "local_count": 2
+  },
+  {
+   "id": "data-engineering",
+   "essential": true,
+   "name": {
+    "ar": "هندسة البيانات",
+    "en": "data engineering"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-engineering"
+  },
+  {
+   "id": "data-ethics",
+   "essential": true,
+   "name": {
+    "ar": "أخلاقيات البيانات",
+    "en": "data ethics"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-ethics"
+  },
+  {
+   "id": "data-mining",
+   "essential": true,
+   "name": {
+    "ar": "التنقيب عن البيانات",
+    "en": "data mining"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-mining"
+  },
+  {
+   "id": "data-models",
+   "essential": true,
+   "name": {
+    "ar": "نماذج البيانات",
+    "en": "data models"
+   },
+   "concepts": [
+    "relational_model",
+    "er_modeling"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/data-models"
+  },
+  {
+   "id": "data-science",
+   "essential": true,
+   "name": {
+    "ar": "علم البيانات",
+    "en": "data science"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-science"
+  },
+  {
+   "id": "data-visualisation-software",
+   "essential": true,
+   "name": {
+    "ar": "برمجيات تصور البيانات",
+    "en": "data visualisation software"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-visualisation-software",
+   "local_count": 7
+  },
+  {
+   "id": "define-data-quality-criteria",
+   "essential": true,
+   "name": {
+    "ar": "تحديد معايير جودة البيانات",
+    "en": "define data quality criteria"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/define-data-quality-criteria"
+  },
+  {
+   "id": "digital-data-processing",
+   "essential": true,
+   "name": {
+    "ar": "معالجة البيانات الرقمية",
+    "en": "digital data processing"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/digital-data-processing"
+  },
+  {
+   "id": "documentation-types",
+   "essential": true,
+   "name": {
+    "ar": "أنواع التوثيق",
+    "en": "documentation types"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/documentation-types",
+   "local_count": 1
+  },
+  {
+   "id": "establish-data-processes",
+   "essential": true,
+   "name": {
+    "ar": "إنشاء عمليات البيانات",
+    "en": "establish data processes"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/establish-data-processes"
+  },
+  {
+   "id": "execute-analytical-mathematical-calculations",
+   "essential": true,
+   "name": {
+    "ar": "إجراء الحسابات الرياضية التحليلية",
+    "en": "execute analytical mathematical calculations"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/execute-analytical-mathematical-calculations"
+  },
+  {
+   "id": "handle-data-samples",
+   "essential": true,
+   "name": {
+    "ar": "التعامل مع عينات البيانات",
+    "en": "handle data samples"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/handle-data-samples"
+  },
+  {
+   "id": "implement-data-quality-processes",
+   "essential": true,
+   "name": {
+    "ar": "تطبيق عمليات جودة البيانات",
+    "en": "implement data quality processes"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/implement-data-quality-processes"
+  },
+  {
+   "id": "information-categorisation",
+   "essential": true,
+   "name": {
+    "ar": "تصنيف المعلومات",
+    "en": "information categorisation"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/information-categorisation"
+  },
+  {
+   "id": "information-confidentiality",
+   "essential": true,
+   "name": {
+    "ar": "سرية المعلومات",
+    "en": "information confidentiality"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/information-confidentiality",
+   "local_count": 3
+  },
+  {
+   "id": "information-extraction",
+   "essential": true,
+   "name": {
+    "ar": "استخراج المعلومات",
+    "en": "information extraction"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/information-extraction"
+  },
+  {
+   "id": "information-structure",
+   "essential": true,
+   "name": {
+    "ar": "هيكلة المعلومات",
+    "en": "information structure"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/information-structure"
+  },
+  {
+   "id": "integrate-ict-data",
+   "essential": true,
+   "name": {
+    "ar": "دمج بيانات تكنولوجيا المعلومات والاتصالات",
+    "en": "integrate ICT data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/integrate-ict-data",
+   "local_count": 1
+  },
+  {
+   "id": "manage-data",
+   "essential": true,
+   "name": {
+    "ar": "إدارة البيانات",
+    "en": "manage data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/manage-data",
+   "local_count": 2
+  },
+  {
+   "id": "normalise-data",
+   "essential": true,
+   "name": {
+    "ar": "تطبيع البيانات",
+    "en": "normalise data"
+   },
+   "concepts": [
+    "functional_dependency",
+    "normalization"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/normalise-data"
+  },
+  {
+   "id": "perform-data-mining",
+   "essential": true,
+   "name": {
+    "ar": "تنفيذ التنقيب عن البيانات",
+    "en": "perform data mining"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/perform-data-mining"
+  },
+  {
+   "id": "resource-description-framework-query-language",
+   "essential": true,
+   "name": {
+    "ar": "لغة استعلام إطار وصف الموارد (SPARQL)",
+    "en": "resource description framework query language"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/resource-description-framework-query-language"
+  },
+  {
+   "id": "statistics",
+   "essential": true,
+   "name": {
+    "ar": "الإحصاء",
+    "en": "statistics"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/statistics"
+  },
+  {
+   "id": "unstructured-data",
+   "essential": true,
+   "name": {
+    "ar": "البيانات غير المهيكلة",
+    "en": "unstructured data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/unstructured-data"
+  },
+  {
+   "id": "use-data-processing-techniques",
+   "essential": true,
+   "name": {
+    "ar": "استخدام تقنيات معالجة البيانات",
+    "en": "use data processing techniques"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/use-data-processing-techniques",
+   "local_count": 7
+  },
+  {
+   "id": "use-databases",
+   "essential": true,
+   "name": {
+    "ar": "استخدام قواعد البيانات",
+    "en": "use databases"
+   },
+   "concepts": [
+    "relational_model",
+    "primary_key",
+    "foreign_key",
+    "sql_select"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/use-databases"
+  },
+  {
+   "id": "hadoop",
+   "essential": false,
+   "name": {
+    "ar": "إطار عمل هادوب (Hadoop)",
+    "en": "Hadoop"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/hadoop"
+  },
+  {
+   "id": "ldap",
+   "essential": false,
+   "name": {
+    "ar": "بروتوكول الوصول الخفيف للدليل (LDAP)",
+    "en": "LDAP"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/ldap"
+  },
+  {
+   "id": "linq",
+   "essential": false,
+   "name": {
+    "ar": "الاستعلام المتكامل مع اللغة (LINQ)",
+    "en": "LINQ"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/linq"
+  },
+  {
+   "id": "mdx",
+   "essential": false,
+   "name": {
+    "ar": "التعبيرات متعددة الأبعاد (MDX)",
+    "en": "MDX"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/mdx"
+  },
+  {
+   "id": "n1ql",
+   "essential": false,
+   "name": {
+    "ar": "لغة استعلام N1QL",
+    "en": "N1QL"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/n1ql"
+  },
+  {
+   "id": "sparql",
+   "essential": false,
+   "name": {
+    "ar": "لغة استعلام SPARQL",
+    "en": "SPARQL"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/sparql"
+  },
+  {
+   "id": "xquery",
+   "essential": false,
+   "name": {
+    "ar": "لغة استعلام XQuery",
+    "en": "XQuery"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/xquery"
+  },
+  {
+   "id": "cloud-technologies",
+   "essential": false,
+   "name": {
+    "ar": "تقنيات الحوسبة السحابية",
+    "en": "cloud technologies"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/cloud-technologies",
+   "local_count": 2
+  },
+  {
+   "id": "create-data-models",
+   "essential": false,
+   "name": {
+    "ar": "إنشاء نماذج البيانات",
+    "en": "create data models"
+   },
+   "concepts": [
+    "er_modeling",
+    "normalization"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/create-data-models",
+   "local_count": 3
+  },
+  {
+   "id": "data-storage",
+   "essential": false,
+   "name": {
+    "ar": "تخزين البيانات",
+    "en": "data storage"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/data-storage"
+  },
+  {
+   "id": "database",
+   "essential": false,
+   "name": {
+    "ar": "قواعد البيانات",
+    "en": "database"
+   },
+   "concepts": [
+    "relational_model"
+   ],
+   "source_uri": "http://data.europa.eu/esco/skill/database"
+  },
+  {
+   "id": "deliver-visual-presentation-of-data",
+   "essential": false,
+   "name": {
+    "ar": "تقديم عرض بصري للبيانات",
+    "en": "deliver visual presentation of data"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/deliver-visual-presentation-of-data"
+  },
+  {
+   "id": "game-theory",
+   "essential": false,
+   "name": {
+    "ar": "نظرية الألعاب",
+    "en": "game theory"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/game-theory"
+  },
+  {
+   "id": "gather-data-for-forensic-purposes",
+   "essential": false,
+   "name": {
+    "ar": "جمع البيانات لأغراض التحقيق الجنائي الرقمي",
+    "en": "gather data for forensic purposes"
+   },
+   "concepts": [],
+   "source_uri": "http://data.europa.eu/esco/skill/gather-data-for-forensic-purposes"
+  }
+ ],
+ "local_adverts": {
+  "total": 9,
+  "published_from": "2026-07-02",
+  "published_to": "2026-11-08",
+  "collected": "2026-11-27",
+  "sites": [
+   "Jobs.ps",
+   "LinkedIn Jobs"
+  ],
+  "labellers": 1,
+  "status": "preliminary",
+  "note": "Collected by hand by the Bousla team; each advert counts once per skill. Data: data/careers/local_adverts_2026-06_2026-11.csv."
+ }
+}
