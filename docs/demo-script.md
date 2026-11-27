@@ -44,10 +44,11 @@ Passing a course does not show *which* concept a student is missing, or whether 
 - The instructor screen updates live: "طلاب أجابوا · مجموع الإجابات".
 - Fallback: type the code on `/#/join` instead of scanning.
 
-### 4. What the class understands (45 s) — built, check Friday (Yasmeen)
+### 4. What the class understands (45 s) — browser rehearsal verified in part (Yasmeen)
 - Under the counter: each concept's difficulty with its evidence (respondents, accuracy), weakest first.
-- A *possible* prerequisite signal, in cautious words ("قد يكون … سبباً محتملاً").
-- Privacy: a concept answered by fewer than 3 students shows no numbers. With 1–2 students the panel shows only a session overview (overall % correct and which concepts to start with, no numbers per concept); say so: that is the protection working.
+- A *possible* prerequisite signal, in cautious words ("قد يكون … سبباً محتملاً"). The targeted offline tests passed, but a live signal has not yet been observed in the 26 Nov rehearsal. Show it only if present, using normal mode (the detailed signal is hidden in presentation mode). Use the rule-based teaching actions if the optional Gemini tactic is unavailable or unverified.
+- Browser rehearsal: 3 participant records, 49 answers, 6 visible concepts and 4 hidden. Presentation mode worked on the computer; physical projector testing remains pending. Past-session rename was reported complete. See [QA log](qa/Bousla_QA_2026-11-26.md).
+- Privacy: a concept answered by fewer than 3 students shows no numbers. With 1–2 students the panel shows only a session overview (overall % correct and which concepts to start with, no numbers per concept). With just one participant the overall result is theirs, so do not claim complete anonymity.
 - Fallback: a session from the Friday rehearsal with the team as students (say it is the rehearsal session).
 
 ### 5. Each student's feedback (45 s) — built, check Friday (Lina)
