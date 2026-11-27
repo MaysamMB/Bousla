@@ -162,6 +162,8 @@ Status (27 Nov, fixes from the team rehearsal): (1) a reload (e.g. when feedback
 
 Status (27 Nov, profile save follow-up): Lina's message had no code and the consent window had appeared, which only happens when the browser is not signed in as an anonymous student — most likely the instructor dashboard was used in the same browser (likely, not confirmed). Saving now says so ("This browser is signed in to an instructor account… sign out or use a private window") instead of a bare "Could not save"; every other general failure shows a code and is logged to the console. Checks: `flutter analyze` clean, `flutter test` 306/306 (1 new in `test/student_profile_test.dart`). Not yet checked on Lina's devices.
 
+Status (27 Nov, question drafting timeout): in a live test gemini-3.8-flash gave no answer for 2 minutes (console: TimeoutException, then a 500), and the lighter fallback model was never tried because a timeout counted as a network error. Now each model gets 75 s for drafting, and a timeout moves on to the fallback model at once (no retry of the slow one, not marked as used up). Checks: `flutter analyze` clean, `flutter test` 308/308 (2 new in `test/model_retry_test.dart`). Not yet checked live.
+
 ## If time runs short
 Cut from the bottom, not the middle: keep 2 → 3 → 4 → 5 working end to end before polishing 6 and 7. Minimum AI for the demo: level 1 review screen (with offline drafts if needed) + level 2 explanations with guards.
 

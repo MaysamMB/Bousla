@@ -1,7 +1,7 @@
 import 'package:bousla_app/data/ai/model_retry.dart';
 import 'package:bousla_app/data/ai/question_generator.dart';
 import 'package:bousla_app/data/firebase/gemini_question_generator.dart'
-    show retryDelayFrom;
+    show geminiTimeoutDetail, isGeminiTimeout, retryDelayFrom;
 import 'package:flutter_test/flutter_test.dart';
 
 const _busy = QuestionGenerationException(
@@ -219,5 +219,48 @@ void main() {
       )),
     );
     expect(called, ['lite']); // nothing sent
+  });
+
+  test('a model that does not answer in time: the next one, at once', () async {
+    const late = QuestionGenerationException(
+      GenerationProblem.network,
+      geminiTimeoutDetail,
+    );
+    final result = await callWithModelFallback(
+      models: ['main', 'backup'],
+      isBusy: _isBusy,
+      moveOn: isGeminiTimeout,
+      wait: wait,
+      call: (m) async {
+        calls.add(m);
+        if (m == 'main') throw late;
+        return 'drafts from $m';
+      },
+    );
+    expect(result, 'drafts from backup');
+    expect(calls, ['main', 'backup']);
+    expect(waits, isEmpty);
+    expect(dailyLimitReached, isEmpty);
+  });
+
+  test('both models too slow: the timeout is reported', () async {
+    const late = QuestionGenerationException(
+      GenerationProblem.network,
+      geminiTimeoutDetail,
+    );
+    await expectLater(
+      callWithModelFallback<String>(
+        models: ['main', 'backup'],
+        isBusy: _isBusy,
+        moveOn: isGeminiTimeout,
+        wait: wait,
+        call: (m) async {
+          calls.add(m);
+          throw late;
+        },
+      ),
+      throwsA(predicate(isGeminiTimeout)),
+    );
+    expect(calls, ['main', 'backup']);
   });
 }

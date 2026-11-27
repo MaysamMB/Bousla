@@ -17,6 +17,9 @@ final dailyLimitReached = <String>{};
 ///   model once.
 /// - Other errors stop immediately and are rethrown.
 /// - [retryable] false (e.g. a used-up daily limit) skips the retries.
+/// - [moveOn] true (e.g. a model that did not answer in time) goes straight
+///   to the next model, without retries and without marking the model as
+///   used up.
 /// - If every attempt failed this way, or a fallback failed for another
 ///   reason (e.g. that model is not offered for the project), the first
 ///   model's error is rethrown: its reason is the useful one.
@@ -29,6 +32,7 @@ Future<T> callWithModelFallback<T>({
   bool Function(Object error)? retryable,
   Future<void> Function(Duration) wait = Future<void>.delayed,
   Set<String>? usedUp,
+  bool Function(Object error)? moveOn,
 }) async {
   assert(models.isNotEmpty);
   final skip = usedUp ?? dailyLimitReached;
@@ -47,6 +51,10 @@ Future<T> callWithModelFallback<T>({
       try {
         return await call(models[m]);
       } catch (e) {
+        if (moveOn != null && moveOn(e)) {
+          firstBusy ??= e;
+          break;
+        }
         final busy = isBusy(e);
         if (!busy && m == 0) rethrow;
         firstBusy ??= e;
