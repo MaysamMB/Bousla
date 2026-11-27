@@ -12,7 +12,9 @@ An AI-powered educational intelligence platform for Educathon 2026 (Hebron Unive
 - Instructor: review AI-drafted questions (approve / edit / reject, no "approve all"), learning resources (AI describes, the instructor adds the link), create a session with code, link and QR, live class insights (aggregated, hidden under 3 students), close and release feedback, share the feedback link.
 - Student: join by code or QR, answer in Arabic or English, personal feedback with next steps and an AI explanation (with a template fallback), knowledge map, optional personal profile by consent (Google sign-in).
 - Checks (cloud environment, 26 Nov): rules 46/46 (`firebase/`), engine 118/118 (`src/engine`), app 275/275 and `flutter analyze` clean (`src/app`).
-- Not done yet: a measured evaluation of Gemini's explanations against real Gemini (tool ready, run pending), career pathways, longitudinal analytics. Details and limits: `docs/implementation-plan.md`, `docs/ethics-privacy.md`.
+- Gemini explanation evaluation: one real run on 20 synthetic profiles, 20 of 20 passed the five guards (26 Nov; `src/engine/gemini_eval_report/`).
+- Career path (preview, from "My profile"): a chosen job's ESCO skills compared with the student's saved evidence, plus an early sample of local job adverts (shown from 10 adverts). "Add a course from outside Bousla" is an interface preview only (nothing uploaded or saved). Data: `src/app/assets/careers/`, `data/careers/`.
+- Not done yet: outline topic extraction and the AI self-check for outside courses, a cross-checked local-adverts sample, longitudinal analytics. Details and limits: `docs/implementation-plan.md`, `docs/ethics-privacy.md`.
 - Commands (build, deploy, run, seed, tests): `.\bousla help` on Windows, `./scripts/bousla.sh help` elsewhere; see `firebase/README.md`. Without Firebase settings the app runs in an offline demo mode (in-memory data) and shows a "LOCAL DEMO" corner banner.
 
 ## Running the checks

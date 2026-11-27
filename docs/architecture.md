@@ -35,7 +35,7 @@ Bousla/
 │   │   ├── answer_keys.json   correct option IDs (never bundled into the web app)
 │   │   ├── resources.json     learning resources (bilingual)
 │   │   └── materials.json     optional: metadata of source materials content was generated from
-│   ├── careers/backend-developer.json
+│   ├── careers/               local job adverts (CSV, collected by hand) + their skill links
 │   └── demo/                  synthetic responses, labeled synthetic
 ├── src/
 │   ├── engine/                pure Dart package `bousla_engine` (no Flutter, no Firebase)
@@ -268,7 +268,7 @@ Result (26 Nov, run by Lina locally with `src/engine/tool/gemini_explanation_eva
 ### Later
 | Component | Condition |
 |---|---|
-| Career skill mapping | small static map for one role first |
+| Career skill mapping | preview built 27 Nov for two roles (§13) |
 | Free-text answer evaluation | only after a bilingual rubric, a labeled AR/EN/mixed test set, abstention when uncertain, and consistency tests exist |
 | Storing uploaded files | needs Cloud Storage (Blaze plan) |
 
@@ -292,9 +292,20 @@ AI never scores multiple-choice answers and never overrides engine results.
 ## 12. Privacy controls
 
 - Instructor views are aggregate only by default.
-- Concept-level breakdowns are hidden when fewer than **5** participants answered (configurable).
+- Concept-level breakdowns are hidden when fewer than **3** participants answered (`classMinGroupSize` in the app; the engine's default is 5).
 - Join codes: random, at least 6 characters; sessions have an open/closed state; responses are rejected after closing.
 - No AI API keys in client code: Gemini is reached only through Firebase AI Logic with App Check enforced.
 - No personal identifiers are sent to the model (§9).
 - Check the Gemini API terms for how the chosen tier may use submitted content before sending real course materials or real student evidence; use synthetic data for the demo.
 - Synthetic demo data is labeled `"synthetic": true`.
+
+## 13. Career path (preview, 27 Nov 2026)
+
+Reached from "My profile" only; it is not part of the session flow, and it needs at least one saved session.
+
+- **Skills of a job:** ESCO (European Commission) skills for *database developer* (34) and *data analyst* (50), collected from the ESCO portal by the team on 27 Nov 2026, each with its ESCO URI (`src/app/assets/careers/*.json`, `source.kind: esco`). Arabic names are the team's translation.
+- **Evidence:** which Bousla concepts count for which ESCO skill is the team's mapping (said on screen). The engine (`career_gaps.dart`, deterministic, no AI) gives each skill *may need review*, *no evidence yet*, *partly shown*, *shown in your sessions* or *not covered by Bousla yet*, from the latest assessed result of each concept in the student's saved sessions. Uncovered skills are listed, not judged.
+- **Local job market:** adverts collected by hand from local job sites, linked to ESCO skills by the team; `src/ai/careers/build_local_adverts.py` turns the spreadsheet into `data/careers/*.csv` and a per-skill `local_count`. Shown as "asked for in X of Y local adverts" only from **10 adverts** (`minLocalAdverts`); the screen says when only one person linked adverts to skills.
+- **Outside courses (next):** the student names a course and adds its outline; the screen exists as an interface preview only (nothing is uploaded or saved). Planned: AI extracts topics, the student confirms them, a labelled AI self-check for practice, results marked "self-reported" and weighted below sessions run by an instructor. Design notes: the team doc "تصميم المسار المهني".
+- **Privacy:** all of it lives in the student's own optional profile; instructors see nothing of it.
+

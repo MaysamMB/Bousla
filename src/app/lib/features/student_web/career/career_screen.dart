@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../feedback/feedback_screen.dart' show stateLabel;
+import 'external_course_screen.dart';
 
 /// Career path, preview (project scope 12). From the student's own profile:
 /// the skills a chosen job asks for, and what the saved sessions show for
@@ -210,9 +211,15 @@ class _ReportView extends StatelessWidget {
             Card(
               key: const ValueKey('career-next'),
               child: ListTile(
-                leading: const Icon(Icons.route_outlined),
-                title: Text(l.studentCareerNextTitle),
+                leading: const Icon(Icons.upload_file_outlined),
+                title: Text(l.studentExternalOpen),
                 subtitle: Text(l.studentCareerNextBody),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ExternalCourseScreen(),
+                  ),
+                ),
               ),
             ),
           ],

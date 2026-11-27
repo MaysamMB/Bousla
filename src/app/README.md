@@ -42,7 +42,7 @@ flutter run -d chrome
 Commit the generated `web/`, `android/` and `.metadata`. Requires a recent
 Flutter (3.38 or newer; the committed `pubspec.lock` needs Dart 3.10) for the `l10n.yaml` settings used here.
 
-> Status (26 Nov): `flutter analyze` clean and `flutter test` 275/275 in the
+> Status (27 Nov): `flutter analyze` clean and `flutter test` 294/294 in the
 > cloud environment (Flutter 3.38.10); deployed at
 > https://bousla-educathon.web.app. Progress per feature is in
 > `docs/implementation-plan.md`.
@@ -55,6 +55,8 @@ Flutter (3.38 or newer; the committed `pubspec.lock` needs Dart 3.10) for the `l
 | `lib/features/instructor/` | Instructor app |
 | `lib/features/student_web/`, `lib/shared/` | Student portal |
 | `lib/features/instructor/content_review/`, `../engine/lib/src/ai/` | AI and content |
+
+`lib/features/student_web/career/` (career path preview) and `profile/` were added by Backend (Maysam) on 25–27 Nov; tell her before changing them.
 
 Change someone else's folder only after telling them.
 

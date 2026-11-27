@@ -67,6 +67,13 @@ Keep for questions (do not read out):
 - Gemini runs through Firebase with App Check; course files are not stored.
 - The instructor app must stay open while scoring (no paid server).
 
+### 6b. Career path (optional, 15 s) — preview, check Friday
+Only if there is time, at the end; skip it in the 3-minute version.
+- On a phone with a saved profile: **ملفي → المسار المهني (تجريبي)** → *مطوّر قواعد بيانات*.
+- Say: skills from ESCO; Bousla measures 4 of the 20 essential ones and says so; in 10 local adverts, database management systems were asked for in 10 and SQL in 9, exactly what the course measures.
+- Say plainly: an early sample linked by one person; adding a course from outside Bousla is a preview of the next step (nothing is uploaded).
+- Fallback: say it in one sentence without showing the screen.
+
 ### 7. Close (10 s)
 Bousla turns a short in-class quiz into what each student should learn next, and what the instructor should revisit, in Arabic and English.
 
