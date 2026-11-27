@@ -142,7 +142,7 @@ Answer keys are stored separately: `{ "db_fk_001": { "correct_option_id": "a" } 
 ```
 `status`: `processing`, `ready_for_review`, `failed`.
 
-**Extracted text instead of the file (MVP):** the original file is not stored. During AI drafting, Gemini also returns the material's text split by page or section. Each part is saved as `courses/{courseId}/materials/{materialId}/sections/{sectionId}` (`{ "location": "page 4", "text": "..." }`), staying well under Firestore's 1 MiB document limit. A draft's `source_location` points to these sections, so the instructor can check the original passage next to the draft during review.
+**Extracted text instead of the file (target; not implemented as of 26 Nov — material sections are not saved, only the draft's page/section label):** the original file is not stored. During AI drafting, Gemini also returns the material's text split by page or section. Each part is saved as `courses/{courseId}/materials/{materialId}/sections/{sectionId}` (`{ "location": "page 4", "text": "..." }`), staying well under Firestore's 1 MiB document limit. A draft's `source_location` points to these sections, so the instructor can check the original passage next to the draft during review.
 
 Files the instructor wants students to have (slides, PDFs) are added as `link` resources pointing to the instructor's own Google Drive, OneDrive or Moodle. Real file storage (Cloud Storage on Blaze, or another provider) is a later stage.
 
@@ -154,6 +154,7 @@ Validation (`validate_data.py`, mirrored later in Dart): unique IDs; non-empty `
 
 1. **Upload:** the instructor picks a PDF/text file in the instructor app. In the MVP the file stays on the instructor's device; it is sent directly to Gemini through Firebase AI Logic and is **not stored** (no Cloud Storage on Spark). Only a `materials` metadata document is saved.
 2. **AI drafting (AI level 1):** Gemini returns structured JSON: concepts, prerequisite links, bilingual questions with a proposed answer, and resource suggestions, each with its source location. Everything is saved as `pending_review`.
+   - **Implemented (26 Nov):** Gemini drafts **questions only**, each linked to concepts that already exist and are approved in the course (`src/engine/lib/src/ai/question_drafting.dart`), with the page it came from. Concepts and prerequisite links are written and reviewed by the team (`data/courses/database-systems`), not generated. Resource suggestions are a separate step (descriptions without links, `resource_suggestions.dart`). Generating concepts and prerequisites from material is still the target design.
 3. **Automatic checks:** the same rules as `validate_data.py` run on the drafts. Failing drafts are flagged, not saved as approved.
 4. **Human review:** the instructor approves, edits or rejects each item in a review screen (`/instructor/review`). Only `approved` content can be used in sessions or shown to students.
    - Several waiting items can be selected and approved or rejected together, and everything waiting can be rejected at once. There is deliberately **no "approve all"**: every AI draft is seen before it is approved.
@@ -236,7 +237,7 @@ Implementation details (`src/engine`):
 - **Scoring** compares option IDs per question version. Unknown questions/versions, unknown options, missing keys and duplicate answers are returned as *ignored with a reason*, never silently dropped. For duplicates, the first answer counts.
 - **Concept evidence:** a question mapped to several concepts counts for each. Concepts with no answers stay visible with zero attempts.
 - **Prerequisites:** only direct prerequisites of a concept in possible difficulty are classified: *possible contributing gap* (prerequisite also struggling), *needs more evidence*, *uncertain* (emerging), or *unlikely cause* (demonstrated mastery).
-- **Class insights:** a concept with fewer than `minGroupSize` (default 5) respondents is suppressed (no counts, no accuracy) and its prerequisite signals are hidden. Output never contains participant IDs.
+- **Class insights:** a concept with fewer than `minGroupSize` respondents is suppressed (no counts, no accuracy) and its prerequisite signals are hidden. Output never contains participant IDs. The engine's default is 5; **the app passes 3** (`classMinGroupSize` in `src/app/lib/features/instructor/sessions/live_insights.dart`) so a small class still sees results. Below 3 participants the instructor sees only a session overview (overall % correct and which concepts to start with). **Known limit:** with exactly one participant, that overall % is that student's own result (still anonymous: no name or ID is shown).
 - **Recommendations:** prerequisite gaps first (foundations first), then concepts in difficulty, then emerging concepts below mastery accuracy, then "assess more" for unassessed prerequisites. Emerging concepts answered at mastery accuracy (just too few answers) get no practice recommendation. Approved resources only; student's language first, then bilingual, then the other language.
 
 ## 9. AI in two levels

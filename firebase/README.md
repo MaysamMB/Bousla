@@ -246,7 +246,7 @@ from gstatic. Without internet Firestore cannot work anyway, so:
 - Students can read any *approved* question or concept if they know its ID
   (questions contain no answers). The architecture's stricter "only for
   courses of a session you joined" is not enforced yet.
-- No App Check yet (planned with Firebase AI Logic).
+- App Check (reCAPTCHA Enterprise) is **enforced for Firebase AI Logic** only: on 25 Nov a request from outside the site was refused with "Firebase App Check token is invalid" (Lina's evaluation run). Firestore and Authentication are not enforced; the security rules protect them.
 - The instructor app must stay open during a session (scoring runs there,
   Option A).
 - Android was not built with Firebase; the target for the demo is the web app.

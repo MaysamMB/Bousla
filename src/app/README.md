@@ -42,10 +42,10 @@ flutter run -d chrome
 Commit the generated `web/`, `android/` and `.metadata`. Requires a recent
 Flutter (3.38 or newer; the committed `pubspec.lock` needs Dart 3.10) for the `l10n.yaml` settings used here.
 
-> Status: the files in `lib/data/` and `test/data/` were analyzed and tested
-> with plain Dart. The screens, localization setup and `test/widget_smoke_test.dart`
-> were written without a Flutter SDK available and have **not been compiled
-> yet**. The first `flutter analyze` / `flutter test` run is their first check.
+> Status (26 Nov): `flutter analyze` clean and `flutter test` 275/275 in the
+> cloud environment (Flutter 3.38.10); deployed at
+> https://bousla-educathon.web.app. Progress per feature is in
+> `docs/implementation-plan.md`.
 
 ## Who owns what
 
