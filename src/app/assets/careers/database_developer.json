@@ -1,0 +1,45 @@
+{
+  "id": "database_developer",
+  "title": {"ar": "مطوّر قواعد بيانات", "en": "Database developer"},
+  "source": {
+    "kind": "team_draft",
+    "name": "Bousla team draft, 27 Nov 2026 (to be replaced by ESCO and local job adverts)",
+    "url": null,
+    "retrieved": null
+  },
+  "concept_names": {
+    "relational_model": {"ar": "النموذج العلائقي", "en": "Relational Model"},
+    "er_modeling": {"ar": "نمذجة الكيانات والعلاقات", "en": "Entity-Relationship Modeling"},
+    "functional_dependency": {"ar": "الاعتمادية الوظيفية", "en": "Functional Dependency"},
+    "normalization": {"ar": "التطبيع", "en": "Normalization"},
+    "primary_key": {"ar": "المفتاح الأساسي", "en": "Primary Key"},
+    "foreign_key": {"ar": "المفتاح الخارجي", "en": "Foreign Key"},
+    "sql_select": {"ar": "استعلامات SELECT الأساسية", "en": "Basic SELECT Queries"},
+    "sql_join": {"ar": "ربط الجداول (JOIN)", "en": "Joins"},
+    "sql_aggregation": {"ar": "التجميع (GROUP BY)", "en": "Aggregation (GROUP BY)"},
+    "transactions_acid": {"ar": "المعاملات وخصائص ACID", "en": "Transactions and ACID"}
+  },
+  "skills": [
+    {"id": "relational_design", "essential": true,
+     "name": {"ar": "تصميم قواعد البيانات العلائقية", "en": "Relational database design"},
+     "concepts": ["relational_model", "er_modeling", "functional_dependency", "normalization"]},
+    {"id": "keys_integrity", "essential": true,
+     "name": {"ar": "المفاتيح وقيود السلامة", "en": "Keys and integrity constraints"},
+     "concepts": ["primary_key", "foreign_key"]},
+    {"id": "sql_querying", "essential": true,
+     "name": {"ar": "كتابة استعلامات SQL", "en": "Writing SQL queries"},
+     "concepts": ["sql_select", "sql_join", "sql_aggregation"]},
+    {"id": "transactions", "essential": true,
+     "name": {"ar": "المعاملات والتزامن", "en": "Transactions and concurrency"},
+     "concepts": ["transactions_acid"]},
+    {"id": "performance_indexing", "essential": false,
+     "name": {"ar": "الفهارس وأداء الاستعلامات", "en": "Indexing and query performance"},
+     "concepts": []},
+    {"id": "backend_language", "essential": false,
+     "name": {"ar": "لغة برمجة للخوادم", "en": "A back-end programming language"},
+     "concepts": []},
+    {"id": "version_control", "essential": false,
+     "name": {"ar": "إدارة الإصدارات (Git)", "en": "Version control (Git)"},
+     "concepts": []}
+  ]
+}

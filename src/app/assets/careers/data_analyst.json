@@ -1,0 +1,43 @@
+{
+  "id": "data_analyst",
+  "title": {"ar": "محلّل بيانات", "en": "Data analyst"},
+  "source": {
+    "kind": "team_draft",
+    "name": "Bousla team draft, 27 Nov 2026 (to be replaced by ESCO and local job adverts)",
+    "url": null,
+    "retrieved": null
+  },
+  "concept_names": {
+    "sql_select": {"ar": "استعلامات SELECT الأساسية", "en": "Basic SELECT Queries"},
+    "sql_join": {"ar": "ربط الجداول (JOIN)", "en": "Joins"},
+    "sql_aggregation": {"ar": "التجميع (GROUP BY)", "en": "Aggregation (GROUP BY)"},
+    "relational_model": {"ar": "النموذج العلائقي", "en": "Relational Model"},
+    "primary_key": {"ar": "المفتاح الأساسي", "en": "Primary Key"},
+    "foreign_key": {"ar": "المفتاح الخارجي", "en": "Foreign Key"},
+    "er_modeling": {"ar": "نمذجة الكيانات والعلاقات", "en": "Entity-Relationship Modeling"},
+    "normalization": {"ar": "التطبيع", "en": "Normalization"}
+  },
+  "skills": [
+    {"id": "sql_querying", "essential": true,
+     "name": {"ar": "كتابة استعلامات SQL", "en": "Writing SQL queries"},
+     "concepts": ["sql_select", "sql_join", "sql_aggregation"]},
+    {"id": "relational_data", "essential": true,
+     "name": {"ar": "فهم البيانات العلائقية", "en": "Understanding relational data"},
+     "concepts": ["relational_model", "primary_key", "foreign_key"]},
+    {"id": "statistics", "essential": true,
+     "name": {"ar": "الإحصاء الوصفي", "en": "Descriptive statistics"},
+     "concepts": []},
+    {"id": "visualisation", "essential": true,
+     "name": {"ar": "عرض البيانات بصريًا", "en": "Data visualisation"},
+     "concepts": []},
+    {"id": "data_modelling", "essential": false,
+     "name": {"ar": "نمذجة البيانات", "en": "Data modelling"},
+     "concepts": ["er_modeling", "normalization"]},
+    {"id": "spreadsheets", "essential": false,
+     "name": {"ar": "الجداول الإلكترونية", "en": "Spreadsheets"},
+     "concepts": []},
+    {"id": "scripting", "essential": false,
+     "name": {"ar": "Python أو R لتحليل البيانات", "en": "Python or R for analysis"},
+     "concepts": []}
+  ]
+}

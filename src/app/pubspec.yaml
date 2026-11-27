@@ -33,6 +33,10 @@ flutter:
   uses-material-design: true
   generate: true
 
+  # Career path datasets (each names its source; see docs).
+  assets:
+    - assets/careers/
+
   # Bundled fonts (SIL Open Font License, see assets/fonts/OFL.txt), so text
   # never depends on downloading fonts at the venue. The Bousla identity
   # (find-your-bousla.base44.app/assets): Sora for Latin words and numbers,

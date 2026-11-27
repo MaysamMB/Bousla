@@ -7,6 +7,7 @@ import '../../../data/repositories/profile_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import '../career/career_screen.dart';
 import '../feedback/feedback_screen.dart' show stateLabel;
 import '../../../shared/widgets/bousla_mark.dart';
 
@@ -159,6 +160,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
+                          const SizedBox(height: 16),
+                          // Career path preview, from these sessions only.
+                          Card(
+                            key: const ValueKey('open-career'),
+                            child: ListTile(
+                              leading: const Icon(Icons.work_outline),
+                              title: Text(l.studentCareerOpen),
+                              subtitle: Text(l.studentCareerOpenHint),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) =>
+                                      CareerScreen(sessions: sessions),
+                                ),
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 24),
                           Text(
                             l.studentProfileSessionsTitle,
