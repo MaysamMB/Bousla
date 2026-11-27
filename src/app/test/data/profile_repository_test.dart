@@ -64,6 +64,16 @@ void main() {
         expect(await repo.sessions('s2'), isEmpty);
       });
 
+      test('saving a session that is already saved is not an error', () async {
+        // The rules allow no edits; a retry after a half-finished save
+        // must not fail.
+        final repo = make();
+        await repo.create('s1');
+        await repo.saveSession('s1', _session('AAA222'), _feedback);
+        await repo.saveSession('s1', _session('AAA222'), _feedback);
+        expect((await repo.sessions('s1')).map((s) => s.code), ['AAA222']);
+      });
+
       test('remove one session, then delete everything', () async {
         final repo = make();
         await repo.create('s1');

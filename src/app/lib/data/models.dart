@@ -80,6 +80,7 @@ class QuestionView {
     this.source = ContentSource.team,
     this.edited = false,
     this.rejectionReason,
+    this.rejectionNote,
     this.sourceLocation,
     this.sourceMaterialId,
     this.hiddenOptionLanguages = const {},
@@ -97,6 +98,9 @@ class QuestionView {
 
   /// Only set while the question is rejected.
   final RejectionReason? rejectionReason;
+
+  /// The instructor's own words for [RejectionReason.other] (optional).
+  final String? rejectionNote;
 
   /// Where in the instructor's material an AI draft came from, e.g. "page 4".
   final String? sourceLocation;
@@ -131,12 +135,17 @@ class QuestionView {
     source: source,
     edited: edited,
     rejectionReason: rejectionReason,
+    rejectionNote: rejectionNote,
     sourceLocation: sourceLocation,
     sourceMaterialId: sourceMaterialId,
     hiddenOptionLanguages: Set.unmodifiable(hidden),
   );
 
-  QuestionView withStatus(ReviewStatus status, {RejectionReason? reason}) =>
+  QuestionView withStatus(
+    ReviewStatus status, {
+    RejectionReason? reason,
+    String? note,
+  }) =>
       QuestionView(
         question: Question(
           id: question.id,
@@ -150,6 +159,10 @@ class QuestionView {
         source: source,
         edited: edited,
         rejectionReason: status == ReviewStatus.rejected ? reason : null,
+        rejectionNote: status == ReviewStatus.rejected &&
+                reason == RejectionReason.other
+            ? note
+            : null,
         sourceLocation: sourceLocation,
         sourceMaterialId: sourceMaterialId,
         hiddenOptionLanguages: hiddenOptionLanguages,
@@ -174,6 +187,7 @@ class QuestionView {
       rejectionReason: RejectionReason.parse(
         provenance['rejection_reason'] as String?,
       ),
+      rejectionNote: provenance['rejection_note'] as String?,
       sourceLocation: provenance['source_location'] as String?,
       sourceMaterialId: provenance['source_material_id'] as String?,
       hiddenOptionLanguages: _parseLanguages(json['hidden_option_languages']),

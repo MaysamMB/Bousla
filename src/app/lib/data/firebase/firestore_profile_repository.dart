@@ -46,11 +46,17 @@ class FirestoreProfileRepository implements ProfileRepository {
     Session session,
     StudentFeedback feedback, {
     String? handoverId,
-  }) =>
-      _sessions(uid).doc(session.id).set({
-        ...savedSessionToJson(savedSessionFrom(session, feedback)),
-        if (handoverId != null) 'handover_id': handoverId,
-      });
+  }) async {
+    final doc = _sessions(uid).doc(session.id);
+    // Saved before (e.g. an earlier attempt that failed after saving): the
+    // rules allow no edits, and it is already there, so there is nothing to
+    // do.
+    if ((await doc.get()).exists) return;
+    await doc.set({
+      ...savedSessionToJson(savedSessionFrom(session, feedback)),
+      if (handoverId != null) 'handover_id': handoverId,
+    });
+  }
 
   @override
   Future<String> createHandover(String sessionId, String fromUid) async {

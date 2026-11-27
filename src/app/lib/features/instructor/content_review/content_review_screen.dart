@@ -141,11 +141,16 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
     List<String> ids,
     ReviewStatus status, {
     RejectionReason? reason,
+    String? note,
   }) async {
     if (ids.isEmpty) return;
-    await ServicesScope.of(
-      context,
-    ).content.setQuestionsStatus(courseId, ids, status, reason: reason);
+    await ServicesScope.of(context).content.setQuestionsStatus(
+          courseId,
+          ids,
+          status,
+          reason: reason,
+          note: note,
+        );
     if (mounted) _reload();
   }
 
@@ -161,6 +166,7 @@ class _ContentReviewScreenState extends State<ContentReviewScreen> {
       ids,
       ReviewStatus.rejected,
       reason: choice.reason,
+      note: choice.note,
     );
   }
 
@@ -883,7 +889,12 @@ class _QuestionCard extends StatelessWidget {
             if (reason != null) ...[
               const SizedBox(height: 4),
               Text(
-                l.reviewRejectedBecause(rejectionReasonText(l, reason)),
+                l.reviewRejectedBecause(
+                  reason == RejectionReason.other &&
+                          (question.rejectionNote?.isNotEmpty ?? false)
+                      ? '${rejectionReasonText(l, reason)}: ${question.rejectionNote}'
+                      : rejectionReasonText(l, reason),
+                ),
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -925,21 +936,72 @@ class _Tag extends StatelessWidget {
 
 /// Result of the reject dialog. Null (dialog dismissed) means "cancel".
 class _RejectChoice {
-  const _RejectChoice(this.reason);
+  const _RejectChoice(this.reason, [this.note]);
 
   final RejectionReason? reason;
+
+  /// The instructor's words, with [RejectionReason.other] only.
+  final String? note;
 }
 
-class _RejectDialog extends StatelessWidget {
+/// Pick a reason; "other" opens a box for the instructor's own words
+/// (optional, so rejecting is never blocked).
+class _RejectDialog extends StatefulWidget {
   const _RejectDialog({required this.count});
 
   final int count;
 
   @override
+  State<_RejectDialog> createState() => _RejectDialogState();
+}
+
+class _RejectDialogState extends State<_RejectDialog> {
+  var _other = false;
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    if (_other) {
+      return AlertDialog(
+        key: const ValueKey('reject-other'),
+        title: Text(l.reviewRejectOtherTitle),
+        content: TextField(
+          key: const ValueKey('reject-other-note'),
+          controller: _note,
+          autofocus: true,
+          maxLength: 200,
+          maxLines: 3,
+          minLines: 1,
+          textDirection: textDirectionOf(_note.text),
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(hintText: l.reviewRejectOtherHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => setState(() => _other = false),
+            child: Text(l.reviewCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(
+              _RejectChoice(
+                RejectionReason.other,
+                _note.text.trim().isEmpty ? null : _note.text.trim(),
+              ),
+            ),
+            child: Text(l.reviewRejectOtherConfirm),
+          ),
+        ],
+      );
+    }
     return SimpleDialog(
-      title: Text(l.reviewRejectDialogTitle(count)),
+      title: Text(l.reviewRejectDialogTitle(widget.count)),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -948,7 +1010,9 @@ class _RejectDialog extends StatelessWidget {
         const SizedBox(height: 8),
         for (final reason in RejectionReason.values)
           SimpleDialogOption(
-            onPressed: () => Navigator.of(context).pop(_RejectChoice(reason)),
+            onPressed: () => reason == RejectionReason.other
+                ? setState(() => _other = true)
+                : Navigator.of(context).pop(_RejectChoice(reason)),
             child: Text(rejectionReasonText(l, reason)),
           ),
         const Divider(),

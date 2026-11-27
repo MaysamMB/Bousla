@@ -6,6 +6,7 @@ import '../../../data/careers.dart';
 import '../../../data/repositories/profile_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
+import '../../../shared/text_direction.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../feedback/feedback_screen.dart' show stateLabel;
 import 'external_course_screen.dart';
@@ -93,6 +94,12 @@ class _CareerScreenState extends State<CareerScreen> {
                 }
                 final (roles, names) = data;
                 if (roles.isEmpty) return Center(child: Text(l.errorGeneric));
+                if (_roleIndex == _otherRole) {
+                  return _OtherRoleView(
+                    roles: roles,
+                    onSelect: (i) => setState(() => _roleIndex = i),
+                  );
+                }
                 final role = roles[_roleIndex.clamp(0, roles.length - 1)];
                 final report =
                     careerGaps(role, standingsFromSessions(widget.sessions));
@@ -105,6 +112,130 @@ class _CareerScreenState extends State<CareerScreen> {
                 );
               },
             ),
+    );
+  }
+}
+
+/// "Another job": not one of the datasets.
+const _otherRole = -1;
+
+class _RoleChips extends StatelessWidget {
+  const _RoleChips({
+    required this.roles,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<CareerRole> roles;
+  final int selected;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final lang = currentLanguage(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var i = 0; i < roles.length; i++)
+          ChoiceChip(
+            key: ValueKey('role-${roles[i].id}'),
+            label: Text(roles[i].title.of(lang)),
+            selected: i == selected,
+            onSelected: (_) => onSelect(i),
+          ),
+        ChoiceChip(
+          key: const ValueKey('role-other'),
+          label: Text(l.studentCareerOtherRole),
+          selected: selected == _otherRole,
+          onSelected: (_) => onSelect(_otherRole),
+        ),
+      ],
+    );
+  }
+}
+
+/// The student wants a job Bousla has no skills list for yet: they write
+/// it, and are told plainly that there is no data for it. Nothing is saved
+/// or sent (front end only).
+class _OtherRoleView extends StatefulWidget {
+  const _OtherRoleView({required this.roles, required this.onSelect});
+
+  final List<CareerRole> roles;
+  final ValueChanged<int> onSelect;
+
+  @override
+  State<_OtherRoleView> createState() => _OtherRoleViewState();
+}
+
+class _OtherRoleViewState extends State<_OtherRoleView> {
+  final _job = TextEditingController();
+  var _sent = false;
+
+  @override
+  void dispose() {
+    _job.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Text(l.studentCareerChooseRole, style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
+            _RoleChips(
+              roles: widget.roles,
+              selected: _otherRole,
+              onSelect: widget.onSelect,
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              key: const ValueKey('other-role-field'),
+              controller: _job,
+              textDirection: textDirectionOf(_job.text),
+              onChanged: (_) => setState(() => _sent = false),
+              decoration: InputDecoration(
+                labelText: l.studentCareerOtherRoleLabel,
+                hintText: l.studentCareerOtherRoleHint,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: FilledButton(
+                key: const ValueKey('other-role-go'),
+                onPressed: _job.text.trim().isEmpty
+                    ? null
+                    : () => setState(() => _sent = true),
+                child: Text(l.studentCareerOtherRoleGo),
+              ),
+            ),
+            if (_sent) ...[
+              const SizedBox(height: 16),
+              Card(
+                key: const ValueKey('other-role-none'),
+                color: theme.colorScheme.tertiaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    l.studentCareerOtherRoleNone(_job.text.trim()),
+                    style: TextStyle(
+                        color: theme.colorScheme.onTertiaryContainer),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -128,7 +259,6 @@ class _ReportView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final lang = currentLanguage(context);
     final essential = report.skills.where((s) => s.skill.essential).toList();
     final optional = report.skills.where((s) => !s.skill.essential).toList();
     return Center(
@@ -139,19 +269,7 @@ class _ReportView extends StatelessWidget {
           children: [
             Text(l.studentCareerChooseRole, style: theme.textTheme.titleSmall),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (var i = 0; i < roles.length; i++)
-                  ChoiceChip(
-                    key: ValueKey('role-${roles[i].id}'),
-                    label: Text(roles[i].title.of(lang)),
-                    selected: i == selected,
-                    onSelected: (_) => onSelect(i),
-                  ),
-              ],
-            ),
+            _RoleChips(roles: roles, selected: selected, onSelect: onSelect),
             const SizedBox(height: 16),
             _Notice(
               key: ValueKey(report.role.source.isDraft

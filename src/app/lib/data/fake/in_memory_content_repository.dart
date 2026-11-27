@@ -188,12 +188,14 @@ class InMemoryContentRepository implements ContentRepository {
     Iterable<String> questionIds,
     ReviewStatus status, {
     RejectionReason? reason,
+    String? note,
   }) async {
     if (courseId != _course.id) return;
     final ids = questionIds.toSet();
     for (var i = 0; i < _questions.length; i++) {
       if (ids.contains(_questions[i].id)) {
-        _questions[i] = _questions[i].withStatus(status, reason: reason);
+        _questions[i] =
+            _questions[i].withStatus(status, reason: reason, note: note);
       }
     }
   }

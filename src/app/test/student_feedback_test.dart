@@ -388,6 +388,7 @@ void main() {
       await tester.tap(find.text('Create session now'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Close session'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Close session'));
       await tester.pumpAndSettle();
       expect(find.text('Session closed'), findsOneWidget);
@@ -458,6 +459,7 @@ void main() {
         ),
       );
       await tester.ensureVisible(find.text('Close session'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Close session'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Publish feedback'));
