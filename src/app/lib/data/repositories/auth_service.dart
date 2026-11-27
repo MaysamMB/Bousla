@@ -78,6 +78,11 @@ enum StudentLinkProblem {
 
   /// Nothing to link: the student has not answered in this browser.
   noSession,
+
+  /// This browser is signed in to an instructor account (email and
+  /// password), so there is no anonymous student to link: the student must
+  /// sign out of the dashboard or use a private window.
+  instructorSignedIn,
   unknown,
 }
 

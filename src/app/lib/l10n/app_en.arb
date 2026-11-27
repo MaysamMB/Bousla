@@ -668,6 +668,7 @@
   "studentProfileErrNotEnabled": "Google sign-in is not enabled for this site yet.",
   "studentProfileErrNetwork": "No connection. Try again.",
   "studentProfileErrFailed": "Could not save. Try again.",
+  "studentProfileErrInstructor": "This browser is signed in to an instructor account. Sign out of the instructor dashboard, or open the session link in a private window, then try again.",
   "studentProfileTitle": "My profile",
   "studentProfileSignedInAs": "Signed in as {label}",
   "@studentProfileSignedInAs": {"placeholders": {"label": {"type": "String"}}},

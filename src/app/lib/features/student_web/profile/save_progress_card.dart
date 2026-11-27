@@ -50,7 +50,8 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
     final account = services.auth.studentAccount;
     if (account == null) return;
     try {
-      final saved = await services.profiles.hasSession(account.uid, widget.sessionId);
+      final saved =
+          await services.profiles.hasSession(account.uid, widget.sessionId);
       if (mounted && saved) setState(() => _saved = true);
     } catch (_) {
       // Shown as not saved; saving again is harmless.
@@ -62,6 +63,7 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
         StudentLinkProblem.accountInUse => l.studentProfileErrInUse,
         StudentLinkProblem.notEnabled => l.studentProfileErrNotEnabled,
         StudentLinkProblem.network => l.studentProfileErrNetwork,
+        StudentLinkProblem.instructorSignedIn => l.studentProfileErrInstructor,
         _ => l.studentProfileErrFailed,
       };
 
@@ -166,11 +168,12 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
         return;
       }
       _reset();
+      debugPrint('Linking the profile failed: $e');
       final text = _problemText(l, e.problem);
-      // The code tells us what went wrong when the reason is not known.
+      // A general message carries a code, so the failure can be diagnosed.
       messenger.showSnackBar(SnackBar(
-        content: Text(e.problem == StudentLinkProblem.unknown
-            ? '$text (${e.detail ?? 'link-unknown'})'
+        content: Text(text == l.studentProfileErrFailed
+            ? '$text (${e.detail ?? e.problem.name})'
             : text),
       ));
     } catch (e) {
