@@ -751,5 +751,20 @@
   "studentExternalContinue": "Continue",
   "studentExternalNotReadyTitle": "This step is not built yet",
   "studentExternalNotReadyBody": "We are working on topic extraction and the self-check. Your file was not uploaded and nothing was saved.",
-  "studentExternalOk": "OK"
+  "studentExternalOk": "OK",
+  "studentClosedEarlyTitle": "The session was closed",
+  "studentClosedEarlyBody": "Your instructor closed the session before you finished. Your answers so far are kept, and your feedback will appear here when your instructor publishes it.",
+  "reviewRejectOtherTitle": "Other reason",
+  "reviewRejectOtherHint": "Write the reason (optional)",
+  "reviewRejectOtherConfirm": "Reject",
+  "instructorShareJoin": "Share the session with students",
+  "instructorShareJoinHint": "Send the session's code and link to the class group or Classroom, so students join from their phones.",
+  "instructorShareJoinMessage": "A Bousla session is open now. Join code: {code}. Open the link on your phone:",
+  "@instructorShareJoinMessage": {"placeholders": {"code": {"type": "String"}}},
+  "studentCareerOtherRole": "Another job",
+  "studentCareerOtherRoleLabel": "The job you are interested in",
+  "studentCareerOtherRoleHint": "e.g. Mobile app developer",
+  "studentCareerOtherRoleGo": "Show",
+  "studentCareerOtherRoleNone": "Bousla has no documented skills list for “{job}” yet, and will not guess one. We start with jobs linked to Bousla courses and add others from documented sources. What you typed was not saved.",
+  "@studentCareerOtherRoleNone": {"placeholders": {"job": {"type": "String"}}}
 }

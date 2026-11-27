@@ -60,13 +60,15 @@ abstract interface class ContentRepository {
   });
 
   /// Instructor only. Approves, rejects or restores (back to pending) one or
-  /// many questions, all versions. [reason] is kept only when rejecting.
+  /// many questions, all versions. [reason] is kept only when rejecting;
+  /// [note] (the instructor's words) only with [RejectionReason.other].
   /// Unknown IDs are ignored.
   Future<void> setQuestionsStatus(
     String courseId,
     Iterable<String> questionIds,
     ReviewStatus status, {
     RejectionReason? reason,
+    String? note,
   });
 
   /// Instructor only. Saves questions drafted by AI (level 1) as

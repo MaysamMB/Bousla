@@ -447,5 +447,18 @@
   "studentExternalContinue": "متابعة",
   "studentExternalNotReadyTitle": "هذه الخطوة لم تُبنَ بعد",
   "studentExternalNotReadyBody": "نعمل على استخراج المواضيع والاختبار الذاتي. لم يُرفع ملفك ولم يُحفظ أي شيء.",
-  "studentExternalOk": "حسنًا"
+  "studentExternalOk": "حسنًا",
+  "studentClosedEarlyTitle": "أُغلقت الجلسة",
+  "studentClosedEarlyBody": "أغلق المدرّس الجلسة قبل أن تُنهي الأسئلة. حُفظت إجاباتك حتى الآن، وستظهر ملاحظاتك هنا عندما ينشرها المدرّس.",
+  "reviewRejectOtherTitle": "سبب آخر",
+  "reviewRejectOtherHint": "اكتب السبب (اختياري)",
+  "reviewRejectOtherConfirm": "رفض",
+  "instructorShareJoin": "مشاركة الجلسة مع الطلاب",
+  "instructorShareJoinHint": "أرسل رمز الجلسة ورابطها إلى مجموعة الصف أو Classroom، ليدخلها الطلاب من هواتفهم.",
+  "instructorShareJoinMessage": "جلسة بوصلة مفتوحة الآن. رمز الانضمام: {code}. افتحوا الرابط من الهاتف:",
+  "studentCareerOtherRole": "وظيفة أخرى",
+  "studentCareerOtherRoleLabel": "الوظيفة التي تهمّك",
+  "studentCareerOtherRoleHint": "مثال: مطوّر تطبيقات موبايل",
+  "studentCareerOtherRoleGo": "عرض",
+  "studentCareerOtherRoleNone": "لا توجد بعد قائمة مهارات موثّقة لوظيفة «{job}» في بوصلة، ولن نخمّنها. نبدأ بوظائف مرتبطة بمساقات بوصلة، ونضيف غيرها من مصادر موثّقة. لم يُحفظ ما كتبته."
 }

@@ -88,15 +88,30 @@ class FirebaseAuthService implements AuthService {
     try {
       // A Google window; the UID stays the same, so this browser's answers
       // and feedback stay this student's.
-      await user.linkWithPopup(GoogleAuthProvider());
+      final result = await user.linkWithPopup(GoogleAuthProvider());
+      return _accountFrom(result.user);
     } on FirebaseAuthException catch (e) {
       // Already linked elsewhere: keep Google's answer, so switching to
       // that account needs no second window.
       _pendingGoogle = e.credential;
       throw StudentLinkFailure(studentLinkProblemFromCode(e.code), e.code);
     }
-    return studentAccount ??
-        (throw const StudentLinkFailure(StudentLinkProblem.unknown));
+  }
+
+  /// The account from a sign-in's own result, not from currentUser: right
+  /// after linking, currentUser's provider list may not be updated yet.
+  StudentAccount _accountFrom(User? user) {
+    final u = user ?? _auth.currentUser;
+    if (u == null || u.isAnonymous) {
+      throw const StudentLinkFailure(StudentLinkProblem.unknown, 'no-user');
+    }
+    final email = u.email ??
+        u.providerData
+            .where((p) => p.providerId == 'google.com')
+            .map((p) => p.email)
+            .whereType<String>()
+            .firstOrNull;
+    return StudentAccount(uid: u.uid, label: email ?? '');
   }
 
   AuthCredential? _pendingGoogle;
@@ -106,21 +121,21 @@ class FirebaseAuthService implements AuthService {
     final pending = _pendingGoogle;
     _pendingGoogle = null;
     try {
+      UserCredential result;
       if (pending != null) {
         try {
-          await _auth.signInWithCredential(pending);
+          result = await _auth.signInWithCredential(pending);
         } on FirebaseAuthException {
           // Expired or not reusable: ask Google again.
-          await _auth.signInWithPopup(GoogleAuthProvider());
+          result = await _auth.signInWithPopup(GoogleAuthProvider());
         }
       } else {
-        await _auth.signInWithPopup(GoogleAuthProvider());
+        result = await _auth.signInWithPopup(GoogleAuthProvider());
       }
+      return _accountFrom(result.user);
     } on FirebaseAuthException catch (e) {
       throw StudentLinkFailure(studentLinkProblemFromCode(e.code), e.code);
     }
-    return studentAccount ??
-        (throw const StudentLinkFailure(StudentLinkProblem.unknown));
   }
 
   @override

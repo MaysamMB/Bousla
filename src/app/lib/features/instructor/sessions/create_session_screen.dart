@@ -300,6 +300,9 @@ class _LiveSessionPanel extends StatelessWidget {
           const SizedBox(height: 16),
           JoinQr(link: joinLink!, code: session.code),
         ],
+        const SizedBox(height: 8),
+        // Post the code and link where the class already talks.
+        Center(child: ShareJoinButton(session: session)),
         const SizedBox(height: 24),
         StreamBuilder(
           stream: sessions.watchResponses(session.id),

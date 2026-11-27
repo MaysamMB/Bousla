@@ -169,8 +169,8 @@ class _SaveProgressCardState extends State<SaveProgressCard> {
       final text = _problemText(l, e.problem);
       // The code tells us what went wrong when the reason is not known.
       messenger.showSnackBar(SnackBar(
-        content: Text(e.problem == StudentLinkProblem.unknown && e.detail != null
-            ? '$text (${e.detail})'
+        content: Text(e.problem == StudentLinkProblem.unknown
+            ? '$text (${e.detail ?? 'link-unknown'})'
             : text),
       ));
     } catch (e) {

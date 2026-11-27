@@ -265,14 +265,19 @@ class FirestoreContentRepository implements ContentRepository {
     Iterable<String> questionIds,
     ReviewStatus status, {
     RejectionReason? reason,
+    String? note,
   }) async {
     final docs = await _versionDocs(courseId, questionIds);
+    final keepNote = status == ReviewStatus.rejected &&
+        reason == RejectionReason.other &&
+        (note?.trim().isNotEmpty ?? false);
     await _updateAll(
       docs,
       (_) => {
         'provenance.status': statusToJson(status),
         'provenance.rejection_reason':
             status == ReviewStatus.rejected ? reason?.jsonValue : null,
+        'provenance.rejection_note': keepNote ? note!.trim() : null,
         'provenance.reviewed_by': _reviewer(status),
       },
     );

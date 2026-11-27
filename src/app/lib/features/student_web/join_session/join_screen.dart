@@ -6,6 +6,7 @@ import '../../../app_services.dart';
 import '../../../data/join_code.dart';
 import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/last_join_code_store.dart';
 import '../../../shared/widgets/bousla_mark.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../answering/answering_screen.dart';
@@ -16,16 +17,26 @@ import '../feedback/feedback_screen.dart';
 /// Opened from the home screen, or directly from a link/QR code with
 /// [initialCode]. To do: nicer layout for phones, error states polish.
 class JoinScreen extends StatefulWidget {
-  const JoinScreen({super.key, this.initialCode});
+  const JoinScreen({
+    super.key,
+    this.initialCode,
+    this.rememberedCode = loadLastJoinCode,
+  });
 
   final String? initialCode;
+
+  /// The code this browser joined last (kept for a few hours), offered when
+  /// the page is reloaded without a code in the link. Replaced in tests.
+  final String? Function() rememberedCode;
 
   @override
   State<JoinScreen> createState() => _JoinScreenState();
 }
 
 class _JoinScreenState extends State<JoinScreen> {
-  late final _code = TextEditingController(text: widget.initialCode ?? '');
+  late final _code = TextEditingController(
+    text: widget.initialCode ?? widget.rememberedCode() ?? '',
+  );
   String? _error;
   var _busy = false;
 
@@ -53,6 +64,9 @@ class _JoinScreenState extends State<JoinScreen> {
         setState(() => _error = l.studentCodeNotFound);
         return;
       }
+      // After a reload (e.g. when feedback is published) the code is
+      // filled in again.
+      saveLastJoinCode(session.code);
       if (session.status == SessionStatus.closed) {
         // Closed, but feedback may be published: the same browser keeps the
         // same anonymous participant, so it can still open its feedback.

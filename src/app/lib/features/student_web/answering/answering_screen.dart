@@ -43,10 +43,32 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
   String? _error;
   var _busy = false;
 
+  /// The instructor closed the session before this student finished.
+  var _closedEarly = false;
+  StreamSubscription<Session>? _status;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _questions ??= _load();
+    // Notice a close at once, not only at the next answer.
+    _status ??= ServicesScope.of(context)
+        .sessions
+        .watchSession(widget.session.id)
+        .listen(
+      (s) {
+        if (s.status == SessionStatus.closed && !_closedEarly && mounted) {
+          setState(() => _closedEarly = true);
+        }
+      },
+      onError: (Object _) {},
+    );
+  }
+
+  @override
+  void dispose() {
+    _status?.cancel();
+    super.dispose();
   }
 
   /// Approved questions of this session, in the session's order. Uses the
@@ -99,7 +121,7 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
     } on DuplicateAnswerException {
       _next();
     } on SessionClosedException {
-      if (mounted) setState(() => _error = l.studentSessionClosed);
+      if (mounted) setState(() => _closedEarly = true);
     } on TimeoutException {
       // Safe to press again: a second answer to the same question is
       // refused by the server and then skipped here.
@@ -142,10 +164,11 @@ class _AnsweringScreenState extends State<AnsweringScreen> {
           body = const Center(child: CircularProgressIndicator());
         } else if (questions.isEmpty) {
           body = Center(child: Text(l.studentNoQuestions));
-        } else if (_index >= questions.length) {
+        } else if (_index >= questions.length || _closedEarly) {
           body = _ThankYou(
             sessionId: widget.session.id,
             participantId: widget.participantId,
+            closedEarly: _index < questions.length,
           );
         } else {
           final q = questions[_index];
@@ -276,10 +299,18 @@ class _OptionText extends StatelessWidget {
 /// ([SessionRepository.watchMyFeedback] stays null until the instructor
 /// releases it) and then opens it.
 class _ThankYou extends StatefulWidget {
-  const _ThankYou({required this.sessionId, required this.participantId});
+  const _ThankYou({
+    required this.sessionId,
+    required this.participantId,
+    this.closedEarly = false,
+  });
 
   final String sessionId;
   final String participantId;
+
+  /// The session was closed before the last answer: say so, and that the
+  /// answers given so far are kept.
+  final bool closedEarly;
 
   @override
   State<_ThankYou> createState() => _ThankYouState();
@@ -349,10 +380,19 @@ class _ThankYouState extends State<_ThankYou> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_rounded, size: 72, color: teal),
+                  Icon(
+                    widget.closedEarly
+                        ? Icons.lock_clock_outlined
+                        : Icons.check_circle_rounded,
+                    size: 72,
+                    color: teal,
+                  ),
                   const SizedBox(height: 20),
                   Text(
-                    l.studentAllDone,
+                    widget.closedEarly
+                        ? l.studentClosedEarlyTitle
+                        : l.studentAllDone,
+                    key: ValueKey(widget.closedEarly ? 'closed-early' : 'all-done'),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
@@ -362,7 +402,9 @@ class _ThankYouState extends State<_ThankYou> {
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 320),
                     child: Text(
-                      l.studentFeedbackWaiting,
+                      widget.closedEarly
+                          ? l.studentClosedEarlyBody
+                          : l.studentFeedbackWaiting,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
