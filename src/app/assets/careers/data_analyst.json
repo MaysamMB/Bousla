@@ -58,7 +58,8 @@
     "en": "perform data cleansing"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/perform-data-cleansing"
+   "source_uri": "http://data.europa.eu/esco/skill/perform-data-cleansing",
+   "local_count": 1
   },
   {
    "id": "query-languages",
@@ -72,7 +73,8 @@
     "sql_join",
     "sql_aggregation"
    ],
-   "source_uri": "http://data.europa.eu/esco/skill/query-languages"
+   "source_uri": "http://data.europa.eu/esco/skill/query-languages",
+   "local_count": 5
   },
   {
    "id": "apply-statistical-analysis-techniques",
@@ -82,7 +84,8 @@
     "en": "apply statistical analysis techniques"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/apply-statistical-analysis-techniques"
+   "source_uri": "http://data.europa.eu/esco/skill/apply-statistical-analysis-techniques",
+   "local_count": 2
   },
   {
    "id": "visual-presentation-techniques",
@@ -92,7 +95,8 @@
     "en": "visual presentation techniques"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/visual-presentation-techniques"
+   "source_uri": "http://data.europa.eu/esco/skill/visual-presentation-techniques",
+   "local_count": 1
   },
   {
    "id": "data-quality-assessment",
@@ -102,7 +106,8 @@
     "en": "data quality assessment"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/data-quality-assessment"
+   "source_uri": "http://data.europa.eu/esco/skill/data-quality-assessment",
+   "local_count": 3
   },
   {
    "id": "interpret-current-data",
@@ -142,7 +147,8 @@
     "en": "business intelligence"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/business-intelligence"
+   "source_uri": "http://data.europa.eu/esco/skill/business-intelligence",
+   "local_count": 2
   },
   {
    "id": "collect-ict-data",
@@ -152,7 +158,8 @@
     "en": "collect ICT data"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/collect-ict-data"
+   "source_uri": "http://data.europa.eu/esco/skill/collect-ict-data",
+   "local_count": 2
   },
   {
    "id": "data-engineering",
@@ -215,7 +222,8 @@
     "en": "data visualisation software"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/data-visualisation-software"
+   "source_uri": "http://data.europa.eu/esco/skill/data-visualisation-software",
+   "local_count": 7
   },
   {
    "id": "define-data-quality-criteria",
@@ -245,7 +253,8 @@
     "en": "documentation types"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/documentation-types"
+   "source_uri": "http://data.europa.eu/esco/skill/documentation-types",
+   "local_count": 1
   },
   {
    "id": "establish-data-processes",
@@ -305,7 +314,8 @@
     "en": "information confidentiality"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/information-confidentiality"
+   "source_uri": "http://data.europa.eu/esco/skill/information-confidentiality",
+   "local_count": 3
   },
   {
    "id": "information-extraction",
@@ -335,7 +345,8 @@
     "en": "integrate ICT data"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/integrate-ict-data"
+   "source_uri": "http://data.europa.eu/esco/skill/integrate-ict-data",
+   "local_count": 1
   },
   {
    "id": "manage-data",
@@ -345,7 +356,8 @@
     "en": "manage data"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/manage-data"
+   "source_uri": "http://data.europa.eu/esco/skill/manage-data",
+   "local_count": 2
   },
   {
    "id": "normalise-data",
@@ -408,7 +420,8 @@
     "en": "use data processing techniques"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/use-data-processing-techniques"
+   "source_uri": "http://data.europa.eu/esco/skill/use-data-processing-techniques",
+   "local_count": 7
   },
   {
    "id": "use-databases",
@@ -503,7 +516,8 @@
     "en": "cloud technologies"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/cloud-technologies"
+   "source_uri": "http://data.europa.eu/esco/skill/cloud-technologies",
+   "local_count": 2
   },
   {
    "id": "create-data-models",
@@ -516,7 +530,8 @@
     "er_modeling",
     "normalization"
    ],
-   "source_uri": "http://data.europa.eu/esco/skill/create-data-models"
+   "source_uri": "http://data.europa.eu/esco/skill/create-data-models",
+   "local_count": 3
   },
   {
    "id": "data-storage",
@@ -570,5 +585,18 @@
    "concepts": [],
    "source_uri": "http://data.europa.eu/esco/skill/gather-data-for-forensic-purposes"
   }
- ]
+ ],
+ "local_adverts": {
+  "total": 9,
+  "published_from": "2026-07-02",
+  "published_to": "2026-11-08",
+  "collected": "2026-11-27",
+  "sites": [
+   "Jobs.ps",
+   "LinkedIn Jobs"
+  ],
+  "labellers": 1,
+  "status": "preliminary",
+  "note": "Collected by hand by the Bousla team; each advert counts once per skill. Data: data/careers/local_adverts_2026-06_2026-11.csv."
+ }
 }

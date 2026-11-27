@@ -67,7 +67,8 @@
     "functional_dependency",
     "normalization"
    ],
-   "source_uri": "http://data.europa.eu/esco/skill/create-data-models"
+   "source_uri": "http://data.europa.eu/esco/skill/create-data-models",
+   "local_count": 6
   },
   {
    "id": "query-languages",
@@ -81,7 +82,8 @@
     "sql_join",
     "sql_aggregation"
    ],
-   "source_uri": "http://data.europa.eu/esco/skill/query-languages"
+   "source_uri": "http://data.europa.eu/esco/skill/query-languages",
+   "local_count": 9
   },
   {
    "id": "data-extraction,-transformation-and-loading-tools",
@@ -91,7 +93,8 @@
     "en": "data extraction, transformation and loading tools"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/data-extraction,-transformation-and-loading-tools"
+   "source_uri": "http://data.europa.eu/esco/skill/data-extraction,-transformation-and-loading-tools",
+   "local_count": 2
   },
   {
    "id": "test-ict-queries",
@@ -111,7 +114,8 @@
     "en": "write database documentation"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/write-database-documentation"
+   "source_uri": "http://data.europa.eu/esco/skill/write-database-documentation",
+   "local_count": 2
   },
   {
    "id": "database-management-systems",
@@ -124,7 +128,8 @@
     "relational_model",
     "transactions_acid"
    ],
-   "source_uri": "http://data.europa.eu/esco/skill/database-management-systems"
+   "source_uri": "http://data.europa.eu/esco/skill/database-management-systems",
+   "local_count": 10
   },
   {
    "id": "apply-information-security-policies",
@@ -134,7 +139,8 @@
     "en": "apply information security policies"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/apply-information-security-policies"
+   "source_uri": "http://data.europa.eu/esco/skill/apply-information-security-policies",
+   "local_count": 3
   },
   {
    "id": "balance-database-resources",
@@ -144,7 +150,8 @@
     "en": "balance database resources"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/balance-database-resources"
+   "source_uri": "http://data.europa.eu/esco/skill/balance-database-resources",
+   "local_count": 3
   },
   {
    "id": "collect-customer-feedback-on-applications",
@@ -164,7 +171,8 @@
     "en": "data quality assessment"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/data-quality-assessment"
+   "source_uri": "http://data.europa.eu/esco/skill/data-quality-assessment",
+   "local_count": 3
   },
   {
    "id": "data-storage",
@@ -184,7 +192,8 @@
     "en": "database development tools"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/database-development-tools"
+   "source_uri": "http://data.europa.eu/esco/skill/database-development-tools",
+   "local_count": 1
   },
   {
    "id": "estimate-duration-of-work",
@@ -224,7 +233,8 @@
     "en": "perform backups"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/perform-backups"
+   "source_uri": "http://data.europa.eu/esco/skill/perform-backups",
+   "local_count": 1
   },
   {
    "id": "report-analysis-results",
@@ -289,7 +299,8 @@
     "en": "AJAX"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/ajax"
+   "source_uri": "http://data.europa.eu/esco/skill/ajax",
+   "local_count": 1
   },
   {
    "id": "apl",
@@ -339,7 +350,8 @@
     "en": "C#"
    },
    "concepts": [],
-   "source_uri": "http://data.europa.eu/esco/skill/c#"
+   "source_uri": "http://data.europa.eu/esco/skill/c#",
+   "local_count": 1
   },
   {
    "id": "c++",
@@ -411,5 +423,18 @@
    "concepts": [],
    "source_uri": "http://data.europa.eu/esco/skill/erlang"
   }
- ]
+ ],
+ "local_adverts": {
+  "total": 10,
+  "published_from": "2026-06-15",
+  "published_to": "2026-11-20",
+  "collected": "2026-11-27",
+  "sites": [
+   "Jobs.ps",
+   "LinkedIn Jobs"
+  ],
+  "labellers": 1,
+  "status": "preliminary",
+  "note": "Collected by hand by the Bousla team; each advert counts once per skill. Data: data/careers/local_adverts_2026-06_2026-11.csv."
+ }
 }

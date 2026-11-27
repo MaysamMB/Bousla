@@ -415,5 +415,12 @@
   "studentCareerEscoNotice": "المهارات من تصنيف ESCO الأوروبي للمهن والمهارات، وليست من إعلانات وظائف محلية بعد. ربط مفاهيم بوصلة بهذه المهارات من فريق بوصلة.",
   "studentCareerCoverage": "تقيس مساقات بوصلة حاليًا {covered} من {total}.",
   "studentCareerOutsideCount": "مهارات لا تغطيها بوصلة بعد: {count}",
-  "studentCareerSourceEsco": "المصدر: تصنيف ESCO (المفوضية الأوروبية)، جُمعت المهارات في {date}، والترجمة العربية من فريق بوصلة."
+  "studentCareerSourceEsco": "المصدر: تصنيف ESCO (المفوضية الأوروبية)، جُمعت المهارات في {date}، والترجمة العربية من فريق بوصلة.",
+  "studentCareerLocalTitle": "السوق المحلي (عيّنة أولية)",
+  "studentCareerLocalIntro": "من {total} إعلانًا محليًا ({sites})، نُشرت بين {from} و{to}. الأكثر طلبًا:",
+  "studentCareerLocalCount": "مطلوبة في {count} من {total} إعلانًا محليًا",
+  "studentCareerLocalCovered": "تقيسها بوصلة",
+  "studentCareerLocalNotCovered": "لا تقيسها بوصلة بعد",
+  "studentCareerLocalOneLabeller": "ربط الإعلانات بالمهارات قام به شخص واحد ولم يُراجَع بعد.",
+  "studentCareerLocalTooFew": "جمعنا {total} إعلانات محلية لهذه الوظيفة حتى الآن. نعرض الأرقام عندما تصل إلى {min} على الأقل."
 }

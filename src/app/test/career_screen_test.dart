@@ -79,6 +79,13 @@ void main() {
       expect(role.source.name, isNotEmpty);
       expect(role.source.kind, CareerSourceKind.esco, reason: role.id);
       expect(role.source.retrieved, isNotNull);
+      // Local adverts: counted per skill, never more than the adverts.
+      final local = role.localAdverts!;
+      expect(local.total, greaterThan(0));
+      for (final skill in role.skills) {
+        expect(skill.localCount ?? 0, lessThanOrEqualTo(local.total),
+            reason: skill.id);
+      }
       expect(role.skills.map((s) => s.id).toSet(), hasLength(role.skills.length),
           reason: 'unique skill IDs in ${role.id}');
       for (final skill in role.skills) {
@@ -141,6 +148,23 @@ void main() {
     expect(find.byKey(const ValueKey('outside-skill-perform-backups')),
         findsOneWidget);
 
+    // Local adverts (database developer: 10, enough to show).
+    final dbms = find.byKey(
+        const ValueKey('local-top-database-management-systems'));
+    expect(
+        find.descendant(
+            of: dbms,
+            matching: find.textContaining(
+                'asked for in 10 of 10 local adverts · Bousla measures it')),
+        findsOneWidget);
+    expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('local-count-query-languages')))
+            .data,
+        'asked for in 9 of 10 local adverts');
+    expect(find.text('One person linked the adverts to skills; not '
+        'cross-checked yet.'), findsOneWidget);
+
     // Data analyst.
     await tester.tap(find.byKey(const ValueKey('role-data_analyst')));
     await tester.pumpAndSettle();
@@ -149,6 +173,12 @@ void main() {
     expect(find.text('Bousla courses currently measure 2 of 14.'),
         findsOneWidget);
     expect(find.byKey(const ValueKey('skill-normalise-data')), findsOneWidget);
+    // 9 local adverts: fewer than 10, so no local numbers yet.
+    expect(find.byKey(const ValueKey('career-local-too-few')), findsOneWidget);
+    expect(find.textContaining('We have collected 9 local adverts'),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('local-count-query-languages')),
+        findsNothing);
     expect(find.byKey(const ValueKey('career-next')), findsOneWidget);
   });
 

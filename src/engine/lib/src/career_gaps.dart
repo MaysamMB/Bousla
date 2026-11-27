@@ -52,6 +52,7 @@ class CareerSkill {
     required this.essential,
     this.conceptIds = const [],
     this.sourceUri,
+    this.localCount,
   });
 
   final String id;
@@ -63,6 +64,38 @@ class CareerSkill {
 
   /// The skill in its source (e.g. an ESCO skill URI), when there is one.
   final String? sourceUri;
+
+  /// In how many of the role's local job adverts this skill was asked for
+  /// (see [CareerRole.localAdverts]); null when none asked for it.
+  final int? localCount;
+}
+
+/// Below this many local adverts a role's local counts are not shown: a
+/// share of 3 or 5 adverts says little and reads as more than it is.
+const minLocalAdverts = 10;
+
+/// The local job adverts behind [CareerSkill.localCount]: how many, when,
+/// from where, and how many people linked them to skills.
+class LocalAdverts {
+  const LocalAdverts({
+    required this.total,
+    required this.publishedFrom,
+    required this.publishedTo,
+    required this.sites,
+    required this.labellers,
+    this.preliminary = true,
+  });
+
+  final int total;
+  final String publishedFrom;
+  final String publishedTo;
+  final List<String> sites;
+
+  /// People who linked adverts to skills; 1 = not yet cross-checked.
+  final int labellers;
+  final bool preliminary;
+
+  bool get enough => total >= minLocalAdverts;
 }
 
 class CareerRole {
@@ -72,6 +105,7 @@ class CareerRole {
     required this.source,
     required this.skills,
     this.conceptNames = const {},
+    this.localAdverts,
   });
 
   final String id;
@@ -82,6 +116,23 @@ class CareerRole {
   /// Names of the concepts the skills use, copied from the course data
   /// (tests check they match), for concepts the student never met.
   final Map<String, LocalizedText> conceptNames;
+
+  /// Local job adverts collected for this role, when there are any.
+  final LocalAdverts? localAdverts;
+
+  /// The skills the local adverts asked for most, most asked first (ties in
+  /// the dataset's order). Empty without enough adverts.
+  List<CareerSkill> topLocalSkills([int n = 5]) {
+    if (localAdverts?.enough != true) return const [];
+    final asked = [
+      for (var i = 0; i < skills.length; i++)
+        if ((skills[i].localCount ?? 0) > 0) (i, skills[i]),
+    ]..sort((a, b) {
+        final c = b.$2.localCount! - a.$2.localCount!;
+        return c != 0 ? c : a.$1 - b.$1;
+      });
+    return [for (final x in asked.take(n)) x.$2];
+  }
 }
 
 /// A concept's standing in the student's profile: the state and evidence
@@ -253,6 +304,17 @@ CareerRole careerRoleFromJson(Map<String, dynamic> j) {
       url: s['url'] as String?,
       retrieved: s['retrieved'] as String?,
     ),
+    localAdverts: switch (j['local_adverts']) {
+      final Map<String, dynamic> a => LocalAdverts(
+          total: (a['total'] as num).toInt(),
+          publishedFrom: '${a['published_from']}',
+          publishedTo: '${a['published_to']}',
+          sites: [for (final s in a['sites'] as List) '$s'],
+          labellers: (a['labellers'] as num?)?.toInt() ?? 1,
+          preliminary: a['status'] != 'reviewed',
+        ),
+      _ => null,
+    },
     conceptNames: {
       for (final e in ((j['concept_names'] as Map?) ?? const {}).entries)
         '${e.key}': text(e.value),
@@ -265,6 +327,7 @@ CareerRole careerRoleFromJson(Map<String, dynamic> j) {
           essential: k['essential'] == true,
           conceptIds: [for (final c in (k['concepts'] as List? ?? [])) '$c'],
           sourceUri: k['source_uri'] as String?,
+          localCount: (k['local_count'] as num?)?.toInt(),
         ),
     ],
   );

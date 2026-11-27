@@ -716,5 +716,15 @@
   "studentCareerOutsideCount": "Skills Bousla does not cover yet: {count}",
   "@studentCareerOutsideCount": {"placeholders": {"count": {"type": "int"}}},
   "studentCareerSourceEsco": "Source: ESCO (European Commission), skills collected on {date}; Arabic translation by the Bousla team.",
-  "@studentCareerSourceEsco": {"placeholders": {"date": {"type": "String"}}}
+  "@studentCareerSourceEsco": {"placeholders": {"date": {"type": "String"}}},
+  "studentCareerLocalTitle": "Local job market (early sample)",
+  "studentCareerLocalIntro": "From {total} local job adverts ({sites}), published {from} to {to}. Asked for most:",
+  "@studentCareerLocalIntro": {"placeholders": {"total": {"type": "int"}, "sites": {"type": "String"}, "from": {"type": "String"}, "to": {"type": "String"}}},
+  "studentCareerLocalCount": "asked for in {count} of {total} local adverts",
+  "@studentCareerLocalCount": {"placeholders": {"count": {"type": "int"}, "total": {"type": "int"}}},
+  "studentCareerLocalCovered": "Bousla measures it",
+  "studentCareerLocalNotCovered": "not measured by Bousla yet",
+  "studentCareerLocalOneLabeller": "One person linked the adverts to skills; not cross-checked yet.",
+  "studentCareerLocalTooFew": "We have collected {total} local adverts for this job so far. Numbers are shown from {min} adverts.",
+  "@studentCareerLocalTooFew": {"placeholders": {"total": {"type": "int"}, "min": {"type": "int"}}}
 }

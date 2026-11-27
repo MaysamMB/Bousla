@@ -170,6 +170,10 @@ class _ReportView extends StatelessWidget {
             ],
             const SizedBox(height: 8),
             Text(l.studentCareerEstimateNote, style: theme.textTheme.bodySmall),
+            if (report.role.localAdverts != null) ...[
+              const SizedBox(height: 16),
+              _LocalMarketCard(report: report),
+            ],
             for (final (title, list, isEssential) in [
               (l.studentCareerEssential, essential, true),
               (l.studentCareerOptional, optional, false),
@@ -190,7 +194,10 @@ class _ReportView extends StatelessWidget {
                 const SizedBox(height: 4),
                 for (final s in list)
                   if (s.status != SkillStatus.outsideBousla)
-                    _SkillCard(result: s, names: names),
+                    _SkillCard(
+                        result: s,
+                        names: names,
+                        localAdverts: report.role.localAdverts),
                 _OutsideList(
                   key: ValueKey('outside-${isEssential ? 'essential' : 'optional'}'),
                   skills: [
@@ -221,6 +228,95 @@ String _sourceLine(AppLocalizations l, CareerDataSource src) {
   if (src.kind != CareerSourceKind.esco) return l.studentCareerSource(src.name);
   // The ISO date as stored: same digits in both languages, with the year.
   return l.studentCareerSourceEsco(src.retrieved ?? '');
+}
+
+/// What local job adverts asked for most, and whether Bousla measures it.
+/// Only with enough adverts; otherwise says how many there are so far.
+class _LocalMarketCard extends StatelessWidget {
+  const _LocalMarketCard({required this.report});
+
+  final CareerGapReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final lang = currentLanguage(context);
+    final local = report.role.localAdverts!;
+    final covered = {
+      for (final s in report.skills)
+        if (s.status != SkillStatus.outsideBousla) s.skill.id,
+    };
+    return Card(
+      key: const ValueKey('career-local'),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.storefront_outlined, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(l.studentCareerLocalTitle,
+                      style: theme.textTheme.titleSmall),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            if (!local.enough)
+              Text(
+                l.studentCareerLocalTooFew(local.total, minLocalAdverts),
+                key: const ValueKey('career-local-too-few'),
+                style: theme.textTheme.bodyMedium,
+              )
+            else ...[
+              Text(
+                l.studentCareerLocalIntro(local.total, local.sites.join('، '),
+                    local.publishedFrom, local.publishedTo),
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              for (final s in report.role.topLocalSkills())
+                Padding(
+                  key: ValueKey('local-top-${s.id}'),
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        covered.contains(s.id)
+                            ? Icons.check_circle_outline
+                            : Icons.remove_circle_outline,
+                        size: 18,
+                        color: covered.contains(s.id)
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outline,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${s.name.of(lang)}: '
+                          '${l.studentCareerLocalCount(s.localCount!, local.total)} · '
+                          '${covered.contains(s.id) ? l.studentCareerLocalCovered : l.studentCareerLocalNotCovered}',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (local.labellers < 2) ...[
+                const SizedBox(height: 10),
+                Text(l.studentCareerLocalOneLabeller,
+                    style: theme.textTheme.bodySmall),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Notice extends StatelessWidget {
@@ -295,10 +391,15 @@ class _OutsideList extends StatelessWidget {
 }
 
 class _SkillCard extends StatelessWidget {
-  const _SkillCard({required this.result, required this.names});
+  const _SkillCard({
+    required this.result,
+    required this.names,
+    this.localAdverts,
+  });
 
   final SkillResult result;
   final Map<String, LocalizedText> names;
+  final LocalAdverts? localAdverts;
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +458,19 @@ class _SkillCard extends StatelessWidget {
                     style: theme.textTheme.labelMedium?.copyWith(color: color)),
               ],
             ),
+            if (result.skill.localCount != null &&
+                (result.skill.localCount ?? 0) > 0 &&
+                localAdverts?.enough == true)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  l.studentCareerLocalCount(
+                      result.skill.localCount!, localAdverts!.total),
+                  key: ValueKey('local-count-${result.skill.id}'),
+                  style: theme.textTheme.labelMedium
+                      ?.copyWith(color: theme.colorScheme.primary),
+                ),
+              ),
             if (result.status == SkillStatus.outsideBousla)
               Padding(
                 padding: const EdgeInsets.only(top: 6),

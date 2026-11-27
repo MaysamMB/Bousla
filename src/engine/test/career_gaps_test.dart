@@ -128,4 +128,34 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('local adverts: counts read; top skills only with enough adverts', () {
+    Map<String, dynamic> role(int total) => {
+          'id': 'r',
+          'title': {'ar': 'x', 'en': 'x'},
+          'source': {'kind': 'esco', 'name': 'ESCO'},
+          'local_adverts': {
+            'total': total,
+            'published_from': '2026-06-15',
+            'published_to': '2026-11-20',
+            'sites': ['Jobs.ps'],
+            'labellers': 1,
+            'status': 'preliminary',
+          },
+          'skills': [
+            {'id': 'a', 'name': {'ar': 'a', 'en': 'a'}, 'essential': true, 'local_count': 3},
+            {'id': 'b', 'name': {'ar': 'b', 'en': 'b'}, 'essential': true, 'local_count': 9},
+            {'id': 'c', 'name': {'ar': 'c', 'en': 'c'}, 'essential': false},
+            {'id': 'd', 'name': {'ar': 'd', 'en': 'd'}, 'essential': false, 'local_count': 3},
+          ],
+        };
+    final ten = careerRoleFromJson(role(10));
+    expect(ten.localAdverts!.enough, isTrue);
+    expect(ten.localAdverts!.preliminary, isTrue);
+    expect([for (final s in ten.topLocalSkills()) s.id], ['b', 'a', 'd']);
+    expect([for (final s in ten.topLocalSkills(1)) s.id], ['b']);
+    final nine = careerRoleFromJson(role(9));
+    expect(nine.localAdverts!.enough, isFalse);
+    expect(nine.topLocalSkills(), isEmpty);
+  });
 }
