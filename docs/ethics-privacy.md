@@ -1,6 +1,6 @@
 # Bousla — Ethics and Privacy
 
-These are design principles and open considerations, not claims that the implementation already satisfies them.
+The list below is the design principles. What the current implementation actually does, and its limits, is in the two sections after it.
 
 - Collect the minimum personal data needed.
 - Prefer session identifiers for classroom participation, but do not claim pseudonymous data is guaranteed anonymous.
@@ -15,3 +15,27 @@ These are design principles and open considerations, not claims that the impleme
 - Consider accessibility and diverse learning needs.
 - Document retention, deletion, consent, and access policies before real student data is used.
 - Do not use identifiable student data for AI training without appropriate authorization.
+
+## What is implemented (as of 26 Nov 2026)
+
+Each point was checked as stated; tests are in `firebase/test/rules.test.mjs` (46 emulator tests), `src/engine/test` and `src/app/test`.
+
+- **No names asked.** Students join a session anonymously (Firebase anonymous sign-in). The UID identifies a participant within one session in one browser; it is not a student identity.
+- **Answer keys stay with the instructor.** In Firestore, keys are readable only by the course owner (rules tests). Exception: the sample course in this **public** repository includes `data/courses/database-systems/answer_keys.json`, so its sample questions are for testing, not for real assessment.
+- **Aggregated instructor view.** The class view shows counts and accuracy per concept only when at least 3 students answered it (`classMinGroupSize`); prerequisite signals are hidden below that. Below 3 participants the instructor sees only an overall percentage and where to start. Limit: with a single participant that percentage is that student's own result (still without a name or ID).
+- **Personal feedback is private.** Each student reads only their own feedback, and only after the instructor releases it (rules).
+- **Cautious wording.** Mastery and prerequisite results are labelled as estimates from the evidence ("X of Y correct", "possible", "needs more evidence"); too little evidence is shown as such, not as a weakness.
+- **Human review of AI content.** AI-drafted questions and suggested resources stay "waiting" until the instructor approves, edits or rejects each one; there is no "approve all". The review screen counts approved / edited / rejected drafts.
+- **AI never changes a score.** Feedback explanations are written on top of the engine's results and pass five automatic checks; if any check fails or Gemini is unavailable, a fixed template is shown. Explanations are labelled "AI-generated".
+- **No links invented by AI.** Resource suggestions are descriptions (kind, where to look, search words); the instructor adds and checks the link.
+- **Course files are not stored.** A lecture file is sent to Gemini through Firebase AI Logic for drafting and not kept.
+- **Gemini is protected by App Check** (enforced for Firebase AI Logic), so the project's AI quota cannot be used from outside the site.
+- **Optional personal profile, by consent.** A student may keep a session's results in a personal profile only after reading a consent text (decline is as easy as agree) and signing in with Google. Only that student can read or delete it; instructors have no access, and answering stays anonymous to the instructor. The student can remove a session or delete the whole profile. Deleting the profile does not remove past answers from the anonymous class results (the delete dialog says so).
+
+## Known limits (said plainly in the demo)
+
+- Thresholds (3 students, mastery cut-offs) are provisional and not validated with real classes.
+- The Gemini quota is the free tier; when it runs out the template feedback is used.
+- No retention policy yet for session data; it stays in Firestore until deleted from the console.
+- Not tested with screen readers in a structured way yet.
+- No real student data has been used; the survey results are not yet collected (`docs/surveys`).

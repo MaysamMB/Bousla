@@ -12,12 +12,13 @@ Rule: never present an unfinished feature as working. If a step fails, use its f
 | Site is the latest build | `.\bousla deploy` on Friday, then open in a private window | Maysam |
 | Venue network reaches the site, Firebase, `www.gstatic.com` and `www.google.com/recaptcha` | Open the site on a phone on the venue Wi-Fi; bring a phone hotspot as backup | Everyone |
 | Instructor signed in on the presentation laptop | `/#/instructor`, account of the course owner | Maysam |
-| 4–6 approved questions in the course, at least one concept and its prerequisite (e.g. `db_pk_*` and `db_fk_*`) | Review screen, "Approved" tab | Maysam |
+| 4–6 approved questions in the course, at least one concept and its prerequisite (e.g. `db_pk_*` and `db_fk_*`). **A new session uses every approved question** (19 on 26 Nov), so move the others out first: "Approved" tab → **إرجاع للمراجعة** (Back to review) on each; they return to "waiting" and stay out of new sessions (the AI-draft statistics then count them as waiting, not approved) | Review screen, "Approved" tab | Maysam |
+| Demo questions are **not** from the repository's sample set: `data/courses/database-systems/answer_keys.json` is public on GitHub. Use questions drafted by AI and approved in the app (their keys exist only in Firestore) | Review screen | Maysam |
 | Approved resources for the concepts the questions test, at least one in Arabic, so feedback has next steps | **مصادر التعلّم** screen: add by hand (title, link, kind, language, concepts) | Maysam |
 | AI resource suggestions made once and checked; keep one suggestion "waiting for a link" to show live | **مصادر التعلّم** → "Suggest resources (AI)", Thursday after 10:00 | Maysam |
 | Light theme on the presentation laptop (clearer on a projector) | Sun/moon button next to the language button | Maysam |
 | AI drafts already made from 2–3 real lectures and reviewed | Thursday after 10:00 (Gemini quota renews then); keep at least one group still "waiting" to review live | Maysam |
-| Gemini quota not spent on Saturday (20 requests a day, shared by question drafts, resource suggestions, feedback explanations and teaching tactics) | Nobody presses an AI button on Saturday before the demo except the one feedback release | Everyone |
+| Gemini quota not spent on Saturday (free tier: about 20 requests a day **per model**, 5 a minute; the app falls back from `gemini-3.8-flash` to `flash-lite` when the first is used up, so roughly 40 a day in total, shared by question drafts, resource suggestions, feedback explanations and teaching tactics; Google can change these limits) | Nobody presses an AI button on Saturday before the demo except the one feedback release | Everyone |
 | Friday rehearsal session renamed so the past-sessions list reads well (e.g. "Rehearsal — keys") | Past sessions → rename | Maysam |
 | Team phones charged, browser open on the site | 4 phones | Everyone |
 | Offline fallback works | `.\bousla demo` on the laptop (red "LOCAL DEMO" ribbon) | Maysam |
@@ -57,7 +58,7 @@ Passing a course does not show *which* concept a student is missing, or whether 
 - Fallback: show the template feedback only (AI explanation turned off in the release dialog). If a phone says there is no feedback for it, open the same link again on that phone (feedback belongs to the browser that answered); this was seen once on the live site and is still being checked.
 
 ### 6. Privacy and limits, said plainly (20 s)
-Say two sentences: "Students join anonymously for one session, answer keys are readable only by the instructor, and the class view shows no per-concept numbers for groups under 3. Our limits: a free AI quota, provisional thresholds, and content still under team review."
+Say two sentences: "Students join anonymously for one session, answer keys in the database are readable only by the instructor (the sample questions in our public repository are for testing only), and the class view shows no per-concept numbers for groups under 3. Our limits: a free AI quota, provisional thresholds, and content still under team review."
 
 Keep for questions (do not read out):
 - No longitudinal tracking is claimed without identity linking.
