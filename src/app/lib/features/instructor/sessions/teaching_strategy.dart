@@ -73,6 +73,26 @@ TeachingStrategy? parseTeachingStrategy(String raw, TeachingActionKind kind) {
   return null;
 }
 
+/// Personal feedback addressed to one student ("your answer", «إجابتك»).
+final _studentFeedback = RegExp(
+  r"\byour (answers?|scores?|results?|grades?|marks?|level|understanding|mistakes?)\b"
+  r"|\byou (failed|got|scored|did not understand|didn't understand|don't understand|do not understand)\b"
+  r'|إجابتك|إجاباتك|نتيجتك|درجتك|علامتك|مستواك|فهمك|أخطاؤك|أخطائك',
+  caseSensitive: false,
+);
+
+/// A statement about how actual students or the class did ("Most students
+/// are confused…", «معظم الطلاب لا…»). Classroom instructions such as "Ask
+/// some students to explain…" are not claims and stay allowed.
+final _unsupportedClaim = RegExp(
+  r'\b(most|many|all|some|several|half|the majority)\s+(of\s+)?(the\s+|your\s+|these\s+)?students\s+'
+  r"(are|were|struggle\w*|fail\w*|do not|don't|did not|didn't|cannot|can't|got|have trouble|had trouble|seem\w*|misunderst\w*|confus\w*|lack\w*)\b"
+  r"|\b(the|your|this) class\s+(is|was|struggle\w*|fail\w*|does not|doesn't|did not|didn't|cannot|can't|seem\w*|lack\w*)\b"
+  r'|(معظم|أغلب|كل|جميع|بعض|نصف|غالبية)\s+الطلاب\s+(لا|لم|لن|يعان|يعانون|يخطئ|يخطئون|أخطأ|أخطأوا|فشل|فشلوا|ضعيف|ضعفاء|يجد|يجدون|يخلط|يخلطون)'
+  r'|الصف\s+(لا|لم|يعاني|ضعيف)',
+  caseSensitive: false,
+);
+
 /// Structural and basic text guards, not factual verification.
 class TeachingDraft {
   const TeachingDraft(this.strategy, this.example, this.question);
@@ -104,8 +124,15 @@ TeachingDraft? parseTeachingDraft(String raw, TeachingActionKind kind,
         return false;
       }
       // Do not accept links, control characters or obvious classroom claims.
-      return !RegExp(r'https?://|www\.|[\x00-\x1f]|\d+\s*[%٪]|\b(students failed|class failed|your students scored|diagnos\w*)\b|فشل الطلاب|تشخيص|نسبة الطلاب',
-          caseSensitive: false).hasMatch(value);
+      if (RegExp(r'https?://|www\.|[\x00-\x1f]|\d+\s*[%٪]|\b(students failed|class failed|your students scored|diagnos\w*)\b|فشل الطلاب|تشخيص|نسبة الطلاب',
+          caseSensitive: false).hasMatch(value)) {
+        return false;
+      }
+      // Instructor-facing only: no personal feedback to a student.
+      if (_studentFeedback.hasMatch(value)) return false;
+      // No claims about how actual students did, stated as facts: the
+      // model never sees results, only the action and the concept.
+      return !_unsupportedClaim.hasMatch(value);
     }
     if (!valid(example, 500) || !valid(question, 250)) return null;
     return TeachingDraft(strategy, example.trim(), question.trim());
@@ -135,7 +162,8 @@ Future<TeachingStrategyResult> resolveTeachingStrategy({
     allowedStrategies(kind).first,
     aiSelected: false,
   );
-  if (choose == null) return fallback;
+  // Incomplete data: nothing to ask the model about, so no request.
+  if (choose == null || conceptName.trim().isEmpty) return fallback;
   try {
     final raw = await choose(teachingStrategyPrompt(
       kind: kind, conceptName: conceptName, relatedName: relatedName, language: language,

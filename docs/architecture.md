@@ -1,6 +1,6 @@
 # Bousla — Architecture
 
-> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Since then (24 Nov): QR code, AI level 1 question drafting, and student feedback with AI level 2 explanations (guards + template fallback; tested, not yet run against Gemini). Not yet implemented: classroom insights screen, knowledge map, the instructor teaching suggestion of AI level 2. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
+> Status (24 Nov 2026): implemented and deployed: the Flutter app (instructor + student web) on Firebase (Auth, Firestore with rules, Hosting), the deterministic engine and the draft dataset with its validator. Since then (to 26 Nov): QR code, AI level 1 question drafting, learning resources, classroom live insights with the instructor's teaching actions (AI level 2, instructor side), student feedback with AI level 2 explanations (five guards + template fallback; real Gemini evaluation on 26 Nov: 20 of 20 synthetic profiles accepted, see §9), the session knowledge map, and (on `main`, from Maysam) the optional persistent profile (§10). Not run on real phones at scale yet. Progress: `docs/implementation-plan.md`. This is the agreed target design; update it when the implementation differs.
 
 ## 1. Components
 
@@ -262,6 +262,8 @@ The engine produces verified, structured evidence. Gemini turns it into language
 **Transparency:** AI text is labeled "AI-generated" and shown next to the evidence it was based on. The instructor can turn AI explanations off per session.
 
 **Evaluation before the demo:** run the level-2 generator on about 20 synthetic evidence cases in both languages and report the guard pass rate. Report the real number, whatever it is.
+
+Result (26 Nov, run by Lina locally with `src/engine/tool/gemini_explanation_eval.dart` through Firebase AI Logic and an App Check debug token): 20 synthetic profiles (26 students) in one request; `gemini-3.8-flash` answered HTTP 500 (high demand), the fallback `gemini-3.5-flash-lite` answered; **20 of 20 explanations passed all five guards (0 rejected, 0 template fallbacks)**. One run on synthetic profiles, not a general quality measure; separate from the mocked guard test (12 of 20 by design). Details: `docs/implementation-plan.md`, Phase 7.
 
 ### Later
 | Component | Condition |
