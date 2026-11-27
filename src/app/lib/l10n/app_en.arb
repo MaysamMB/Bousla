@@ -709,5 +709,12 @@
   "studentCareerStartWith": "Start with: {concepts}",
   "@studentCareerStartWith": {"placeholders": {"concepts": {"type": "String"}}},
   "studentCareerNextTitle": "Next (being designed)",
-  "studentCareerNextBody": "Add a course from outside Bousla with its outline, take an AI-generated self-check to find possible gaps, then compare with what the local job market asks for."
+  "studentCareerNextBody": "Add a course from outside Bousla with its outline, take an AI-generated self-check to find possible gaps, then compare with what the local job market asks for.",
+  "studentCareerEscoNotice": "Skills from ESCO, the European classification of occupations and skills, not yet from local job adverts. Which Bousla concepts count for which skill is the Bousla team's mapping.",
+  "studentCareerCoverage": "Bousla courses currently measure {covered} of {total}.",
+  "@studentCareerCoverage": {"placeholders": {"covered": {"type": "int"}, "total": {"type": "int"}}},
+  "studentCareerOutsideCount": "Skills Bousla does not cover yet: {count}",
+  "@studentCareerOutsideCount": {"placeholders": {"count": {"type": "int"}}},
+  "studentCareerSourceEsco": "Source: ESCO (European Commission), skills collected on {date}; Arabic translation by the Bousla team.",
+  "@studentCareerSourceEsco": {"placeholders": {"date": {"type": "String"}}}
 }

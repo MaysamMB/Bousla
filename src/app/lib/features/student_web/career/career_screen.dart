@@ -152,44 +152,53 @@ class _ReportView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            if (report.role.source.isDraft)
-              Card(
-                key: const ValueKey('career-draft-notice'),
-                color: theme.colorScheme.tertiaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline,
-                          color: theme.colorScheme.onTertiaryContainer),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          l.studentCareerDraftNotice,
-                          style: TextStyle(
-                              color: theme.colorScheme.onTertiaryContainer),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Text(l.studentCareerSource(report.role.source.name),
-                  style: theme.textTheme.bodySmall),
+            _Notice(
+              key: ValueKey(report.role.source.isDraft
+                  ? 'career-draft-notice'
+                  : 'career-source-notice'),
+              text: report.role.source.isDraft
+                  ? l.studentCareerDraftNotice
+                  : l.studentCareerEscoNotice,
+            ),
+            if (!report.role.source.isDraft) ...[
+              const SizedBox(height: 8),
+              Text(
+                key: const ValueKey('career-source'),
+                _sourceLine(l, report.role.source),
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: 8),
             Text(l.studentCareerEstimateNote, style: theme.textTheme.bodySmall),
-            const SizedBox(height: 16),
-            Text(l.studentCareerEssential, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            for (final s in essential) _SkillCard(result: s, names: names),
-            if (optional.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(l.studentCareerOptional, style: theme.textTheme.titleMedium),
-              const SizedBox(height: 4),
-              for (final s in optional) _SkillCard(result: s, names: names),
-            ],
+            for (final (title, list, isEssential) in [
+              (l.studentCareerEssential, essential, true),
+              (l.studentCareerOptional, optional, false),
+            ])
+              if (list.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Text(title, style: theme.textTheme.titleMedium),
+                const SizedBox(height: 2),
+                // How much of this list Bousla can say anything about.
+                Text(
+                  l.studentCareerCoverage(
+                    list.where((s) => s.status != SkillStatus.outsideBousla).length,
+                    list.length,
+                  ),
+                  key: ValueKey('coverage-${isEssential ? 'essential' : 'optional'}'),
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                for (final s in list)
+                  if (s.status != SkillStatus.outsideBousla)
+                    _SkillCard(result: s, names: names),
+                _OutsideList(
+                  key: ValueKey('outside-${isEssential ? 'essential' : 'optional'}'),
+                  skills: [
+                    for (final s in list)
+                      if (s.status == SkillStatus.outsideBousla) s.skill,
+                  ],
+                ),
+              ],
             const SizedBox(height: 24),
             Card(
               key: const ValueKey('career-next'),
@@ -201,6 +210,85 @@ class _ReportView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A short source line in the screen's language; the dataset keeps the full
+/// citation (`source.name`).
+String _sourceLine(AppLocalizations l, CareerDataSource src) {
+  if (src.kind != CareerSourceKind.esco) return l.studentCareerSource(src.name);
+  // The ISO date as stored: same digits in both languages, with the year.
+  return l.studentCareerSourceEsco(src.retrieved ?? '');
+}
+
+class _Notice extends StatelessWidget {
+  const _Notice({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      color: scheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline, color: scheme.onTertiaryContainer),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(text,
+                  style: TextStyle(color: scheme.onTertiaryContainer)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The skills no Bousla concept covers yet: one folded list, not a card
+/// each (they carry no evidence, only the name).
+class _OutsideList extends StatelessWidget {
+  const _OutsideList({super.key, required this.skills});
+
+  final List<CareerSkill> skills;
+
+  @override
+  Widget build(BuildContext context) {
+    if (skills.isEmpty) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final lang = currentLanguage(context);
+    return Card(
+      child: ExpansionTile(
+        shape: const Border(),
+        leading: Icon(Icons.remove_circle_outline,
+            color: theme.colorScheme.outline),
+        title: Text(l.studentCareerOutsideCount(skills.length),
+            style: theme.textTheme.titleSmall),
+        subtitle: Text(l.studentCareerOutsideHint,
+            style: theme.textTheme.bodySmall),
+        childrenPadding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 12),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final s in skills)
+                Chip(
+                  key: ValueKey('outside-skill-${s.id}'),
+                  label: Text(s.name.of(lang)),
+                  visualDensity: VisualDensity.compact,
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

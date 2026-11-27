@@ -77,9 +77,13 @@ void main() {
     expect(roles, hasLength(2));
     for (final role in roles) {
       expect(role.source.name, isNotEmpty);
+      expect(role.source.kind, CareerSourceKind.esco, reason: role.id);
+      expect(role.source.retrieved, isNotNull);
       expect(role.skills.map((s) => s.id).toSet(), hasLength(role.skills.length),
           reason: 'unique skill IDs in ${role.id}');
       for (final skill in role.skills) {
+        expect(skill.sourceUri,
+            startsWith('http://data.europa.eu/esco/skill/'), reason: skill.id);
         expect(skill.name.ar, isNotEmpty);
         expect(skill.name.en, isNotEmpty);
         for (final id in skill.conceptIds) {
@@ -98,47 +102,73 @@ void main() {
         'career path.'), findsOneWidget);
   });
 
-  testWidgets('a draft dataset says so; each skill shows its evidence',
+  testWidgets('ESCO skills: evidence per covered skill, the rest folded',
       (tester) async {
     await _show(tester, _sessions, roles: _bundledRoles());
-    expect(find.byKey(const ValueKey('career-draft-notice')), findsOneWidget);
+    expect(find.byKey(const ValueKey('career-source-notice')), findsOneWidget);
+    expect(find.byKey(const ValueKey('career-draft-notice')), findsNothing);
+    expect(
+        find.text('Source: ESCO (European Commission), skills collected on '
+            '2026-11-27; Arabic translation by the Bousla team.'),
+        findsOneWidget);
 
-    // Database developer (first): SQL has a possible gap through Joins.
-    final sql = find.byKey(const ValueKey('skill-sql_querying'));
+    // Database developer (first): ESCO "query languages" has a possible
+    // gap through Joins.
+    final sql = find.byKey(const ValueKey('skill-query-languages'));
     expect(find.descendant(of: sql, matching: find.text('May need review')),
         findsOneWidget);
     expect(
         find.descendant(
             of: sql, matching: find.textContaining('Joins: May need review')),
         findsOneWidget);
-    // Review first, then the concepts that need evidence.
     expect(
         find.descendant(
             of: sql, matching: find.textContaining('Start with: Joins, ')),
         findsOneWidget);
-    // A concept never asked about gets its name from the course.
-    expect(
-        find.descendant(
-            of: find.byKey(const ValueKey('skill-keys_integrity')),
-            matching: find.text('Start with: Foreign Key')),
+
+    // "use databases": only part of its concepts shown so far.
+    final use = find.byKey(const ValueKey('skill-use-databases'));
+    expect(find.descendant(of: use, matching: find.text('Partly shown')),
         findsOneWidget);
 
-    // Keys: only Primary Key shown so far.
-    final keys = find.byKey(const ValueKey('skill-keys_integrity'));
-    expect(find.descendant(of: keys, matching: find.text('Partly shown')),
+    // Coverage said plainly; uncovered skills are one folded list.
+    expect(find.text('Bousla courses currently measure 4 of 20.'),
         findsOneWidget);
-
-    // A skill no Bousla course covers says so, without a judgement.
-    final git = find.byKey(const ValueKey('skill-version_control'));
-    expect(find.descendant(
-            of: git, matching: find.text('Not covered by Bousla courses yet')),
+    expect(find.byKey(const ValueKey('skill-perform-backups')), findsNothing);
+    expect(find.text('Skills Bousla does not cover yet: 16'), findsOneWidget);
+    await tester.tap(find.text('Skills Bousla does not cover yet: 16'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('outside-skill-perform-backups')),
         findsOneWidget);
 
     // Data analyst.
     await tester.tap(find.byKey(const ValueKey('role-data_analyst')));
-    await tester.pump();
-    expect(find.byKey(const ValueKey('skill-statistics')), findsOneWidget);
-    expect(find.byKey(const ValueKey('skill-version_control')), findsNothing);
+    await tester.pumpAndSettle();
+    expect(find.text('Bousla courses currently measure 4 of 36.'),
+        findsOneWidget);
+    expect(find.text('Bousla courses currently measure 2 of 14.'),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('skill-normalise-data')), findsOneWidget);
     expect(find.byKey(const ValueKey('career-next')), findsOneWidget);
+  });
+
+  testWidgets('a team-draft dataset says it is a draft', (tester) async {
+    await _show(tester, _sessions, roles: [
+      careerRoleFromJson({
+        'id': 'draft',
+        'title': {'ar': 'مسودة', 'en': 'Draft role'},
+        'source': {'kind': 'team_draft', 'name': 'Team draft'},
+        'skills': [
+          {
+            'id': 'sql',
+            'name': {'ar': 'SQL', 'en': 'SQL'},
+            'essential': true,
+            'concepts': ['sql_select'],
+          },
+        ],
+      }),
+    ]);
+    expect(find.byKey(const ValueKey('career-draft-notice')), findsOneWidget);
+    expect(find.text('Shown in your sessions'), findsOneWidget);
   });
 }
