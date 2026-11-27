@@ -180,6 +180,10 @@ void main() {
     expect(find.byKey(const ValueKey('local-count-query-languages')),
         findsNothing);
     expect(find.byKey(const ValueKey('career-next')), findsOneWidget);
+    // The next step opens its (front-end only) screen.
+    await tester.tap(find.text('Add a course from outside Bousla (preview)'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('external-preview-notice')), findsOneWidget);
   });
 
   testWidgets('a team-draft dataset says it is a draft', (tester) async {
