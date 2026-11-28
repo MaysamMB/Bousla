@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app_services.dart';
 import '../../../data/repositories/auth_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/open_link.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../../../shared/widgets/bousla_mark.dart';
 
@@ -15,6 +17,13 @@ import '../../../shared/widgets/bousla_mark.dart';
 /// unapproved account (firebase/firestore.rules, `isInstructor`).
 ///
 /// Students are never asked to sign in: they join anonymously.
+/// Who approves new instructor accounts. Build with
+/// --dart-define=BOUSLA_ADMIN_EMAIL=... to change it.
+const adminEmail = String.fromEnvironment(
+  'BOUSLA_ADMIN_EMAIL',
+  defaultValue: 'maysammbaradeah@gmail.com',
+);
+
 class InstructorGate extends StatelessWidget {
   const InstructorGate({super.key, required this.child});
 
@@ -55,9 +64,26 @@ class _ApprovalCheckState extends State<_ApprovalCheck> {
     _approved ??= ServicesScope.of(context).auth.isApprovedInstructor();
   }
 
+  /// Opens the mail app with the request written out.
+  void _emailAdmin(AppLocalizations l) => openLink(
+        'mailto:$adminEmail'
+        '?subject=${Uri.encodeComponent(l.authRequestSubject)}'
+        '&body=${Uri.encodeComponent(l.authRequestBody(widget.uid))}',
+      );
+
+  /// For when no mail app opens: the same request, to paste anywhere.
+  Future<void> _copyRequest(AppLocalizations l) async {
+    final messenger = ScaffoldMessenger.of(context);
+    await Clipboard.setData(ClipboardData(
+      text: '$adminEmail\n${l.authRequestSubject}\n\n'
+          '${l.authRequestBody(widget.uid)}',
+    ));
+    messenger.showSnackBar(SnackBar(content: Text(l.authRequestCopied)));
+  }
+
   void _checkAgain() => setState(() {
-    _approved = ServicesScope.of(context).auth.isApprovedInstructor();
-  });
+        _approved = ServicesScope.of(context).auth.isApprovedInstructor();
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -92,13 +118,46 @@ class _ApprovalCheckState extends State<_ApprovalCheck> {
                             ),
                             const SizedBox(height: 12),
                             Text(l.authNotApprovedBody),
+                            const SizedBox(height: 16),
+                            Text(
+                              l.authAdminLabel,
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            SelectableText(
+                              adminEmail,
+                              key: const ValueKey('admin-email'),
+                              textDirection: TextDirection.ltr,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                             const SizedBox(height: 12),
-                            // The ID the admin adds in the Firebase console.
+                            Text(
+                              l.authAccountIdLabel,
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            // The admin needs it to approve the account.
                             SelectableText(
                               widget.uid,
                               textDirection: TextDirection.ltr,
                               textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                FilledButton.tonalIcon(
+                                  onPressed: () => _emailAdmin(l),
+                                  icon: const Icon(Icons.mail_outline),
+                                  label: Text(l.authEmailAdmin),
+                                ),
+                                OutlinedButton.icon(
+                                  onPressed: () => _copyRequest(l),
+                                  icon: const Icon(Icons.copy_rounded),
+                                  label: Text(l.authCopyRequest),
+                                ),
+                              ],
                             ),
                           ],
                           const SizedBox(height: 24),
@@ -227,7 +286,8 @@ class _SignInFormState extends State<_SignInForm> {
                     problem == AuthProblem.unknown && _detail != null
                         ? '${_message(l, problem)}\n($_detail)'
                         : _message(l, problem),
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ],
                 const SizedBox(height: 24),

@@ -39,6 +39,11 @@ class GeminiQuestionGenerator implements QuestionGenerator {
 
   static const timeout = Duration(seconds: 120);
 
+  /// One model's time to draft questions. Seen live on 27 Nov:
+  /// gemini-3.8-flash gave no answer for 2 minutes (then a 500) under high
+  /// demand; after this the lighter fallback model is tried instead.
+  static const draftTimeout = Duration(seconds: 75);
+
   final List<String> _models;
   String _lastModel;
 
@@ -86,9 +91,10 @@ class GeminiQuestionGenerator implements QuestionGenerator {
       retryable: (e) =>
           e is QuestionGenerationException &&
           e.problem != GenerationProblem.dailyQuota,
-      retryAfter: (e) => e is QuestionGenerationException
-          ? retryDelayFrom(e.detail)
-          : null,
+      retryAfter: (e) =>
+          e is QuestionGenerationException ? retryDelayFrom(e.detail) : null,
+      // No answer in time: the next model, not the same one again.
+      moveOn: isGeminiTimeout,
       call: (name) async {
         final r = await _generate(name, [
           Content.multi([TextPart(instructions), materialPart]),
@@ -122,7 +128,8 @@ class GeminiQuestionGenerator implements QuestionGenerator {
       ),
     );
     try {
-      final response = await model.generateContent(prompt).timeout(timeout);
+      final response =
+          await model.generateContent(prompt).timeout(draftTimeout);
       debugPrint('Bousla AI: $name answered');
       return response;
     } on Object catch (e) {
@@ -161,7 +168,10 @@ Future<T> withGeminiErrors<T>(Future<T> Function() request) async {
       e.message,
     );
   } on TimeoutException {
-    throw const QuestionGenerationException(GenerationProblem.network);
+    throw const QuestionGenerationException(
+      GenerationProblem.network,
+      geminiTimeoutDetail,
+    );
   } on FirebaseAIException catch (e) {
     // Setup problems also arrive as generic server errors, e.g. right
     // after AI Logic is enabled, while permissions propagate.
@@ -185,6 +195,13 @@ Future<T> withGeminiErrors<T>(Future<T> Function() request) async {
     );
   }
 }
+
+/// The detail of the error for a Gemini request that did not answer in time.
+const geminiTimeoutDetail = 'timeout';
+
+/// Whether [e] is a Gemini request that did not answer in time.
+bool isGeminiTimeout(Object e) =>
+    e is QuestionGenerationException && e.detail == geminiTimeoutDetail;
 
 /// Reads "Please retry in 16.95s" from a quota error. Null if absent or
 /// longer than 40 s (then the next model is tried instead).
