@@ -122,14 +122,21 @@ void main() {
     // Both sections are folded by default: open them.
     await tester.tap(find.text('Essential skills'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Local job market (early sample)'));
+    await tester.tap(find.text('Local job market'));
     await tester.pumpAndSettle();
 
     // Database developer (first): ESCO "query languages" has a possible
     // gap through Joins.
     final sql = find.byKey(const ValueKey('skill-query-languages'));
-    expect(find.descendant(of: sql, matching: find.text('May need review')),
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('skill-group-possibleGap')),
+            matching: sql),
         findsOneWidget);
+    // One row per skill; its details open on a tap.
+    expect(find.textContaining('Joins: May need review'), findsNothing);
+    await tester.tap(find.text('query languages'));
+    await tester.pumpAndSettle();
     expect(
         find.descendant(
             of: sql, matching: find.textContaining('Joins: May need review')),
@@ -141,7 +148,10 @@ void main() {
 
     // "use databases": only part of its concepts shown so far.
     final use = find.byKey(const ValueKey('skill-use-databases'));
-    expect(find.descendant(of: use, matching: find.text('Partly shown')),
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('skill-group-partial')),
+            matching: use),
         findsOneWidget);
 
     // Coverage said plainly; uncovered skills are one folded list.
@@ -211,6 +221,6 @@ void main() {
     expect(find.byKey(const ValueKey('career-draft-notice')), findsOneWidget);
     await tester.tap(find.text('Essential skills'));
     await tester.pumpAndSettle();
-    expect(find.text('Shown in your sessions'), findsOneWidget);
+    expect(find.text('Shown in your sessions (1)'), findsOneWidget);
   });
 }

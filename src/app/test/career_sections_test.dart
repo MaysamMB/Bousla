@@ -119,7 +119,7 @@ Future<_CountingContent> _show(
   return content;
 }
 
-final _local = find.text('Local job market (early sample)');
+final _local = find.text('Local job market');
 final _essential = find.text('Essential skills');
 
 void main() {
@@ -204,7 +204,10 @@ void main() {
     expect(order, [...order]..sort());
     // The uncovered skill keeps its own folded list.
     expect(find.text('Skills Bousla does not cover yet: 1'), findsOneWidget);
-    // The evidence details stay on the card.
+    // Each skill is one row; its evidence opens on a tap.
+    expect(find.textContaining('sql_join: May need review'), findsNothing);
+    await tester.tap(find.text('Skill gap'));
+    await tester.pumpAndSettle();
     expect(
         find.descendant(
             of: find.byKey(const ValueKey('skill-gap')),
@@ -292,5 +295,43 @@ void main() {
             of: find.byKey(const ValueKey('skill-group-possibleGap')),
             matching: find.byKey(const ValueKey('skill-gap'))),
         findsOneWidget);
+  });
+
+  testWidgets('useful skills: a closed card too; a skill opens on a tap',
+      (tester) async {
+    await _show(tester, _bundledRoles().reversed.toList()); // data analyst
+    final useful = find.text('Useful skills');
+    expect(useful, findsOneWidget);
+    expect(find.byKey(const ValueKey('coverage-optional')), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('optional-group-noEvidence')), findsNothing);
+    await tester.tap(useful);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('outside-optional')), findsOneWidget);
+
+    // Essential: rows with names only, details after a tap on one row.
+    await tester.tap(_essential);
+    await tester.pumpAndSettle();
+    final row = find.byKey(const ValueKey('skill-query-languages'));
+    expect(row, findsOneWidget);
+    expect(find.descendant(of: row, matching: find.textContaining('sql_join:')),
+        findsNothing);
+    await tester
+        .tap(find.descendant(of: row, matching: find.text('query languages')));
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: row, matching: find.textContaining('sql_join:')),
+        findsOneWidget);
+    // Other skills stay closed.
+    expect(find.textContaining('normalization:'), findsNothing);
+  });
+
+  testWidgets('local market title is plain; "early sample" inside',
+      (tester) async {
+    await _show(tester, _bundledRoles());
+    expect(find.text('Local job market'), findsOneWidget);
+    expect(find.byKey(const ValueKey('career-local-early')), findsNothing);
+    await tester.tap(_local);
+    await tester.pumpAndSettle();
+    expect(find.text('Early sample'), findsOneWidget);
   });
 }

@@ -46,6 +46,26 @@ class ReviewMarksStore {
     }
   }
 
+  static String practiceKeyFor(String sessionId, String participantId) =>
+      'bousla.practice.v1.$sessionId.$participantId';
+
+  /// The AI practice attempt kept in this browser (JSON), or null.
+  String? readPractice(String sessionId, String participantId) {
+    try {
+      return _read(practiceKeyFor(sessionId, participantId));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void writePractice(String sessionId, String participantId, String json) {
+    try {
+      _write(practiceKeyFor(sessionId, participantId), json);
+    } catch (_) {
+      // Not kept: after a reload the student starts a new practice quiz.
+    }
+  }
+
   void save(String sessionId, String participantId, Set<String> conceptIds) {
     try {
       _write(keyFor(sessionId, participantId),

@@ -5,6 +5,7 @@
 library;
 
 export 'src/ai/feedback_explanation.dart';
+export 'src/ai/practice_quiz.dart';
 export 'src/ai/question_drafting.dart';
 export 'src/ai/resource_suggestions.dart';
 export 'src/career_gaps.dart';

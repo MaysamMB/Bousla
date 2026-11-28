@@ -4,6 +4,7 @@ import 'package:bousla_engine/bousla_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app_services.dart';
+import '../../../data/ai/practice_quiz_generator.dart';
 import '../../../data/feedback.dart';
 import '../../../data/models.dart';
 import '../../../data/repositories/follow_up_repository.dart';
@@ -11,14 +12,24 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/text_direction.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import 'practice_attempt.dart';
+import 'review_marks_store.dart';
 
 /// "Test my understanding again": the student's own private follow-up on
 /// the concepts they ticked, then their results next to the original ones.
+/// No instructor creates, sees or grades it.
 ///
-/// Created and graded without any instructor ([FollowUpRepository]): the
-/// browser gets questions and options, and back only right or wrong for
-/// its own locked answers. The comparison uses the original feedback's
-/// counts and the follow-up's grades, never the ticks.
+/// Two sources, tried in this order:
+/// 1. **AI practice** ([PracticeQuizGenerator], Gemini): new questions
+///    written for this student, checked by the engine's guards but not by
+///    a person, so they are labelled as AI practice and the comparison as
+///    approximate. Kept and graded in this browser only ([PracticeAttempt]).
+/// 2. When AI is not available or fails: the questions the instructor app
+///    reserved at publish time ([FollowUpRepository]), graded by the
+///    backend against the answer keys.
+///
+/// The comparison uses the original feedback's counts and the follow-up's
+/// grades, never the ticks.
 class FollowUpScreen extends StatefulWidget {
   const FollowUpScreen({
     super.key,
@@ -26,7 +37,12 @@ class FollowUpScreen extends StatefulWidget {
     required this.participantId,
     required this.feedback,
     required this.reviewedConceptIds,
+    this.store,
   });
+
+  /// Where the AI practice attempt is kept: this browser's localStorage
+  /// unless a test passes another.
+  final ReviewMarksStore? store;
 
   /// The original session and the student its feedback belongs to.
   final String sessionId;
@@ -56,7 +72,60 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
   var _answerError = false;
   var _started = false;
 
-  FollowUpRepository get _repo => ServicesScope.of(context).followUps!;
+  /// The AI practice attempt, when that is the source.
+  PracticeAttempt? _practice;
+  late final ReviewMarksStore _store =
+      widget.store ?? ReviewMarksStore.browser();
+
+  FollowUpRepository? get _repoOrNull => ServicesScope.of(context).followUps;
+  FollowUpRepository get _repo => _repoOrNull!;
+
+  void _savePractice() => _store.writePractice(
+      widget.sessionId, widget.participantId, _practice!.toJson());
+
+  /// Uses [p] as the source of questions.
+  Future<void> _usePractice(PracticeAttempt p) async {
+    _practice = p;
+    _questions = [for (var i = 0; i < p.questions.length; i++) p.view(i)];
+    _done = {for (final i in p.answers.keys) QuestionRef('practice_$i', 1)};
+    if (p.finished || _next == null) {
+      await _finish();
+    } else {
+      _show(_Stage.answering);
+    }
+  }
+
+  /// A new AI practice quiz, or null when AI is not available or gave
+  /// nothing usable (then the reserved questions are used).
+  Future<PracticeAttempt?> _newPractice(PracticeQuizGenerator ai) async {
+    final eligible = widget.feedback.reviewConceptIds.toSet();
+    final concepts = [
+      for (final c in widget.feedback.concepts)
+        if (eligible.contains(c.conceptId) &&
+            widget.reviewedConceptIds.contains(c.conceptId))
+          c,
+    ].take(maxFollowUpConcepts).toList();
+    if (concepts.isEmpty) return null;
+    try {
+      final questions = await ai.practiceQuestions(concepts: [
+        // Only the concepts: nothing about the student.
+        for (final c in concepts)
+          DraftingConcept(id: c.conceptId, name: c.name),
+      ]);
+      if (questions.isEmpty) return null;
+      final ids = {for (final q in questions) ...q.conceptIds};
+      return PracticeAttempt(
+        model: ai.modelName,
+        conceptIds: [
+          for (final c in concepts)
+            if (ids.contains(c.conceptId)) c.conceptId,
+        ],
+        questions: questions,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -88,8 +157,22 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
       if (uid != widget.participantId) {
         return _show(_Stage.unavailable, FollowUpProblem.notOwner);
       }
-      var attempt = await _repo.findAttempt(widget.sessionId);
+      // Resume what was started: reserved questions, or AI practice.
+      var attempt = await _repoOrNull?.findAttempt(widget.sessionId);
       if (attempt == null) {
+        final kept = PracticeAttempt.tryParse(
+            _store.readPractice(widget.sessionId, widget.participantId));
+        if (kept != null) return _usePractice(kept);
+        if (services.practiceQuizGenerator case final ai?) {
+          if (await _newPractice(ai) case final fresh?) {
+            _practice = fresh;
+            _savePractice();
+            return _usePractice(fresh);
+          }
+        }
+        if (_repoOrNull == null) {
+          return _show(_Stage.unavailable, FollowUpProblem.noQuestions);
+        }
         final concepts = widget.reviewedConceptIds;
         if (concepts.isEmpty) {
           return _show(_Stage.unavailable, FollowUpProblem.notEligible);
@@ -139,7 +222,14 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
     });
     try {
       final ref = QuestionRef(q.id, q.version);
-      await _repo.answer(_attempt!, ref, option);
+      if (_practice case final p?) {
+        // Graded here: practice questions written for this student.
+        final i = _questions.indexOf(q);
+        p.answers.putIfAbsent(i, () => option);
+        _savePractice();
+      } else {
+        await _repo.answer(_attempt!, ref, option);
+      }
       _done = {..._done, ref};
       _selected = null;
       if (_next == null) {
@@ -155,14 +245,24 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
 
   Future<void> _finish() async {
     try {
-      _attempt = await _repo.finish(_attempt!);
-      final grades = await _repo.grades(_attempt!);
+      final List<FollowUpGrade> grades;
+      final List<String> concepts;
+      if (_practice case final p?) {
+        p.finished = true;
+        _savePractice();
+        grades = p.grades;
+        concepts = p.conceptIds;
+      } else {
+        _attempt = await _repo.finish(_attempt!);
+        grades = await _repo.grades(_attempt!);
+        concepts = _attempt!.conceptIds;
+      }
       final before = {
         for (final c in widget.feedback.concepts)
           c.conceptId: Tally(c.correct, c.attempts),
       };
       _comparison = compareFollowUp(
-        concepts: _attempt!.conceptIds,
+        concepts: concepts,
         before: before,
         grades: grades,
       );
@@ -198,6 +298,7 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
       _Stage.results => _ResultsView(
           comparison: _comparison!,
           feedback: widget.feedback,
+          ai: _practice != null,
         ),
     };
     return Scaffold(
@@ -224,7 +325,12 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
           key: ValueKey('follow-up-q-${q.id}'),
           padding: const EdgeInsets.all(24),
           children: [
-            if (index == 0 && _done.isEmpty) ...[
+            if (_practice != null) ...[
+              const _AiLabel(),
+              const SizedBox(height: 4),
+              Text(l.studentFollowUpAiNote, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 16),
+            ] else if (index == 0 && _done.isEmpty) ...[
               Text(l.studentFollowUpIntro, style: theme.textTheme.bodyMedium),
               const SizedBox(height: 16),
             ],
@@ -293,6 +399,21 @@ class _FollowUpScreenState extends State<FollowUpScreen> {
   }
 }
 
+/// "Practice questions written by AI": never shown without it.
+class _AiLabel extends StatelessWidget {
+  const _AiLabel();
+
+  @override
+  Widget build(BuildContext context) => Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Chip(
+          key: const ValueKey('follow-up-ai-label'),
+          avatar: const Icon(Icons.auto_awesome, size: 18),
+          label: Text(AppLocalizations.of(context).studentFollowUpAiLabel),
+        ),
+      );
+}
+
 /// [text] kept left to right inside a right-to-left line (a signed number).
 String _ltr(String text) =>
     '${String.fromCharCode(0x2066)}$text${String.fromCharCode(0x2069)}';
@@ -339,10 +460,18 @@ class _Message extends StatelessWidget {
 /// The follow-up results: a summary, then each tested concept before and
 /// after, in cautious words.
 class _ResultsView extends StatelessWidget {
-  const _ResultsView({required this.comparison, required this.feedback});
+  const _ResultsView({
+    required this.comparison,
+    required this.feedback,
+    required this.ai,
+  });
 
   final FollowUpComparison comparison;
   final StudentFeedback feedback;
+
+  /// The follow-up was AI practice: labelled, and the comparison is called
+  /// approximate.
+  final bool ai;
 
   @override
   Widget build(BuildContext context) {
@@ -358,6 +487,7 @@ class _ResultsView extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
+            if (ai) ...[const _AiLabel(), const SizedBox(height: 8)],
             Card(
               key: const ValueKey('follow-up-summary'),
               color: theme.colorScheme.surfaceContainerHighest,
@@ -381,7 +511,9 @@ class _ResultsView extends StatelessWidget {
                 name: names[c.conceptId] ?? c.conceptId,
               ),
             const SizedBox(height: 12),
-            Text(l.studentFollowUpCaution, style: theme.textTheme.bodySmall),
+            Text(ai ? l.studentFollowUpAiCaution : l.studentFollowUpCaution,
+                key: const ValueKey('follow-up-caution'),
+                style: theme.textTheme.bodySmall),
             const SizedBox(height: 20),
             Align(
               alignment: AlignmentDirectional.centerStart,

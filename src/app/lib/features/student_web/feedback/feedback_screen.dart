@@ -14,6 +14,7 @@ import '../profile/save_progress_card.dart';
 import '../knowledge_map/knowledge_map_screen.dart';
 import '../../../data/repositories/follow_up_repository.dart';
 import 'follow_up_screen.dart';
+import 'practice_attempt.dart';
 import 'review_marks_store.dart';
 
 /// A student's personal feedback for one session (owner: student web
@@ -66,15 +67,26 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
   /// This student's private follow-up for the session, if one was started
   /// (to show "continue" or "see results").
-  FollowUpAttempt? _attempt;
+  FollowUpStatus? _followUpStatus;
   var _attemptChecked = false;
 
   Future<void> _checkAttempt() async {
+    // Not during the build that called this.
+    await Future<void>.value();
+    if (!mounted) return;
+    final practice = PracticeAttempt.tryParse(
+        _reviewStore.readPractice(widget.sessionId, widget.participantId));
+    if (practice != null) {
+      setState(() => _followUpStatus = practice.finished
+          ? FollowUpStatus.finished
+          : FollowUpStatus.inProgress);
+      return;
+    }
     final followUps = ServicesScope.of(context).followUps;
     if (followUps == null) return;
     try {
       final a = await followUps.findAttempt(widget.sessionId);
-      if (mounted) setState(() => _attempt = a);
+      if (mounted) setState(() => _followUpStatus = a?.status);
     } catch (_) {
       // Not known: the button starts or resumes it anyway.
     }
@@ -92,6 +104,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           participantId: widget.participantId,
           feedback: feedback,
           reviewedConceptIds: reviewed,
+          store: _reviewStore,
         ),
       ),
     );
@@ -99,13 +112,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Widget _view(StudentFeedback feedback) {
-    final followUps = ServicesScope.of(context).followUps;
+    final services = ServicesScope.of(context);
+    final canFollowUp = services.followUps != null ||
+        services.practiceQuizGenerator != null;
     return FeedbackView(
       feedback: feedback,
       reviewed: _reviewed,
       onReviewChanged: _setReviewed,
-      followUpStatus: _attempt?.status,
-      onTestAgain: followUps == null ? null : () => _openFollowUp(feedback),
+      followUpStatus: _followUpStatus,
+      onTestAgain: canFollowUp ? () => _openFollowUp(feedback) : null,
       // Optional: keep this session in the student's own profile.
       footer: SaveProgressCard(
         sessionId: widget.sessionId,

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'data/fake/in_memory_content_repository.dart';
 import 'data/fake/in_memory_follow_up_repository.dart';
 import 'data/ai/feedback_explainer.dart';
+import 'data/ai/practice_quiz_generator.dart';
 import 'data/ai/question_generator.dart';
 import 'data/ai/resource_suggester.dart';
 import 'data/ai/teaching_draft_generator.dart';
@@ -27,6 +28,7 @@ class AppServices {
     this.feedbackExplainer,
     this.teachingDraftGenerator,
     this.resourceSuggester,
+    this.practiceQuizGenerator,
     ProfileRepository? profiles,
     FollowUpRepository? followUps,
     Locale initialLocale = const Locale('ar'),
@@ -82,6 +84,11 @@ class AppServices {
   /// AI level 2 (explanations in published feedback). Null when not
   /// available: feedback is then published with template explanations.
   final FeedbackExplainer? feedbackExplainer;
+
+  /// "Test my understanding again" with AI: practice questions written for
+  /// one student. Null when not available (e.g. offline demo): the
+  /// follow-up then uses the questions reserved at publish time.
+  final PracticeQuizGenerator? practiceQuizGenerator;
 
   /// Optional instructor draft generator; absent in offline mode.
   final TeachingDraftGenerator? teachingDraftGenerator;
