@@ -8,7 +8,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/language.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../career/career_screen.dart';
-import '../feedback/feedback_screen.dart' show stateLabel;
+import '../../../data/feedback.dart';
+import '../feedback/feedback_screen.dart' show FeedbackScreen, stateLabel;
 import '../knowledge_map/knowledge_map_screen.dart';
 import '../../../shared/widgets/bousla_mark.dart';
 import 'consent_dialog.dart';
@@ -390,6 +391,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
+  /// The session's feedback page, where the student ticks what they
+  /// reviewed and takes "Test my understanding again".
+  void _testAgain(SavedSession s, String uid) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FeedbackScreen(
+          sessionId: s.code,
+          participantId: uid,
+          saved: savedAsFeedback(s, currentLanguage(context)),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -556,6 +571,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             '${l.studentFeedbackEvidence(c.correct, c.attempts)}',
                                           ),
                                         ),
+                                    // "Test my understanding again" for a
+                                    // session with concepts to review: its
+                                    // feedback page, with the ticks.
+                                    if (_hasReview(s))
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Align(
+                                          alignment:
+                                              AlignmentDirectional.centerStart,
+                                          child: FilledButton.tonalIcon(
+                                            key: ValueKey(
+                                                'profile-test-again-${s.code}'),
+                                            onPressed: () =>
+                                                _testAgain(s, account.uid),
+                                            icon:
+                                                const Icon(Icons.quiz_outlined),
+                                            label: Text(
+                                                l.studentFeedbackTestAgain),
+                                          ),
+                                        ),
+                                      ),
                                     Align(
                                       alignment: AlignmentDirectional.centerEnd,
                                       child: IconButton(
@@ -595,6 +631,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+/// Whether [s] has a concept that may need review or is still forming.
+bool _hasReview(SavedSession s) => s.concepts.any((c) =>
+    c.state == MasteryState.possibleDifficulty ||
+    c.state == MasteryState.emerging);
+
+/// [s] as feedback (concepts, states and evidence only), for when its
+/// original feedback cannot be read in this browser.
+StudentFeedback savedAsFeedback(SavedSession s, Language language) =>
+    StudentFeedback(
+      language: language,
+      concepts: [
+        for (final c in s.concepts)
+          FeedbackConcept(
+            conceptId: c.conceptId,
+            name: c.name,
+            state: c.state,
+            attempts: c.attempts,
+            correct: c.correct,
+          ),
+      ],
+    );
 
 String _sessionName(AppLocalizations l, SavedSession s, Language lang) {
   final t = s.title?.of(lang).trim();
