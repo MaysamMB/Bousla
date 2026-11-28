@@ -3,7 +3,10 @@ import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/fake/in_memory_content_repository.dart';
 import 'package:bousla_app/data/fake/in_memory_session_repository.dart';
 import 'package:bousla_app/data/repositories/auth_service.dart';
+import 'package:bousla_app/features/instructor/auth/instructor_gate.dart'
+    show adminEmail;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// A signed-in instructor account whose approval can be switched on.
@@ -65,6 +68,33 @@ void main() {
     final auth = await _open(tester, const Locale('en'));
     expect(find.text('Account waiting for approval'), findsOneWidget);
     expect(find.text('uid-123'), findsOneWidget);
+    // Who to ask, not how the project is set up.
+    expect(find.text(adminEmail), findsOneWidget);
+    expect(find.textContaining('Firebase'), findsNothing);
+    expect(find.text('Email the administrator'), findsOneWidget);
+
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    await tester.ensureVisible(find.text('Copy the request'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy the request'));
+    await tester.pumpAndSettle();
+    expect(copied, contains('uid-123'));
+    expect(copied, contains(adminEmail));
+    expect(find.textContaining('Request copied'), findsOneWidget);
+    tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, null);
+    ScaffoldMessenger.of(tester.element(find.text('Check again')))
+        .removeCurrentSnackBar();
+    await tester.pumpAndSettle();
     expect(find.text('Create session'), findsNothing);
 
     // Still not approved: stays on the waiting screen.
@@ -81,6 +111,8 @@ void main() {
   testWidgets('waiting screen in Arabic, with sign out', (tester) async {
     final auth = await _open(tester, const Locale('ar'));
     expect(find.text('الحساب بانتظار الاعتماد'), findsOneWidget);
+    expect(find.text('راسل المسؤول'), findsOneWidget);
+    expect(find.textContaining('Firebase'), findsNothing);
     await tester.tap(find.text('تسجيل الخروج'));
     await tester.pumpAndSettle();
     expect(auth.signedOut, isTrue);

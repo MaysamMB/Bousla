@@ -164,6 +164,8 @@ Status (27 Nov, profile save follow-up): Lina's message had no code and the cons
 
 Status (27 Nov, question drafting timeout): in a live test gemini-3.8-flash gave no answer for 2 minutes (console: TimeoutException, then a 500), and the lighter fallback model was never tried because a timeout counted as a network error. Now each model gets 75 s for drafting, and a timeout moves on to the fallback model at once (no retry of the slow one, not marked as used up). Checks: `flutter analyze` clean, `flutter test` 308/308 (2 new in `test/model_retry_test.dart`). Not yet checked live.
 
+Status (28 Nov, instructor approval screen): the waiting screen no longer tells instructors about the Firebase console. It names the platform administrator's email (build-time `BOUSLA_ADMIN_EMAIL`, default set by the team), shows the account ID, and offers "Email the administrator" (mailto with the request written out) and "Copy the request". Two other instructor messages that mentioned Firebase setup or the seed script now say to contact the administrator. Approval itself is unchanged (the admin still adds the ID). Checks: `flutter analyze` clean, `flutter test` 308/308 (approval tests extended). Not yet checked in a browser.
+
 ## If time runs short
 Cut from the bottom, not the middle: keep 2 → 3 → 4 → 5 working end to end before polishing 6 and 7. Minimum AI for the demo: level 1 review screen (with offline drafts if needed) + level 2 explanations with guards.
 
