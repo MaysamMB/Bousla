@@ -11,6 +11,7 @@ import 'firestore_follow_up_repository.dart';
 import 'firestore_profile_repository.dart';
 import 'firestore_session_repository.dart';
 import 'gemini_feedback_explainer.dart';
+import 'gemini_practice_quiz_generator.dart';
 import 'gemini_question_generator.dart';
 import 'gemini_resource_suggester.dart';
 import 'gemini_teaching_draft_generator.dart';
@@ -57,6 +58,7 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
     feedbackExplainer: GeminiFeedbackExplainer(),
     teachingDraftGenerator: GeminiTeachingDraftGenerator(),
     resourceSuggester: GeminiResourceSuggester(),
+    practiceQuizGenerator: GeminiPracticeQuizGenerator(),
     profiles: FirestoreProfileRepository(db),
     followUps: FirestoreFollowUpRepository(
       db,
