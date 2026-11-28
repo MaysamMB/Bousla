@@ -162,7 +162,7 @@
     "studentMapSaveFailed":  "تعذّر حفظ الصورة. يمكنك أخذ لقطة شاشة بدلاً من ذلك.",
     "instructorClassStats": "إحصائيات الصف",
     "instructorInsightsTitle":  "ماذا يفهم الصف؟",
-    "instructorInsightsEvidence":  "أجاب {respondents} طالب · نسبة الإجابات الصحيحة {percent}%",
+    "instructorInsightsEvidence":  "أجاب {respondents, plural, =1{طالب واحد} =2{طالبان} few{{respondents} طلاب} other{{respondents} طالبًا}} · نسبة الإجابات الصحيحة {percent}%",
     "instructorInsightsHidden":  "أجاب أقل من {min} طلاب: النتيجة مخفية لحماية الخصوصية",
     "instructorInsightsWaiting":  "يظهر الملخص بعد أن يجيب {min} طلاب على الأقل",
     "instructorInsightsStateDifficulty":  "صعوبة محتملة",
