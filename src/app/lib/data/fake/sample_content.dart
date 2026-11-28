@@ -73,8 +73,7 @@ const sampleQuestions = [
     'concept_ids': ['primary_key'],
     'prompt': {
       'ar': 'في الجدول Student(student_id, name, gpa)، ما أنسب مفتاح أساسي؟',
-      'en':
-          'In the table Student(student_id, name, gpa), which is the most suitable primary key?',
+      'en': 'In the table Student(student_id, name, gpa), which is the most suitable primary key?',
     },
     'options': [
       {
@@ -127,10 +126,8 @@ const sampleQuestions = [
     'version': 1,
     'concept_ids': ['foreign_key'],
     'prompt': {
-      'ar':
-          'ماذا يحدث عند إدخال تسجيل بقيمة student_id غير موجودة في الجدول Student مع تفعيل قيد المفتاح الخارجي؟',
-      'en':
-          'With the foreign key enforced, what happens when inserting an enrollment whose student_id is not in Student?',
+      'ar': 'ماذا يحدث عند إدخال تسجيل بقيمة student_id غير موجودة في الجدول Student مع تفعيل قيد المفتاح الخارجي؟',
+      'en': 'With the foreign key enforced, what happens when inserting an enrollment whose student_id is not in Student?',
     },
     'options': [
       {
@@ -189,10 +186,7 @@ const sampleQuestions = [
     'options': [
       {
         'id': 'a',
-        'text': {
-          'ar': 'سجلاً واحداً لكيان معيّن',
-          'en': 'A single record of one entity'
-        },
+        'text': {'ar': 'سجلاً واحداً لكيان معيّن', 'en': 'A single record of one entity'},
       },
       {
         'id': 'b',

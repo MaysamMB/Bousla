@@ -21,8 +21,7 @@ Future<List<CareerRole>> loadCareerRoles(AssetBundle bundle) async => [
 
 /// The student's concept standings from their saved sessions (oldest
 /// first, as [ProfileRepository.sessions] returns them).
-Map<String, ConceptStanding> standingsFromSessions(
-        List<SavedSession> sessions) =>
+Map<String, ConceptStanding> standingsFromSessions(List<SavedSession> sessions) =>
     latestStandings([
       for (final s in sessions)
         [

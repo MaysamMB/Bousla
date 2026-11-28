@@ -14,7 +14,7 @@ import '../repositories/session_repository.dart';
 /// both in the same running app.
 class InMemorySessionRepository implements SessionRepository {
   InMemorySessionRepository({Random? random})
-      : _random = random ?? Random.secure();
+    : _random = random ?? Random.secure();
 
   final Random _random;
   final _sessions = <String, Session>{};
@@ -64,12 +64,11 @@ class InMemorySessionRepository implements SessionRepository {
   Future<List<Session>> listSessions({
     required String ownerId,
     required String courseId,
-  }) async =>
-      [
-        // Insertion order is creation order; newest first.
-        for (final s in _sessions.values.toList().reversed)
-          if (s.ownerId == ownerId && s.courseId == courseId) s,
-      ];
+  }) async => [
+    // Insertion order is creation order; newest first.
+    for (final s in _sessions.values.toList().reversed)
+      if (s.ownerId == ownerId && s.courseId == courseId) s,
+  ];
 
   @override
   Future<Session?> latestOpenSession({
@@ -160,7 +159,8 @@ class InMemorySessionRepository implements SessionRepository {
   }
 
   @override
-  Future<void> closeSession(String sessionId) async => _update(
+  Future<void> closeSession(String sessionId) async =>
+      _update(
         _require(
           sessionId,
         ).copyWith(status: SessionStatus.closed, closedAt: DateTime.now()),

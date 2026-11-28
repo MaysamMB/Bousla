@@ -84,11 +84,11 @@ bool sameQuestionContent(QuestionView q, String? key, QuestionDraft d) {
 /// A model's draft as a [QuestionDraft], so it passes the same checks as a
 /// question written by hand.
 QuestionDraft draftFromGenerated(GeneratedQuestion g) => QuestionDraft(
-      conceptIds: List.of(g.conceptIds),
-      prompt: g.prompt,
-      options: [for (final o in g.options) OptionView(id: o.id, text: o.text)],
-      correctOptionId: g.correctOptionId,
-    );
+  conceptIds: List.of(g.conceptIds),
+  prompt: g.prompt,
+  options: [for (final o in g.options) OptionView(id: o.id, text: o.text)],
+  correctOptionId: g.correctOptionId,
+);
 
 /// The next unused option ID: a, b, c, ...
 String nextOptionId(Iterable<String> used) {
@@ -110,8 +110,7 @@ Set<Language> toggleHiddenLanguage(
   Set<Language> current,
   Language language,
   bool hidden,
-) =>
-    hidden ? {language} : (Set.of(current)..remove(language));
+) => hidden ? {language} : (Set.of(current)..remove(language));
 
 /// What instructors decided about AI-drafted questions. Shown on the review
 /// screen and usable as evidence of AI draft quality.

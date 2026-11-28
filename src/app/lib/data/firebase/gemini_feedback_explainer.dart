@@ -45,8 +45,9 @@ class GeminiFeedbackExplainer implements FeedbackExplainer {
           ),
         );
         try {
-          final response = await model.generateContent(
-              [Content.text(prompt)]).timeout(GeminiQuestionGenerator.timeout);
+          final response = await model
+              .generateContent([Content.text(prompt)])
+              .timeout(GeminiQuestionGenerator.timeout);
           debugPrint('Bousla AI feedback: $name answered');
           final text = response.text;
           if (text == null || text.trim().isEmpty) {
