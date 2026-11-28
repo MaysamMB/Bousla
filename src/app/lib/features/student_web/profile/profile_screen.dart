@@ -11,6 +11,7 @@ import '../career/career_screen.dart';
 import '../feedback/feedback_screen.dart' show stateLabel;
 import '../knowledge_map/knowledge_map_screen.dart';
 import '../../../shared/widgets/bousla_mark.dart';
+import 'consent_dialog.dart';
 import 'profile_avatar.dart';
 
 /// "My profile": the student's own saved sessions (architecture §10).
@@ -41,6 +42,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _loadInfo();
     }
     _sessions ??= _load();
+  }
+
+  var _signingIn = false;
+
+  /// "Sign in with Google" when this browser has no profile: links this
+  /// browser to Google (keeping its answers), or signs in to the account's
+  /// existing profile from another browser. A new profile needs consent.
+  Future<void> _signIn() async {
+    final l = AppLocalizations.of(context);
+    final services = ServicesScope.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _signingIn = true);
+    try {
+      StudentAccount account;
+      try {
+        await services.auth.ensureParticipant();
+        account = await services.auth.linkStudentAccount();
+      } on StudentLinkFailure catch (e) {
+        if (e.problem != StudentLinkProblem.accountInUse) rethrow;
+        account = await services.auth.switchToLinkedStudentAccount();
+      }
+      final consented = await services.profiles.consentVersion(account.uid);
+      if (consented == null || consented < profileConsentVersion) {
+        if (!mounted) return;
+        // No spinner while the student reads the consent text.
+        setState(() => _signingIn = false);
+        if (await showProfileConsent(context) != true) {
+          messenger.showSnackBar(
+              SnackBar(content: Text(l.studentProfileSignInNoConsent)));
+          return;
+        }
+        await services.profiles.create(account.uid);
+      }
+      if (!mounted) return;
+      setState(() {
+        _account = account;
+        _sessions = _load();
+      });
+      _loadInfo();
+    } on StudentLinkFailure catch (e) {
+      debugPrint('Profile sign-in failed: $e');
+      messenger.showSnackBar(SnackBar(
+        content: Text(switch (e.problem) {
+          // Safari: the window must open straight from a tap.
+          StudentLinkProblem.popupBlocked => l.studentProfileSignInTapAgain,
+          StudentLinkProblem.cancelled => l.studentProfileErrCancelled,
+          StudentLinkProblem.network => l.studentProfileErrNetwork,
+          StudentLinkProblem.notEnabled => l.studentProfileErrNotEnabled,
+          StudentLinkProblem.instructorSignedIn =>
+            l.studentProfileErrInstructor,
+          _ => '${l.studentProfileErrFailed} (${e.detail ?? e.problem.name})',
+        }),
+      ));
+    } catch (e) {
+      debugPrint('Profile sign-in failed: $e');
+      messenger.showSnackBar(
+          SnackBar(content: Text('${l.studentProfileErrFailed} ($e)')));
+    } finally {
+      if (mounted) setState(() => _signingIn = false);
+    }
   }
 
   Future<void> _loadInfo() async {
@@ -81,8 +142,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // A block body: setState must not get a Future back.
   void _reload() => setState(() {
-    _sessions = _load();
-  });
+        _sessions = _load();
+      });
 
   Future<void> _remove(SavedSession s) async {
     await ServicesScope.of(
@@ -314,18 +375,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-  }) => Card(
-    key: key,
-    margin: const EdgeInsets.only(bottom: 8),
-    child: ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
-    ),
-  );
+  }) =>
+      Card(
+        key: key,
+        margin: const EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+          title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+          subtitle: Text(subtitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onTap,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -342,11 +405,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
         alignment: Alignment(0, 0.7),
         child: account == null
             ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    l.studentProfileNone,
-                    textAlign: TextAlign.center,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          l.studentProfileSignInHint,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 20),
+                        FilledButton.icon(
+                          key: const ValueKey('profile-sign-in'),
+                          onPressed: _signingIn ? null : _signIn,
+                          style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 52)),
+                          icon: _signingIn
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.login),
+                          label: Text(l.studentProfileSignInGoogle),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          l.studentProfileNone,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
@@ -441,10 +535,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                   childrenPadding:
                                       const EdgeInsetsDirectional.only(
-                                        start: 16,
-                                        end: 8,
-                                        bottom: 4,
-                                      ),
+                                    start: 16,
+                                    end: 8,
+                                    bottom: 4,
+                                  ),
                                   expandedCrossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
