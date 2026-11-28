@@ -32,7 +32,14 @@ class FeedbackScreen extends StatefulWidget {
     required this.sessionId,
     required this.participantId,
     this.reviewStore,
+    this.saved,
   });
+
+  /// The same session's results as saved in the student's profile ("My
+  /// profile"). Shown when the original feedback cannot be read here (e.g.
+  /// saved from another browser), so the ticks and "Test my understanding
+  /// again" still work. Not shown with the save card (already saved).
+  final StudentFeedback? saved;
 
   final String sessionId;
   final String participantId;
@@ -111,7 +118,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     if (mounted) await _checkAttempt();
   }
 
-  Widget _view(StudentFeedback feedback) {
+  Widget _view(StudentFeedback feedback, {bool fromProfile = false}) {
     final services = ServicesScope.of(context);
     final canFollowUp = services.followUps != null ||
         services.practiceQuizGenerator != null;
@@ -122,10 +129,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       followUpStatus: _followUpStatus,
       onTestAgain: canFollowUp ? () => _openFollowUp(feedback) : null,
       // Optional: keep this session in the student's own profile.
-      footer: SaveProgressCard(
-        sessionId: widget.sessionId,
-        feedback: feedback,
-      ),
+      footer: fromProfile
+          ? null
+          : SaveProgressCard(
+              sessionId: widget.sessionId,
+              feedback: feedback,
+            ),
     );
   }
 
@@ -169,6 +178,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           if (snapshot.hasError && _last != null) {
             return _view(_last!);
           }
+          if (snapshot.hasError && widget.saved != null) {
+            return _view(widget.saved!, fromProfile: true);
+          }
           if (snapshot.hasError) {
             return Center(
               child: Text(l.errorGeneric, textAlign: TextAlign.center),
@@ -178,6 +190,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           final feedback = snapshot.data;
+          if (feedback == null && widget.saved != null) {
+            return _view(widget.saved!, fromProfile: true);
+          }
           if (feedback == null) {
             return Center(
               child: Padding(
