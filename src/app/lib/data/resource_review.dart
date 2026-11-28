@@ -125,10 +125,17 @@ Resource resourceFromSuggestion(ResourceSuggestion s, {required String id}) =>
       type: s.kind.resourceType,
       language: s.language,
       title: s.title,
+      // Found by the web search; the instructor opens it before approving.
+      url: s.url,
       status: ReviewStatus.pendingReview,
       description: s.description,
       source: 'ai_draft',
-      whereToFind: s.whereToFind,
+      whereToFind: s.minutes == null
+          ? s.whereToFind
+          : LocalizedText(
+              ar: '${s.whereToFind.ar} · نحو ${s.minutes} دقيقة (تقدير)',
+              en: '${s.whereToFind.en} · about ${s.minutes} min (estimate)',
+            ),
       searchQuery: s.searchQuery,
       sourceLocation: s.sourceLocation,
     );

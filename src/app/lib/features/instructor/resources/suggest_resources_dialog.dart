@@ -112,7 +112,29 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
     });
     final request = _request.text.trim();
     try {
+      // Search context from the approved questions on these concepts
+      // (prompts only), so the instructor need not describe anything.
+      final questionsByConcept = <String, List<String>>{};
+      try {
+        final questions = await services.content
+            .listQuestions(widget.courseId, approvedOnly: true);
+        for (final q in questions) {
+          final text = q.prompt.en.trim().isNotEmpty
+              ? q.prompt.en.trim()
+              : q.prompt.ar.trim();
+          if (text.isEmpty) continue;
+          for (final id in q.question.conceptIds) {
+            if (_chosen.contains(id)) {
+              (questionsByConcept[id] ??= []).add(text);
+            }
+          }
+        }
+      } catch (e) {
+        // Without questions the concept names alone guide the search.
+        debugPrint('Questions for the resource search: $e');
+      }
       final result = await suggester.suggestResources(
+        questionsByConcept: questionsByConcept,
         concepts: [
           for (final c in widget.concepts)
             if (_chosen.contains(c.id)) c,
@@ -145,7 +167,9 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
         suggestions: fresh,
       );
       final links = result.dropped
-          .where((i) => i == SuggestionIssue.containsLink)
+          .where((i) =>
+              i == SuggestionIssue.containsLink ||
+              i == SuggestionIssue.ungroundedLink)
           .length;
       final done = l.instructorResSuggestDone(
         fresh.length,
@@ -195,7 +219,8 @@ class _SuggestResourcesDialogState extends State<SuggestResourcesDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l.instructorResSuggestHelp, style: theme.textTheme.bodySmall),
+              Text(l.instructorResSuggestHelp,
+                  style: theme.textTheme.bodySmall),
               const SizedBox(height: 16),
               TextField(
                 controller: _request,

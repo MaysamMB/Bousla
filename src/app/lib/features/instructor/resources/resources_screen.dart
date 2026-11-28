@@ -184,11 +184,26 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                             _setStatus(data, r, ReviewStatus.rejected),
                         child: Text(l.reviewReject),
                       ),
-                      FilledButton.icon(
-                        onPressed: () => _edit(data, r),
-                        icon: const Icon(Icons.add_link),
-                        label: Text(l.instructorResAddLink),
-                      ),
+                      // Found by the web search: open it, then approve (or
+                      // edit). Otherwise the instructor adds the link.
+                      if (r.url != null) ...[
+                        OutlinedButton(
+                          onPressed: () => _edit(data, r),
+                          child: Text(l.reviewEdit),
+                        ),
+                        FilledButton.icon(
+                          key: ValueKey('approve-${r.id}'),
+                          onPressed: () =>
+                              _setStatus(data, r, ReviewStatus.approved),
+                          icon: const Icon(Icons.check),
+                          label: Text(l.reviewApprove),
+                        ),
+                      ] else
+                        FilledButton.icon(
+                          onPressed: () => _edit(data, r),
+                          icon: const Icon(Icons.add_link),
+                          label: Text(l.instructorResAddLink),
+                        ),
                     ],
                   ),
               ],

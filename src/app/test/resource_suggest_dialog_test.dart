@@ -37,6 +37,7 @@ class _FakeSuggester implements ResourceSuggester {
   List<Concept>? concepts;
   String? request;
   ClassResourceFocus? focus;
+  Map<String, List<String>>? questions;
 
   @override
   String get modelName => 'fake-model';
@@ -48,11 +49,14 @@ class _FakeSuggester implements ResourceSuggester {
     MaterialFile? material,
     String? request,
     ClassResourceFocus? focus,
+    Map<String, List<String>> questionsByConcept = const {},
+    bool searchWeb = true,
   }) async {
     calls++;
     this.concepts = concepts;
     this.request = request;
     this.focus = focus;
+    questions = questionsByConcept;
     if (error != null) throw error!;
     return SuggestionParseResult(accepted: answer, dropped: const []);
   }
@@ -165,8 +169,8 @@ void main() {
         'Short videos for students who mix up primary and foreign keys');
     expect(ai.focus, isNull);
     expect(popped.single, contains('1 suggestions saved for review'));
-    final saved = await services.content
-        .listResources(_course, approvedOnly: false);
+    final saved =
+        await services.content.listResources(_course, approvedOnly: false);
     // Saved as a pending AI suggestion, without a link: not for students.
     final s = saved.firstWhere((r) => r.title.en == 'Joins between tables');
     expect(s.status, ReviewStatus.pendingReview);
@@ -192,8 +196,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(ai.request, isNull);
     expect(ai.focus!.difficultConceptIds, ['foreign_key']);
-    expect(ai.concepts!.map((c) => c.id).toSet(),
-        {'primary_key', 'foreign_key'});
+    expect(
+        ai.concepts!.map((c) => c.id).toSet(), {'primary_key', 'foreign_key'});
   });
 
   testWidgets('no session results: says so, all concepts stay chosen',
@@ -221,10 +225,10 @@ void main() {
     expect(popped.single, contains('1 suggestions saved for review'));
     expect(popped.single,
         contains('1 skipped: the course already has a resource'));
-    final all = await services.content
-        .listResources(_course, approvedOnly: false);
-    expect(all.where((r) => r.title.en == 'Practice: Primary Key'),
-        hasLength(1));
+    final all =
+        await services.content.listResources(_course, approvedOnly: false);
+    expect(
+        all.where((r) => r.title.en == 'Practice: Primary Key'), hasLength(1));
   });
 
   testWidgets('only duplicates: nothing saved, the dialog says why',
@@ -298,5 +302,38 @@ void main() {
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.text('Add resource'), findsOneWidget);
+  });
+
+  testWidgets(
+      'web search: question prompts give the context; a found link is kept for approval',
+      (tester) async {
+    const found = ResourceSuggestion(
+      conceptIds: ['foreign_key'],
+      kind: SuggestedKind.video,
+      language: ResourceLanguage.en,
+      title: LocalizedText(
+          ar: 'المفتاح الخارجي باختصار', en: 'Foreign keys, briefly'),
+      description: LocalizedText(ar: 'فيديو قصير', en: 'A short video'),
+      whereToFind: LocalizedText(ar: 'يوتيوب', en: 'YouTube'),
+      url: 'https://www.youtube.com/watch?v=fk',
+      minutes: 6,
+    );
+    final ai = _FakeSuggester(answer: [found]);
+    final (services, _) = await _open(tester, ai, focus: _focus());
+    await tester.tap(find.text('Suggest'));
+    await tester.pumpAndSettle();
+
+    // Prompts of approved questions on the chosen concepts, no answers.
+    expect(ai.questions!.keys, isNotEmpty);
+    expect(
+        ai.questions!.keys.toSet().difference({'primary_key', 'foreign_key'}),
+        isEmpty);
+    final saved =
+        (await services.content.listResources(_course, approvedOnly: false))
+            .firstWhere((r) => r.title.en == 'Foreign keys, briefly');
+    expect(saved.url, 'https://www.youtube.com/watch?v=fk');
+    // Still waiting for the instructor.
+    expect(saved.status, ReviewStatus.pendingReview);
+    expect(saved.whereToFind!.en, contains('about 6 min (estimate)'));
   });
 }

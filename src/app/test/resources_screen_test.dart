@@ -11,6 +11,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeSuggester implements ResourceSuggester {
+  _FakeSuggester({this.url});
+
+  /// A link found by the web search, or null for a description only.
+  final String? url;
   List<Concept>? asked;
 
   @override
@@ -23,11 +27,14 @@ class _FakeSuggester implements ResourceSuggester {
     MaterialFile? material,
     String? request,
     ClassResourceFocus? focus,
+    Map<String, List<String>> questionsByConcept = const {},
+    bool searchWeb = true,
   }) async {
     asked = concepts;
-    return const SuggestionParseResult(
+    return SuggestionParseResult(
       accepted: [
         ResourceSuggestion(
+          url: url,
           conceptIds: ['foreign_key'],
           kind: SuggestedKind.video,
           language: ResourceLanguage.en,
@@ -46,7 +53,7 @@ class _FakeSuggester implements ResourceSuggester {
           searchQuery: 'foreign key database tutorial',
         ),
       ],
-      dropped: [SuggestionIssue.containsLink],
+      dropped: const [SuggestionIssue.containsLink],
     );
   }
 }
@@ -133,16 +140,17 @@ void main() {
     final services = await _show(tester, ai: ai);
     await tester.tap(find.text('Suggest resources (AI)'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('It gives no links'), findsOneWidget);
+    expect(find.textContaining('searches the web'), findsOneWidget);
     await tester.tap(find.text('Suggest'));
     await tester.pumpAndSettle();
 
     expect(ai.asked, isNotEmpty);
-    expect(find.textContaining('1 suggestions saved for review'),
+    expect(
+        find.textContaining('1 suggestions saved for review'), findsOneWidget);
+    expect(
+        find.textContaining('1 because they contained links'), findsOneWidget);
+    expect(find.text('AI suggestions waiting for your review (1)'),
         findsOneWidget);
-    expect(find.textContaining('1 because they contained links'),
-        findsOneWidget);
-    expect(find.text('AI suggestions waiting for a link (1)'), findsOneWidget);
     expect(find.text('Where to look: YouTube, a university channel'),
         findsOneWidget);
     expect(find.text('foreign key database tutorial'), findsOneWidget);
@@ -163,12 +171,37 @@ void main() {
     await _settleSave(tester);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('waiting for a link'), findsNothing);
+    expect(find.textContaining('waiting for your review'), findsNothing);
     final done = (await services.content.listResources('database_systems'))
         .where((r) => r.url == 'https://example.edu/fk-video')
         .single;
     expect(done.source, 'ai_draft');
     expect(done.title.ar, 'فيديو عن المفتاح الخارجي');
     expect(find.textContaining('suggested by AI'), findsWidgets);
+  });
+
+  testWidgets('a resource found by the web search is approved in one tap',
+      (tester) async {
+    final ai = _FakeSuggester(url: 'https://www.youtube.com/watch?v=fk');
+    final services = await _show(tester, ai: ai);
+    await tester.tap(find.text('Suggest resources (AI)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Suggest'));
+    await tester.pumpAndSettle();
+
+    // The link is shown to open; approving needs no editing.
+    expect(find.text('https://www.youtube.com/watch?v=fk'), findsOneWidget);
+    expect(find.text('Add link and approve'), findsNothing);
+    final pending = (await services.content
+            .listResources('database_systems', approvedOnly: false))
+        .singleWhere((r) => r.url == 'https://www.youtube.com/watch?v=fk');
+    expect(pending.status, ReviewStatus.pendingReview);
+    await tester.tap(find.byKey(ValueKey('approve-${pending.id}')));
+    await tester.pumpAndSettle();
+
+    final approved = (await services.content.listResources('database_systems'))
+        .where((r) => r.url == 'https://www.youtube.com/watch?v=fk');
+    expect(approved, hasLength(1));
+    expect(find.textContaining('waiting for your review'), findsNothing);
   });
 }

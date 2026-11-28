@@ -40,8 +40,9 @@ enum SuggestedKind {
   }
 }
 
-/// A resource description from the model that passed
-/// [parseResourceSuggestions]. Never has a URL.
+/// A resource from the model that passed [parseResourceSuggestions] (a
+/// description, never a URL) or [parseSearchedResourceSuggestions] (may
+/// carry a URL that the web search actually returned).
 class ResourceSuggestion {
   const ResourceSuggestion({
     required this.conceptIds,
@@ -52,6 +53,8 @@ class ResourceSuggestion {
     required this.whereToFind,
     this.searchQuery,
     this.sourceLocation,
+    this.url,
+    this.minutes,
   });
 
   final List<String> conceptIds;
@@ -74,6 +77,14 @@ class ResourceSuggestion {
 
   /// Where in the instructor's material, when one was attached.
   final String? sourceLocation;
+
+  /// A page the model's web search returned, checked against the search's
+  /// own sources ([parseSearchedResourceSuggestions]). The instructor still
+  /// opens it before approving.
+  final String? url;
+
+  /// The model's estimate of a video's length, in minutes. Not checked.
+  final int? minutes;
 }
 
 /// Why a suggestion was dropped before reaching the instructor.
@@ -89,7 +100,17 @@ enum SuggestionIssue {
   /// checked by the instructor, never taken from the model.
   containsLink,
   duplicate,
+
+  /// A link that is not among the pages the web search returned: possibly
+  /// invented, so it is dropped.
+  ungroundedLink,
+
+  /// A video longer than [maxVideoMinutes] (by the model's own estimate).
+  videoTooLong,
 }
+
+/// Videos longer than this are not suggested: students review one concept.
+const maxVideoMinutes = 15;
 
 class SuggestionParseResult {
   const SuggestionParseResult({required this.accepted, required this.dropped});
@@ -319,7 +340,8 @@ SuggestionParseResult parseResourceSuggestions(
       dropped.add(issue);
       continue;
     }
-    final key = s!.title.en.toLowerCase().replaceAll(RegExp(r'\W+'), ' ').trim();
+    final key =
+        s!.title.en.toLowerCase().replaceAll(RegExp(r'\W+'), ' ').trim();
     if (!seen.add(key)) {
       dropped.add(SuggestionIssue.duplicate);
       continue;
@@ -358,8 +380,16 @@ SuggestionParseResult parseResourceSuggestions(
     _ => ResourceLanguage.both,
   };
 
-  final ar = [text('title_ar'), text('description_ar'), text('where_to_find_ar')];
-  final en = [text('title_en'), text('description_en'), text('where_to_find_en')];
+  final ar = [
+    text('title_ar'),
+    text('description_ar'),
+    text('where_to_find_ar')
+  ];
+  final en = [
+    text('title_en'),
+    text('description_en'),
+    text('where_to_find_en')
+  ];
   if (ar.any((t) => t.isEmpty || !_arabicLetter.hasMatch(t))) {
     return (null, SuggestionIssue.arabicMissing);
   }
@@ -418,4 +448,177 @@ String _titleKey(String t) => t
         s,
   ];
   return (kept, suggestions.length - kept.length);
+}
+
+/// Instructions for the web-search variant: the model searches the web
+/// (Google Search grounding) for real resources and returns them with their
+/// links. The search words come from the concept names and, when given, the
+/// approved questions on each concept ([questionsByConcept], prompts only,
+/// never answers), so the instructor does not have to write anything;
+/// [request] is optional extra guidance.
+String buildSearchedResourceInstructions({
+  required List<DraftingConcept> concepts,
+  required int perConcept,
+  Map<String, List<String>> questionsByConcept = const {},
+  String? request,
+  ClassResourceFocus? focus,
+}) {
+  final lines = <String>[];
+  for (final c in concepts) {
+    lines.add('- ${c.id}: ${c.name.en} / ${c.name.ar}');
+    final qs = questionsByConcept[c.id] ?? const [];
+    for (final q in qs.take(3)) {
+      final one = q.replaceAll(RegExp(r'\s+'), ' ').trim();
+      lines.add('    question students answered: '
+          '"${one.length > 200 ? one.substring(0, 200) : one}"');
+    }
+  }
+  final base = buildResourceSuggestionInstructions(
+    concepts: concepts,
+    perConcept: perConcept,
+    withMaterial: false,
+    request: request,
+    focus: focus,
+  );
+  // Reuse the instructor's request / class focus block only.
+  final start = base.indexOf('\n\n');
+  final end = base.indexOf('For each concept');
+  final context =
+      start >= 0 && end > start ? base.substring(start, end).trim() : '';
+  return """
+You help a university instructor find real learning resources on the web for their students, for these concepts:
+${lines.join('\n')}
+${context.isEmpty ? '' : '\n$context\n'}
+Use Google Search. For each concept, find up to $perConcept resources a student can use right after a short quiz to review it. Rules:
+1. Mix kinds when possible: video (short and clear: at most $maxVideoMinutes minutes, ideally 3–10; one concept, not a whole course), article (a clear explanation or tutorial page), website (an interactive tutorial or practice page), activity (a short exercise the instructor can give, with no link).
+2. Only resources you found in this search, from reputable sources (universities, official documentation, well-known educational channels and sites). Never invent a resource or a link.
+3. url: the exact address of the page or video you found. Empty for activity.
+4. minutes: for a video, its length in minutes if the search shows it; otherwise your best estimate. 0 for other kinds.
+5. description says what the resource covers and why it helps with this concept, in 1–2 sentences.
+6. Write title, description and where_to_find (the site or channel name) in BOTH Arabic (Modern Standard Arabic) and English. Technical terms may be followed by the English term in parentheses.
+7. language is the language of the resource itself: ar, en or both. Include an Arabic or bilingual resource per concept when you find a good one.
+8. Link every resource to one or more of the concept IDs above, and to nothing else.
+9. Use the questions only to understand what students need to review; do not reveal or discuss answers.
+
+Answer with JSON only, in this form:
+{"resources": [{"concept_ids": ["..."], "kind": "video", "language": "en", "url": "https://...", "minutes": 6, "title_ar": "...", "title_en": "...", "description_ar": "...", "description_en": "...", "where_to_find_ar": "...", "where_to_find_en": "..."}]}
+
+The instructor opens and checks every resource before any student sees it.""";
+}
+
+/// The host of [url] if it is an http(s) address, else null.
+String? _host(String url) {
+  final u = Uri.tryParse(url.trim());
+  if (u == null || !(u.isScheme('http') || u.isScheme('https'))) return null;
+  final h = u.host.toLowerCase();
+  return h.isEmpty ? null : (h.startsWith('www.') ? h.substring(4) : h);
+}
+
+/// Whether [host] is one of [domains] or a subdomain of one
+/// (youtu.be counts as youtube.com).
+bool _grounded(String host, Set<String> domains) {
+  final h = host == 'youtu.be' ? 'youtube.com' : host;
+  for (final raw in domains) {
+    var d = raw.toLowerCase().trim();
+    if (d.startsWith('www.')) d = d.substring(4);
+    if (d.isEmpty) continue;
+    if (h == d || h.endsWith('.$d')) return true;
+  }
+  return false;
+}
+
+/// Checks a web-search answer like [parseResourceSuggestions], and its
+/// links: a link is kept only if its site is among [searchedDomains], the
+/// sites the search itself returned (from the response's grounding
+/// metadata); otherwise the whole suggestion is dropped
+/// ([SuggestionIssue.ungroundedLink]). With no searched sites at all, every
+/// linked suggestion is dropped. Videos over [maxVideoMinutes] are dropped.
+SuggestionParseResult parseSearchedResourceSuggestions(
+  String modelText, {
+  required Set<String> knownConceptIds,
+  required int maxCount,
+  required Set<String> searchedDomains,
+}) {
+  final Object? decoded;
+  try {
+    decoded = jsonDecode(stripCodeFence(_jsonPart(modelText)));
+  } on FormatException {
+    return const SuggestionParseResult(
+      accepted: [],
+      dropped: [SuggestionIssue.invalidJson],
+    );
+  }
+  final list = switch (decoded) {
+    {'resources': final List<Object?> r} => r,
+    final List<Object?> r => r,
+    _ => null,
+  };
+  if (list == null) {
+    return const SuggestionParseResult(
+      accepted: [],
+      dropped: [SuggestionIssue.invalidJson],
+    );
+  }
+  final accepted = <ResourceSuggestion>[];
+  final dropped = <SuggestionIssue>[];
+  final seen = <String>{};
+  for (final entry in list) {
+    if (accepted.length >= maxCount) break;
+    if (entry is! Map) {
+      dropped.add(SuggestionIssue.malformed);
+      continue;
+    }
+    final url = entry['url'] is String ? (entry['url'] as String).trim() : '';
+    final minutes = switch (entry['minutes']) {
+      final num n => n.round(),
+      _ => 0,
+    };
+    // The text fields are checked as before (no links in them).
+    final copy = Map<String, Object?>.from(entry)
+      ..remove('url')
+      ..remove('minutes');
+    final (s, issue) = _checkOne(copy, knownConceptIds, false);
+    if (issue != null) {
+      dropped.add(issue);
+      continue;
+    }
+    final kind = s!.kind;
+    String? link;
+    if (kind != SuggestedKind.activity) {
+      final host = _host(url);
+      if (host == null || !_grounded(host, searchedDomains)) {
+        dropped.add(SuggestionIssue.ungroundedLink);
+        continue;
+      }
+      link = url;
+    }
+    if (kind == SuggestedKind.video && minutes > maxVideoMinutes) {
+      dropped.add(SuggestionIssue.videoTooLong);
+      continue;
+    }
+    final key =
+        link ?? s.title.en.toLowerCase().replaceAll(RegExp(r'\W+'), ' ').trim();
+    if (!seen.add(key)) {
+      dropped.add(SuggestionIssue.duplicate);
+      continue;
+    }
+    accepted.add(ResourceSuggestion(
+      conceptIds: s.conceptIds,
+      kind: kind,
+      language: s.language,
+      title: s.title,
+      description: s.description,
+      whereToFind: s.whereToFind,
+      url: link,
+      minutes: kind == SuggestedKind.video && minutes > 0 ? minutes : null,
+    ));
+  }
+  return SuggestionParseResult(accepted: accepted, dropped: dropped);
+}
+
+/// The JSON object in a free-text answer (a search answer cannot be forced
+/// to JSON): from the first "{" to the last "}".
+String _jsonPart(String text) {
+  final a = text.indexOf('{'), b = text.lastIndexOf('}');
+  return a >= 0 && b > a ? text.substring(a, b + 1) : text;
 }
