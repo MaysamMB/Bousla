@@ -46,13 +46,20 @@ Language feedbackLanguage(Iterable<Response> responses) {
 ///
 /// Concepts covered: those of the session's questions plus their direct
 /// prerequisites (so a prerequisite hint can name it), in course order.
+///
+/// [bank] is the course's approved questions: from it each student gets
+/// new questions reserved for a private reassessment on the concepts that
+/// may need review or are still forming ([selectFollowUpQuestions]; never
+/// one asked in this session). It changes nothing else in the feedback.
 Map<String, ComputedFeedback> computeFeedback({
   required List<Response> responses,
   required List<Question> questions,
   required List<AnswerKey> keys,
   required List<Concept> concepts,
   required List<Resource> resources,
+  List<Question> bank = const [],
 }) {
+  final askedIds = {for (final q in questions) q.id};
   final byId = {for (final c in concepts) c.id: c};
   final sessionConcepts = {for (final q in questions) ...q.conceptIds};
   final covered = {
@@ -95,9 +102,28 @@ Map<String, ComputedFeedback> computeFeedback({
       resources: approved,
       preferredLanguage: language,
     );
+    final reviewIds = [
+      for (final id in conceptIds)
+        if (masteries[id]?.state
+            case MasteryState.possibleDifficulty || MasteryState.emerging)
+          id,
+    ];
+    final reserved = selectFollowUpQuestions(
+      bank: bank,
+      concepts: reviewIds,
+      askedIds: askedIds,
+    );
     out[participant] = ComputedFeedback(
       feedback: StudentFeedback(
         language: language,
+        reassessment: [
+          for (final p in reserved)
+            ReassessmentQuestion(
+              questionId: p.question.id,
+              version: p.question.version,
+              conceptId: p.conceptId,
+            ),
+        ],
         concepts: [
           for (final id in conceptIds)
             // .from keeps the concept's prerequisites for the knowledge map.
@@ -202,12 +228,14 @@ class FeedbackPublisher {
       final keys = await content.answerKeys(session.courseId);
       concepts = await content.listConcepts(session.courseId);
       resources = await content.listResources(session.courseId);
+      final bank = await content.listQuestions(session.courseId);
       computed = computeFeedback(
         responses: responses,
         questions: [for (final q in questions) q.question],
         keys: keys,
         concepts: concepts,
         resources: resources,
+        bank: [for (final q in bank) q.question],
       );
     } catch (e) {
       throw FeedbackPublishException(e);
@@ -247,6 +275,7 @@ class FeedbackPublisher {
         concepts: f.concepts,
         hints: f.hints,
         recommendations: f.recommendations,
+        reassessment: f.reassessment,
         explanation: FeedbackExplanation(
           text: outcome.text,
           source:

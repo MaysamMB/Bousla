@@ -7,6 +7,7 @@ import '../../app_services.dart';
 import 'firebase_auth_service.dart';
 import 'firebase_config.dart';
 import 'firestore_content_repository.dart';
+import 'firestore_follow_up_repository.dart';
 import 'firestore_profile_repository.dart';
 import 'firestore_session_repository.dart';
 import 'gemini_feedback_explainer.dart';
@@ -57,5 +58,9 @@ Future<AppServices> firebaseServices(FirebaseConfig config) async {
     teachingDraftGenerator: GeminiTeachingDraftGenerator(),
     resourceSuggester: GeminiResourceSuggester(),
     profiles: FirestoreProfileRepository(db),
+    followUps: FirestoreFollowUpRepository(
+      db,
+      ensureParticipant: authService.ensureParticipant,
+    ),
   );
 }

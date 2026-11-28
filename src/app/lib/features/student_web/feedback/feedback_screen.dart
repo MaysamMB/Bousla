@@ -12,6 +12,8 @@ import '../../../shared/open_link.dart' as shared;
 import '../../../shared/widgets/language_switcher.dart';
 import '../profile/save_progress_card.dart';
 import '../knowledge_map/knowledge_map_screen.dart';
+import '../../../data/repositories/follow_up_repository.dart';
+import 'follow_up_screen.dart';
 import 'review_marks_store.dart';
 
 /// A student's personal feedback for one session (owner: student web
@@ -62,12 +64,66 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     _reviewStore.save(widget.sessionId, widget.participantId, _reviewed);
   }
 
+  /// This student's private follow-up for the session, if one was started
+  /// (to show "continue" or "see results").
+  FollowUpAttempt? _attempt;
+  var _attemptChecked = false;
+
+  Future<void> _checkAttempt() async {
+    final followUps = ServicesScope.of(context).followUps;
+    if (followUps == null) return;
+    try {
+      final a = await followUps.findAttempt(widget.sessionId);
+      if (mounted) setState(() => _attempt = a);
+    } catch (_) {
+      // Not known: the button starts or resumes it anyway.
+    }
+  }
+
+  Future<void> _openFollowUp(StudentFeedback feedback) async {
+    final reviewed = [
+      for (final id in feedback.reviewConceptIds)
+        if (_reviewed.contains(id)) id,
+    ];
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FollowUpScreen(
+          sessionId: widget.sessionId,
+          participantId: widget.participantId,
+          feedback: feedback,
+          reviewedConceptIds: reviewed,
+        ),
+      ),
+    );
+    if (mounted) await _checkAttempt();
+  }
+
+  Widget _view(StudentFeedback feedback) {
+    final followUps = ServicesScope.of(context).followUps;
+    return FeedbackView(
+      feedback: feedback,
+      reviewed: _reviewed,
+      onReviewChanged: _setReviewed,
+      followUpStatus: _attempt?.status,
+      onTestAgain: followUps == null ? null : () => _openFollowUp(feedback),
+      // Optional: keep this session in the student's own profile.
+      footer: SaveProgressCard(
+        sessionId: widget.sessionId,
+        feedback: feedback,
+      ),
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _feedback ??= ServicesScope.of(context)
         .sessions
         .watchMyFeedback(widget.sessionId, widget.participantId);
+    if (!_attemptChecked) {
+      _attemptChecked = true;
+      _checkAttempt();
+    }
   }
 
   /// Switches the UI to the feedback's language once, when it first arrives.
@@ -96,15 +152,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           // browser's anonymous feedback can no longer be read: keep showing
           // what was already shown.
           if (snapshot.hasError && _last != null) {
-            return FeedbackView(
-              feedback: _last!,
-              reviewed: _reviewed,
-              onReviewChanged: _setReviewed,
-              footer: SaveProgressCard(
-                sessionId: widget.sessionId,
-                feedback: _last!,
-              ),
-            );
+            return _view(_last!);
           }
           if (snapshot.hasError) {
             return Center(
@@ -128,16 +176,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           }
           _last = feedback;
           _applyLanguage(feedback);
-          return FeedbackView(
-            feedback: feedback,
-            reviewed: _reviewed,
-            onReviewChanged: _setReviewed,
-            // Optional: keep this session in the student's own profile.
-            footer: SaveProgressCard(
-              sessionId: widget.sessionId,
-              feedback: feedback,
-            ),
-          );
+          return _view(feedback);
         },
       ),
     );
@@ -153,7 +192,16 @@ class FeedbackView extends StatelessWidget {
     this.footer,
     this.reviewed = const {},
     this.onReviewChanged,
+    this.onTestAgain,
+    this.followUpStatus,
   });
+
+  /// Opens the private follow-up test. Null: no button.
+  final VoidCallback? onTestAgain;
+
+  /// The follow-up already started, if any: the button then continues it
+  /// or shows its results (and does not need a tick).
+  final FollowUpStatus? followUpStatus;
 
   final StudentFeedback feedback;
 
@@ -299,24 +347,35 @@ class FeedbackView extends StatelessWidget {
                   ),
                 ),
 
-            // C2. Ready for a follow-up test: only says how to join one the
-            // instructor creates. Nothing is started, sent or changed here.
+            // C2. Test my understanding again: the student's own private
+            // follow-up (no instructor, no class session). The ticks only
+            // choose its concepts; its graded answers are the evidence.
             if (eligible.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(l.studentFeedbackReviewedNote,
                   style: theme.textTheme.bodySmall),
-              const SizedBox(height: 8),
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: FilledButton.icon(
-                  key: const ValueKey('follow-up-ready'),
-                  onPressed: anyReviewed
-                      ? () => showFollowUpInstructions(context)
-                      : null,
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: Text(l.studentFeedbackReadyForFollowUp),
+              if (onTestAgain case final open?) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: FilledButton.icon(
+                    key: const ValueKey('follow-up-start'),
+                    onPressed: anyReviewed || followUpStatus != null
+                        ? open
+                        : null,
+                    icon: Icon(followUpStatus == FollowUpStatus.finished
+                        ? Icons.insights
+                        : Icons.quiz_outlined),
+                    label: Text(switch (followUpStatus) {
+                      null => l.studentFeedbackTestAgain,
+                      FollowUpStatus.inProgress =>
+                        l.studentFeedbackTestAgainContinue,
+                      FollowUpStatus.finished =>
+                        l.studentFeedbackTestAgainResults,
+                    }),
+                  ),
                 ),
-              ),
+              ],
             ],
 
             // D. The explanation, right after the evidence it is based on.
@@ -385,28 +444,6 @@ class FeedbackView extends StatelessWidget {
 /// "may need review" and "still forming".
 bool needsReviewTick(MasteryState state) =>
     state == MasteryState.possibleDifficulty || state == MasteryState.emerging;
-
-/// How to take a follow-up test: ask the instructor for its code or scan
-/// its QR code. Says nothing about results; nothing is started or sent.
-Future<void> showFollowUpInstructions(BuildContext context) =>
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        final l = AppLocalizations.of(context);
-        return AlertDialog(
-          key: const ValueKey('follow-up-instructions'),
-          icon: const Icon(Icons.qr_code_scanner),
-          title: Text(l.studentFeedbackReadyForFollowUp),
-          content: Text(l.studentFeedbackFollowUpInstructions),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l.studentFeedbackFollowUpOk),
-            ),
-          ],
-        );
-      },
-    );
 
 /// One "I've reviewed this concept" tick.
 class _ReviewedTick extends StatelessWidget {

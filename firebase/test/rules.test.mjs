@@ -518,3 +518,165 @@ describe('personal profiles', () => {
       { joined_at: serverTimestamp() }));
   });
 });
+
+// ---------------------------------------------------- private follow-ups
+describe('private follow-up ("test my understanding again")', () => {
+  const ATTEMPT = `student1_${CODE}`;
+  const attempt = (overrides = {}) => ({
+    owner_id: 'student1',
+    session_id: CODE,
+    course_id: COURSE,
+    concept_ids: ['primary_key'],
+    question_keys: ['q_new_v1'],
+    language: 'en',
+    status: 'in_progress',
+    created_at: serverTimestamp(),
+    ...overrides,
+  });
+  const answer = (option = 'a') => ({
+    question_id: 'q_new', question_version: 1, selected_option_id: option,
+    answered_at: serverTimestamp(),
+  });
+  const grade = (correct, concepts = ['primary_key']) => ({
+    correct, concept_ids: concepts, graded_at: serverTimestamp(),
+  });
+
+  // Released feedback for student1 only, and a new question (key: b).
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await setDoc(doc(db, 'courses', COURSE, 'questions', 'q_new_v1'), question('q_new', 'approved'));
+      await setDoc(doc(db, 'courses', COURSE, 'answer_keys', 'q_new_v1'), {
+        question_id: 'q_new', question_version: 1, correct_option_id: 'b',
+      });
+      await updateDoc(doc(db, 'sessions', CODE), { status: 'closed', feedback_released: true });
+      await setDoc(doc(db, 'sessions', CODE, 'feedback', 'student1'), {
+        language: 'en', concepts: [], review_concept_ids: ['primary_key'],
+        reassessment_question_keys: ['q_new_v1'],
+      });
+    });
+  });
+
+  const start = async () => {
+    const db = student('student1');
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT), attempt()));
+    return db;
+  };
+
+  test('students still cannot list the question bank, nor read keys', async () => {
+    const db = student('student1');
+    await assertFails(getDocs(query(collection(db, 'courses', COURSE, 'questions'),
+      where('provenance.status', '==', 'approved'))));
+    await assertFails(getDocs(collection(db, 'courses', COURSE, 'questions')));
+    // A reserved question is opened by its ID, as any approved question.
+    await assertSucceeds(getDoc(doc(db, 'courses', COURSE, 'questions', 'q_new_v1')));
+    await assertFails(getDoc(doc(db, 'courses', COURSE, 'answer_keys', 'q_new_v1')));
+  });
+
+  test('only the questions reserved for this student', async () => {
+    const db = student('student1');
+    // q_ok was asked in the session and is not reserved.
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT), attempt({ question_keys: ['q_ok_v1'] })));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT),
+      attempt({ question_keys: ['q_new_v1', 'q_ok_v1'] })));
+    // Feedback published before the feature: nothing reserved.
+    await env.withSecurityRulesDisabled((ctx) =>
+      setDoc(doc(ctx.firestore(), 'sessions', CODE, 'feedback', 'student1'),
+        { language: 'en', concepts: [], review_concept_ids: ['primary_key'] }));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT), attempt()));
+  });
+
+  test('the attempt: own, eligible concepts only, one per session', async () => {
+    const db = student('student1');
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT), attempt({ concept_ids: ['sql_join'] })));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT), attempt({ concept_ids: [] })));
+    await assertFails(setDoc(doc(db, 'followups', `student1_OTHER`), attempt()));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT), attempt({ status: 'finished' })));
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT), attempt()));
+    // A second press: refused, the first one stays.
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT), attempt()));
+    await assertSucceeds(getDoc(doc(db, 'followups', ATTEMPT)));
+    // Another student cannot make one for student1, nor one of their own
+    // without feedback.
+    await assertFails(setDoc(doc(student('student2'), 'followups', ATTEMPT), attempt()));
+    await assertFails(setDoc(doc(student('student2'), 'followups', `student2_${CODE}`),
+      attempt({ owner_id: 'student2' })));
+    // Nobody lists attempts.
+    await assertFails(getDocs(collection(db, 'followups')));
+  });
+
+  test('a missing attempt can be checked by its owner only', async () => {
+    await assertSucceeds(getDoc(doc(student('student1'), 'followups', ATTEMPT)));
+    await assertFails(getDoc(doc(student('student2'), 'followups', ATTEMPT)));
+  });
+
+  test('answers: once, only questions of the attempt, only the owner', async () => {
+    const db = await start();
+    await assertFails(setDoc(doc(student('student2'), 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer()));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_ok_v1'),
+      { ...answer(), question_id: 'q_ok' }));
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('a')));
+    // Changing it is refused.
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('b')));
+    await assertFails(deleteDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1')));
+  });
+
+  test('grades: only the answer key\'s result is accepted', async () => {
+    const db = await start();
+    const g = doc(db, 'followups', ATTEMPT, 'grades', 'q_new_v1');
+    // No answer yet: no grade.
+    await assertFails(setDoc(g, grade(true)));
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('a')));
+    // 'a' is wrong (key: b): "correct" is refused, wrong concepts too.
+    await assertFails(setDoc(g, grade(true)));
+    await assertFails(setDoc(g, grade(false, ['sql_join'])));
+    await assertSucceeds(setDoc(g, grade(false)));
+    // Never changed afterwards.
+    await assertFails(setDoc(g, grade(true)));
+    await assertFails(deleteDoc(g));
+    // The owner reads their own grades; nobody else does.
+    await assertSucceeds(getDocs(collection(db, 'followups', ATTEMPT, 'grades')));
+    await assertFails(getDocs(collection(student('student2'), 'followups', ATTEMPT, 'grades')));
+  });
+
+  test('a right answer is graded right', async () => {
+    const db = await start();
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('b')));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT, 'grades', 'q_new_v1'), grade(false)));
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT, 'grades', 'q_new_v1'), grade(true)));
+  });
+
+  test('options cannot be tried with an answer and its grade in one batch', async () => {
+    const db = await start();
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('b'));
+    batch.set(doc(db, 'followups', ATTEMPT, 'grades', 'q_new_v1'), grade(true));
+    await assertFails(batch.commit());
+  });
+
+  test('finished: once, and no more answers', async () => {
+    const db = await start();
+    await assertFails(updateDoc(doc(db, 'followups', ATTEMPT), { concept_ids: ['primary_key', 'x'] }));
+    await assertSucceeds(updateDoc(doc(db, 'followups', ATTEMPT),
+      { status: 'finished', finished_at: serverTimestamp() }));
+    await assertFails(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('b')));
+    await assertFails(updateDoc(doc(db, 'followups', ATTEMPT),
+      { status: 'in_progress' }));
+  });
+
+  test('the instructor sees none of it', async () => {
+    const db = await start();
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT, 'answers', 'q_new_v1'), answer('b')));
+    await assertSucceeds(setDoc(doc(db, 'followups', ATTEMPT, 'grades', 'q_new_v1'), grade(true)));
+    const t = instructor();
+    await assertFails(getDoc(doc(t, 'followups', ATTEMPT)));
+    await assertFails(getDocs(collection(t, 'followups')));
+    await assertFails(getDocs(collection(t, 'followups', ATTEMPT, 'answers')));
+    await assertFails(getDocs(collection(t, 'followups', ATTEMPT, 'grades')));
+    // The original feedback is untouched by the follow-up.
+    const fb = await assertSucceeds(getDoc(doc(t, 'sessions', CODE, 'feedback', 'student1')));
+    if (JSON.stringify(fb.data().review_concept_ids) !== '["primary_key"]') {
+      throw new Error('original feedback changed');
+    }
+  });
+});
