@@ -174,6 +174,8 @@ Status (28 Nov, instructor approval screen): the waiting screen no longer tells 
 
 Status (28 Nov, student profile layout): "My profile" now shows each saved session with its own results (newest first, the newest open) instead of one list of concepts across sessions. A header lets the student set a name and pick one of 12 preset pictures (no photo upload: Cloud Storage is not on the free plan, and nothing about the student's face is stored). Both are seen by the student only and deleted with the profile. Rules: `profiles/{uid}` may also hold `display_name` (string, at most 40) and `avatar` (int 0–11); an update must leave the consent record unchanged unless it is a new consent. Checks: `flutter analyze` clean, `flutter test` 309/309, engine 126/126, rules 47/47 (emulator, this container). Needs a rules deploy as well as hosting. Not yet checked in a browser.
 
+Status (28 Nov, profile sign-in): "My profile" with no profile in this browser now offers "Sign in with Google". It links this browser to Google (keeping its answers), or, if that Google account already has a profile from another browser, signs in to it. A new profile is created only after the consent dialog; declining stores nothing. Checks: `flutter analyze` clean, `flutter test` 347/347 (3 new in `test/profile_sign_in_test.dart`). Not yet checked in a browser (Safari may block the first Google window: the student presses again).
+
 ## If time runs short
 Cut from the bottom, not the middle: keep 2 → 3 → 4 → 5 working end to end before polishing 6 and 7. Minimum AI for the demo: level 1 review screen (with offline drafts if needed) + level 2 explanations with guards.
 
