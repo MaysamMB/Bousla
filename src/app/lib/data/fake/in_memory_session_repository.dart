@@ -25,6 +25,16 @@ class InMemorySessionRepository implements SessionRepository {
   final _feedbackSaved = StreamController<String>.broadcast();
   var _nextId = 1;
 
+  /// For the in-memory follow-up "backend": the released feedback of
+  /// [participantId], or null (what the security rules let it check).
+  StudentFeedback? releasedFeedback(String sessionId, String participantId) =>
+      _sessions[sessionId]?.feedbackReleased == true
+          ? (_feedback[sessionId] ?? const {})[participantId]
+          : null;
+
+  /// The session, or null.
+  Session? sessionById(String sessionId) => _sessions[sessionId];
+
   Session _require(String sessionId) =>
       _sessions[sessionId] ?? (throw StateError('Unknown session $sessionId'));
 

@@ -209,6 +209,108 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/sessions/$(request.resource.data.session_id)/feedback/$(request.auth.uid));
     }
 
+    // ------------------------------------------------- private follow-ups
+    // "Test my understanding again": one student's own private
+    // reassessment after a session. Its questions are the new ones the
+    // instructor app reserved for this student when it published feedback
+    // (reassessment_question_keys in their feedback document); students
+    // never list the question bank. No instructor creates, reads or grades
+    // any of it: no rule below gives instructors access. Without a server
+    // (Spark plan), each grade is checked here against the answer key,
+    // which the browser never reads.
+
+    function followUpDoc(attemptId) {
+      return get(/databases/$(database)/documents/followups/$(attemptId));
+    }
+
+    function ownsFollowUp(attemptId) {
+      return signedIn() && followUpDoc(attemptId).data.owner_id == request.auth.uid;
+    }
+
+    function myFeedback(sessionId) {
+      return get(/databases/$(database)/documents/sessions/$(sessionId)/feedback/$(request.auth.uid));
+    }
+
+    // The attempt: {uid}_{sessionId}, so there is one per student and
+    // session (a second create is refused). The student is the one the
+    // feedback belongs to; its concepts and questions must all be among the
+    // ones the instructor app stored in that feedback.
+    match /followups/{attemptId} {
+      allow get: if signedIn()
+        && attemptId.matches('^' + request.auth.uid + '_.+')
+        && (resource == null || resource.data.owner_id == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['owner_id', 'session_id',
+             'course_id', 'concept_ids', 'question_keys', 'language',
+             'status', 'created_at'])
+        && request.resource.data.owner_id == request.auth.uid
+        && request.resource.data.session_id is string
+        && attemptId == request.auth.uid + '_' + request.resource.data.session_id
+        && sessionDoc(request.resource.data.session_id).data.course_id
+             == request.resource.data.course_id
+        && sessionDoc(request.resource.data.session_id).data.feedback_released == true
+        && request.resource.data.concept_ids is list
+        && request.resource.data.concept_ids.size() >= 1
+        && request.resource.data.concept_ids.size() <= 5
+        && myFeedback(request.resource.data.session_id)
+             .data.review_concept_ids.hasAll(request.resource.data.concept_ids)
+        && request.resource.data.question_keys is list
+        && request.resource.data.question_keys.size() >= 1
+        && request.resource.data.question_keys.size() <= 10
+        && myFeedback(request.resource.data.session_id)
+             .data.reassessment_question_keys.hasAll(request.resource.data.question_keys)
+        && request.resource.data.language in ['ar', 'en']
+        && request.resource.data.status == 'in_progress'
+        && request.resource.data.created_at == request.time;
+      // Finishing, once: nothing else changes.
+      allow update: if signedIn()
+        && resource.data.owner_id == request.auth.uid
+        && resource.data.status == 'in_progress'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'finished_at'])
+        && request.resource.data.status == 'finished'
+        && request.resource.data.finished_at == request.time;
+      allow list, delete: if false;
+
+      // One answer per question of the attempt, while it is in progress.
+      // Never changed.
+      match /answers/{key} {
+        allow create: if ownsFollowUp(attemptId)
+          && followUpDoc(attemptId).data.status == 'in_progress'
+          && request.resource.data.keys().hasOnly(['question_id',
+               'question_version', 'selected_option_id', 'answered_at'])
+          && key == request.resource.data.question_id + '_v'
+               + string(request.resource.data.question_version)
+          && key in followUpDoc(attemptId).data.question_keys
+          && request.resource.data.selected_option_id is string
+          && request.resource.data.answered_at == request.time;
+        allow read: if ownsFollowUp(attemptId);
+        allow update, delete: if false;
+      }
+
+      // The grade of a stored answer: accepted only when `correct` is what
+      // the answer key says and `concept_ids` are the question's. get()
+      // reads the answer as stored before this write, so an answer and its
+      // grade cannot be tried together in one batch. Never changed.
+      match /grades/{key} {
+        allow create: if ownsFollowUp(attemptId)
+          && key in followUpDoc(attemptId).data.question_keys
+          && exists(/databases/$(database)/documents/followups/$(attemptId)/answers/$(key))
+          && request.resource.data.keys()
+               .hasOnly(['correct', 'concept_ids', 'graded_at'])
+          && request.resource.data.graded_at == request.time
+          && request.resource.data.correct is bool
+          && request.resource.data.correct
+             == (get(/databases/$(database)/documents/courses/$(followUpDoc(attemptId).data.course_id)/answer_keys/$(key)).data.correct_option_id
+                 == get(/databases/$(database)/documents/followups/$(attemptId)/answers/$(key)).data.selected_option_id)
+          && get(/databases/$(database)/documents/courses/$(followUpDoc(attemptId).data.course_id)/questions/$(key)).data.provenance.status == 'approved'
+          && request.resource.data.concept_ids
+             == get(/databases/$(database)/documents/courses/$(followUpDoc(attemptId).data.course_id)/questions/$(key)).data.concept_ids;
+        allow read: if ownsFollowUp(attemptId);
+        allow update, delete: if false;
+      }
+    }
+
     function handoverDoc(id) {
       return get(/databases/$(database)/documents/profile_handovers/$(id));
     }

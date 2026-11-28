@@ -1,9 +1,10 @@
-// "I've reviewed this concept" ticks and the "I'm Ready for a Follow-Up
-// Test" button on the student's feedback page (phase 1: student side only).
-// The ticks are the student's own note, kept in this browser only: they
-// never change the feedback and are never sent anywhere.
+// "I've reviewed this concept" ticks and the "Test My Understanding Again"
+// button on the student's feedback page. The ticks are the student's own
+// note, kept in this browser only: they never change the feedback and are
+// never sent anywhere. (The follow-up itself: test/follow_up_test.dart.)
 import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/fake/in_memory_content_repository.dart';
+import 'package:bousla_app/data/fake/in_memory_follow_up_repository.dart';
 import 'package:bousla_app/data/fake/in_memory_session_repository.dart';
 import 'package:bousla_app/data/feedback.dart';
 import 'package:bousla_app/data/models.dart';
@@ -142,6 +143,11 @@ Future<(AppServices, _RecordingSessions, Session)> _setUp(
   final services = AppServices(
     content: content,
     sessions: recording,
+    followUps: InMemoryFollowUpRepository(
+      content: content,
+      sessions: inner,
+      currentUser: () async => _me,
+    ),
     initialLocale: Locale(language.name),
   );
   return (services, recording, session);
@@ -185,7 +191,7 @@ Future<void> _show(
   await tester.pumpAndSettle();
 }
 
-final _ready = find.byKey(const ValueKey('follow-up-ready'));
+final _ready = find.byKey(const ValueKey('follow-up-start'));
 Finder _tick(String id) => find.byKey(ValueKey('reviewed-$id'));
 
 bool _enabled(WidgetTester tester) =>
@@ -232,7 +238,7 @@ void main() {
             matching: _tick('er_modeling')),
         findsOneWidget);
 
-    expect(find.text("I'm Ready for a Follow-Up Test"), findsOneWidget);
+    expect(find.text('Test My Understanding Again'), findsOneWidget);
     expect(Directionality.of(tester.element(_ready)), TextDirection.ltr);
   });
 
@@ -278,10 +284,6 @@ void main() {
     await tester.tap(_tick('primary_key'));
     await tester.tap(_tick('sql_join'));
     await tester.pump();
-    await tester.tap(_ready);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
 
     expect(_conceptTexts(tester), before);
     expect(find.text('Review Primary Key'), findsOneWidget);
@@ -293,8 +295,12 @@ void main() {
             .map((c) => (c.conceptId, c.state, c.correct, c.attempts)),
         _feedback.concepts
             .map((c) => (c.conceptId, c.state, c.correct, c.attempts)));
-    // Only reads: no write of any kind to the session repository.
+    // Only reads: no write of any kind to the session repository, and no
+    // follow-up is made by ticking.
     expect(recording.calls, isEmpty);
+    expect(
+        (services.followUps! as InMemoryFollowUpRepository).storedAttempts,
+        isEmpty);
   });
 
   testWidgets(
@@ -338,44 +344,14 @@ void main() {
     blocked.save('s', 'p', {'a'}); // No error.
   });
 
-  testWidgets('the button only says how to join a follow-up session',
-      (tester) async {
-    final (services, recording, session) = await _setUp();
-    await _show(tester, services, session, _FakeStorage().store());
-    await tester.tap(_tick('primary_key'));
-    await tester.pump();
-    await tester.tap(_ready);
-    await tester.pumpAndSettle();
-    expect(
-        find.byKey(const ValueKey('follow-up-instructions')), findsOneWidget);
-    expect(
-        find.text('Ask your teacher for the follow-up session code, or scan '
-            'the QR code to join.'),
-        findsOneWidget);
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-    // Still on the feedback page: nothing started, nothing sent.
-    expect(find.byKey(const ValueKey('follow-up-instructions')), findsNothing);
-    expect(find.byType(FeedbackScreen), findsOneWidget);
-    expect(recording.calls, isEmpty);
-  });
-
   testWidgets('Arabic: texts in Arabic, right to left', (tester) async {
     final (services, _, session) = await _setUp(language: Language.ar);
     await _show(tester, services, session, _FakeStorage().store());
     expect(find.text('راجعتُ هذا المفهوم'), findsNWidgets(3));
-    expect(find.text('أنا جاهز لاختبار المتابعة'), findsOneWidget);
+    expect(find.text('اختبر فهمي مرة أخرى'), findsOneWidget);
     expect(Directionality.of(tester.element(_ready)), TextDirection.rtl);
     expect(Directionality.of(tester.element(_tick('primary_key'))),
         TextDirection.rtl);
-
-    await tester.tap(_tick('primary_key'));
-    await tester.pump();
-    await tester.tap(_ready);
-    await tester.pumpAndSettle();
-    expect(
-        find.text('اطلب من مدرّسك رمز جلسة المتابعة، أو امسح رمز QR للانضمام.'),
-        findsOneWidget);
   });
 
   testWidgets('where feedback is only shown, there are no ticks',
