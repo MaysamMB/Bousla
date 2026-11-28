@@ -792,5 +792,16 @@
   "studentCareerOtherRoleHint": "e.g. Mobile app developer",
   "studentCareerOtherRoleGo": "Show",
   "studentCareerOtherRoleNone": "Bousla has no documented skills list for “{job}” yet, and will not guess one. We start with jobs linked to Bousla courses and add others from documented sources. What you typed was not saved.",
-  "@studentCareerOtherRoleNone": {"placeholders": {"job": {"type": "String"}}}
+  "@studentCareerOtherRoleNone": {"placeholders": {"job": {"type": "String"}}},
+  "studentDashboardTitle": "Where are you in your learning journey?",
+  "studentDashboardSubtitle": "Understand your level, discover your gaps, and find your next step.",
+  "studentDashboardMap": "My knowledge map",
+  "studentDashboardMapHint": "Discover which concepts to review.",
+  "studentDashboardProgress": "My learning progress",
+  "studentDashboardProgressHint": "Follow the results of your saved sessions.",
+  "studentDashboardCareer": "My career path",
+  "studentDashboardCareerHint": "Connect what you learn to job skills.",
+  "studentDashboardEmpty": "Join a session and save your feedback to see your knowledge map here.",
+  "studentDashboardChooseSession": "Choose a saved session to view its knowledge map.",
+  "studentDashboardMapUnavailable": "This map is not available to this account. Open the original feedback on the browser you answered from. Your saved progress is still available."
 }
