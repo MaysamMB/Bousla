@@ -72,9 +72,8 @@ class GeminiResourceSuggester implements ResourceSuggester {
       retryable: (e) =>
           e is QuestionGenerationException &&
           e.problem != GenerationProblem.dailyQuota,
-      retryAfter: (e) => e is QuestionGenerationException
-          ? retryDelayFrom(e.detail)
-          : null,
+      retryAfter: (e) =>
+          e is QuestionGenerationException ? retryDelayFrom(e.detail) : null,
       call: (name) async {
         final r = await withGeminiErrors(() async {
           final model = FirebaseAI.googleAI().generativeModel(
@@ -87,8 +86,8 @@ class GeminiResourceSuggester implements ResourceSuggester {
           );
           try {
             final res = await model
-                .generateContent([Content.multi(parts)])
-                .timeout(GeminiQuestionGenerator.timeout);
+                .generateContent([Content.multi(parts)]).timeout(
+                    GeminiQuestionGenerator.timeout);
             debugPrint('Bousla AI: $name answered (resources)');
             return res;
           } on Object catch (e) {

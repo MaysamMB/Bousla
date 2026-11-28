@@ -9,16 +9,18 @@ import 'sample_content.dart';
 /// Development implementation backed by [sample_content.dart]. No network.
 class InMemoryContentRepository implements ContentRepository {
   InMemoryContentRepository()
-    : _course = Course(
-        id: sampleCourse['id'] as String,
-        name: LocalizedText.fromJson(
-          sampleCourse['name'] as Map<String, dynamic>,
+      : _course = Course(
+          id: sampleCourse['id'] as String,
+          name: LocalizedText.fromJson(
+            sampleCourse['name'] as Map<String, dynamic>,
+          ),
         ),
-      ),
-      _concepts = [for (final j in sampleConcepts) Concept.fromJson(j)],
-      _questions = [for (final j in sampleQuestions) QuestionView.fromJson(j)],
-      _resources = [for (final j in sampleResources) Resource.fromJson(j)],
-      _keys = AnswerKey.listFromJson(sampleAnswerKeys);
+        _concepts = [for (final j in sampleConcepts) Concept.fromJson(j)],
+        _questions = [
+          for (final j in sampleQuestions) QuestionView.fromJson(j)
+        ],
+        _resources = [for (final j in sampleResources) Resource.fromJson(j)],
+        _keys = AnswerKey.listFromJson(sampleAnswerKeys);
 
   final Course _course;
   final List<Concept> _concepts;
@@ -62,9 +64,10 @@ class InMemoryContentRepository implements ContentRepository {
   Future<List<QuestionView>> listQuestions(
     String courseId, {
     bool approvedOnly = true,
-  }) async => _forCourse(courseId, _latest)
-      .where((q) => !approvedOnly || q.status == ReviewStatus.approved)
-      .toList();
+  }) async =>
+      _forCourse(courseId, _latest)
+          .where((q) => !approvedOnly || q.status == ReviewStatus.approved)
+          .toList();
 
   @override
   Future<List<QuestionView>> questionsForSession(
@@ -131,14 +134,12 @@ class InMemoryContentRepository implements ContentRepository {
       draft: draft,
       status: newStatus,
       source: existing.source,
-      edited:
-          existing.edited ||
+      edited: existing.edited ||
           (changed && existing.source == ContentSource.aiDraft),
       sourceLocation: existing.sourceLocation,
       sourceMaterialId: existing.sourceMaterialId,
-      rejectionReason: newStatus == ReviewStatus.rejected
-          ? existing.rejectionReason
-          : null,
+      rejectionReason:
+          newStatus == ReviewStatus.rejected ? existing.rejectionReason : null,
       hiddenOptionLanguages: draft.hiddenOptionLanguages,
     );
     final index = _questions.indexWhere(
@@ -270,10 +271,13 @@ class InMemoryContentRepository implements ContentRepository {
   Future<List<Resource>> listResources(
     String courseId, {
     bool approvedOnly = true,
-  }) async => _forCourse(
-    courseId,
-    _resources,
-  ).where((r) => !approvedOnly || r.status == ReviewStatus.approved).toList();
+  }) async =>
+      _forCourse(
+        courseId,
+        _resources,
+      )
+          .where((r) => !approvedOnly || r.status == ReviewStatus.approved)
+          .toList();
 
   @override
   Future<Resource> saveResource(String courseId, ResourceDraft draft) async {
@@ -288,9 +292,8 @@ class InMemoryContentRepository implements ContentRepository {
       existing: _forCourse(courseId, _resources),
     );
     if (issues.isNotEmpty) throw InvalidResourceException(issues);
-    final index = draft.id == null
-        ? -1
-        : _resources.indexWhere((r) => r.id == draft.id);
+    final index =
+        draft.id == null ? -1 : _resources.indexWhere((r) => r.id == draft.id);
     if (draft.id != null && index < 0) throw ArgumentError(draft.id);
     final saved = resourceFromDraft(
       draft,
@@ -367,30 +370,31 @@ class InMemoryContentRepository implements ContentRepository {
     required RejectionReason? rejectionReason,
     required Set<Language> hiddenOptionLanguages,
     String? sourceMaterialId,
-  }) => QuestionView(
-    question: Question(
-      id: id,
-      version: version,
-      conceptIds: List.unmodifiable(draft.conceptIds),
-      optionIds: [for (final o in draft.options) o.id],
-      status: status,
-    ),
-    prompt: LocalizedText(
-      ar: draft.prompt.ar.trim(),
-      en: draft.prompt.en.trim(),
-    ),
-    options: [
-      for (final o in draft.options)
-        OptionView(
-          id: o.id,
-          text: LocalizedText(ar: o.text.ar.trim(), en: o.text.en.trim()),
+  }) =>
+      QuestionView(
+        question: Question(
+          id: id,
+          version: version,
+          conceptIds: List.unmodifiable(draft.conceptIds),
+          optionIds: [for (final o in draft.options) o.id],
+          status: status,
         ),
-    ],
-    source: source,
-    edited: edited,
-    rejectionReason: rejectionReason,
-    sourceLocation: sourceLocation,
-    sourceMaterialId: sourceMaterialId,
-    hiddenOptionLanguages: Set.unmodifiable(hiddenOptionLanguages),
-  );
+        prompt: LocalizedText(
+          ar: draft.prompt.ar.trim(),
+          en: draft.prompt.en.trim(),
+        ),
+        options: [
+          for (final o in draft.options)
+            OptionView(
+              id: o.id,
+              text: LocalizedText(ar: o.text.ar.trim(), en: o.text.en.trim()),
+            ),
+        ],
+        source: source,
+        edited: edited,
+        rejectionReason: rejectionReason,
+        sourceLocation: sourceLocation,
+        sourceMaterialId: sourceMaterialId,
+        hiddenOptionLanguages: Set.unmodifiable(hiddenOptionLanguages),
+      );
 }

@@ -221,14 +221,35 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/sessions/$(code)/feedback/$(handoverDoc(id).data.from_uid));
     }
 
+    // A name and a preset picture the student may set for their own
+    // profile (seen by them only).
+    function validProfileInfo(d) {
+      return (!('display_name' in d)
+          || (d.display_name is string && d.display_name.size() <= 40))
+        && (!('avatar' in d)
+          || (d.avatar is int && d.avatar >= 0 && d.avatar < 12));
+    }
+
     match /profiles/{uid} {
       allow get, delete: if isOwnerSignedIn(uid);
-      // Only the consent record: the version of the text agreed to, and when.
-      allow create, update: if isOwnerSignedIn(uid)
-        && request.resource.data.keys()
-             .hasOnly(['consent_version', 'consented_at', 'created_at'])
+      // The consent record (the version of the text agreed to, and when),
+      // plus an optional name and picture.
+      allow create: if isOwnerSignedIn(uid)
+        && request.resource.data.keys().hasOnly(['consent_version',
+             'consented_at', 'created_at', 'display_name', 'avatar'])
         && request.resource.data.consent_version is int
-        && request.resource.data.consented_at == request.time;
+        && request.resource.data.consented_at == request.time
+        && validProfileInfo(request.resource.data);
+      // Agreeing again (new time), or a new name or picture with the
+      // consent record left exactly as it was.
+      allow update: if isOwnerSignedIn(uid)
+        && request.resource.data.keys().hasOnly(['consent_version',
+             'consented_at', 'created_at', 'display_name', 'avatar'])
+        && request.resource.data.consent_version is int
+        && (request.resource.data.consented_at == request.time
+          || (request.resource.data.consent_version == resource.data.consent_version
+            && request.resource.data.consented_at == resource.data.consented_at))
+        && validProfileInfo(request.resource.data);
 
       // One document per session, copied from the student's own released
       // feedback: only a session whose feedback was released and where this

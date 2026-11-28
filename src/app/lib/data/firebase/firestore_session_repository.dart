@@ -240,10 +240,8 @@ class FirestoreSessionRepository implements SessionRepository {
     String sessionId,
     String participantId,
   ) {
-    final doc = _sessions
-        .doc(sessionId)
-        .collection('feedback')
-        .doc(participantId);
+    final doc =
+        _sessions.doc(sessionId).collection('feedback').doc(participantId);
     // The rules refuse reading feedback before it is released, so the
     // document is only watched once the session says it is.
     return watchSession(sessionId)
@@ -252,7 +250,8 @@ class FirestoreSessionRepository implements SessionRepository {
         .asyncExpand(
           (released) => released
               ? doc.snapshots().map(
-                    (d) => d.exists ? StudentFeedback.fromJson(d.data()!) : null,
+                    (d) =>
+                        d.exists ? StudentFeedback.fromJson(d.data()!) : null,
                   )
               : Stream<StudentFeedback?>.value(null),
         );

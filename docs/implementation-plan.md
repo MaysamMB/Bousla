@@ -166,6 +166,8 @@ Status (27 Nov, question drafting timeout): in a live test gemini-3.8-flash gave
 
 Status (28 Nov, instructor approval screen): the waiting screen no longer tells instructors about the Firebase console. It names the platform administrator's email (build-time `BOUSLA_ADMIN_EMAIL`, default set by the team), shows the account ID, and offers "Email the administrator" (mailto with the request written out) and "Copy the request". Two other instructor messages that mentioned Firebase setup or the seed script now say to contact the administrator. Approval itself is unchanged (the admin still adds the ID). Checks: `flutter analyze` clean, `flutter test` 308/308 (approval tests extended). Not yet checked in a browser.
 
+Status (28 Nov, student profile layout): "My profile" now shows each saved session with its own results (newest first, the newest open) instead of one list of concepts across sessions. A header lets the student set a name and pick one of 12 preset pictures (no photo upload: Cloud Storage is not on the free plan, and nothing about the student's face is stored). Both are seen by the student only and deleted with the profile. Rules: `profiles/{uid}` may also hold `display_name` (string, at most 40) and `avatar` (int 0–11); an update must leave the consent record unchanged unless it is a new consent. Checks: `flutter analyze` clean, `flutter test` 309/309, engine 126/126, rules 47/47 (emulator, this container). Needs a rules deploy as well as hosting. Not yet checked in a browser.
+
 ## If time runs short
 Cut from the bottom, not the middle: keep 2 → 3 → 4 → 5 working end to end before polishing 6 and 7. Minimum AI for the demo: level 1 review screen (with offline drafts if needed) + level 2 explanations with guards.
 

@@ -249,8 +249,9 @@ class FeedbackPublisher {
         recommendations: f.recommendations,
         explanation: FeedbackExplanation(
           text: outcome.text,
-          source:
-              outcome.fromAi ? ExplanationSource.ai : ExplanationSource.template,
+          source: outcome.fromAi
+              ? ExplanationSource.ai
+              : ExplanationSource.template,
           model: outcome.fromAi ? answer?.model : null,
         ),
       );

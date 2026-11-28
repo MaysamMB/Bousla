@@ -31,10 +31,10 @@ enum ContentSource {
   instructor;
 
   static ContentSource parse(String? value) => switch (value) {
-    'ai_draft' => ContentSource.aiDraft,
-    'instructor' => ContentSource.instructor,
-    _ => ContentSource.team,
-  };
+        'ai_draft' => ContentSource.aiDraft,
+        'instructor' => ContentSource.instructor,
+        _ => ContentSource.team,
+      };
 }
 
 /// Why the instructor rejected an item (`provenance.rejection_reason`).
@@ -48,9 +48,9 @@ enum RejectionReason {
   other;
 
   String get jsonValue => switch (this) {
-    RejectionReason.offTopic => 'off_topic',
-    _ => name,
-  };
+        RejectionReason.offTopic => 'off_topic',
+        _ => name,
+      };
 
   static RejectionReason? parse(String? value) {
     for (final r in RejectionReason.values) {
@@ -65,10 +65,10 @@ Language otherLanguage(Language language) =>
     language == Language.ar ? Language.en : Language.ar;
 
 Set<Language> _parseLanguages(Object? json) => {
-  if (json is List)
-    for (final value in json)
-      if (value == 'ar' || value == 'en') Language.parse(value as String),
-};
+      if (json is List)
+        for (final value in json)
+          if (value == 'ar' || value == 'en') Language.parse(value as String),
+    };
 
 /// A question with its bilingual text and review information. Holds no
 /// answer; keys are separate [AnswerKey]s that only the instructor can read.
@@ -119,9 +119,9 @@ class QuestionView {
   /// in [uiLanguage].
   Language optionLanguageFor(Language uiLanguage) =>
       hiddenOptionLanguages.contains(uiLanguage) &&
-          !hiddenOptionLanguages.contains(otherLanguage(uiLanguage))
-      ? otherLanguage(uiLanguage)
-      : uiLanguage;
+              !hiddenOptionLanguages.contains(otherLanguage(uiLanguage))
+          ? otherLanguage(uiLanguage)
+          : uiLanguage;
 
   String get id => question.id;
   int get version => question.version;
@@ -129,17 +129,17 @@ class QuestionView {
   List<String> get conceptIds => question.conceptIds;
 
   QuestionView withHiddenOptionLanguages(Set<Language> hidden) => QuestionView(
-    question: question,
-    prompt: prompt,
-    options: options,
-    source: source,
-    edited: edited,
-    rejectionReason: rejectionReason,
-    rejectionNote: rejectionNote,
-    sourceLocation: sourceLocation,
-    sourceMaterialId: sourceMaterialId,
-    hiddenOptionLanguages: Set.unmodifiable(hidden),
-  );
+        question: question,
+        prompt: prompt,
+        options: options,
+        source: source,
+        edited: edited,
+        rejectionReason: rejectionReason,
+        rejectionNote: rejectionNote,
+        sourceLocation: sourceLocation,
+        sourceMaterialId: sourceMaterialId,
+        hiddenOptionLanguages: Set.unmodifiable(hidden),
+      );
 
   QuestionView withStatus(
     ReviewStatus status, {
@@ -159,10 +159,10 @@ class QuestionView {
         source: source,
         edited: edited,
         rejectionReason: status == ReviewStatus.rejected ? reason : null,
-        rejectionNote: status == ReviewStatus.rejected &&
-                reason == RejectionReason.other
-            ? note
-            : null,
+        rejectionNote:
+            status == ReviewStatus.rejected && reason == RejectionReason.other
+                ? note
+                : null,
         sourceLocation: sourceLocation,
         sourceMaterialId: sourceMaterialId,
         hiddenOptionLanguages: hiddenOptionLanguages,
@@ -340,18 +340,19 @@ class Session {
     bool? feedbackReleased,
     DateTime? closedAt,
     LocalizedText? title,
-  }) => Session(
-    id: id,
-    code: code,
-    courseId: courseId,
-    ownerId: ownerId,
-    questions: questions,
-    status: status ?? this.status,
-    feedbackReleased: feedbackReleased ?? this.feedbackReleased,
-    title: title ?? this.title,
-    createdAt: createdAt,
-    closedAt: closedAt ?? this.closedAt,
-  );
+  }) =>
+      Session(
+        id: id,
+        code: code,
+        courseId: courseId,
+        ownerId: ownerId,
+        questions: questions,
+        status: status ?? this.status,
+        feedbackReleased: feedbackReleased ?? this.feedbackReleased,
+        title: title ?? this.title,
+        createdAt: createdAt,
+        closedAt: closedAt ?? this.closedAt,
+      );
 }
 
 class SessionClosedException implements Exception {
