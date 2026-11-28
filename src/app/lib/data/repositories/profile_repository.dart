@@ -43,6 +43,21 @@ class SavedSession {
   final DateTime? addedAt;
 }
 
+/// How the student shows themselves in their own profile. Seen by them
+/// only (the rules give nobody else access); deleted with the profile.
+class ProfileInfo {
+  const ProfileInfo({this.displayName, this.avatar});
+
+  /// At most [maxNameLength] characters; null when not set.
+  final String? displayName;
+
+  /// One of the preset pictures (0 to [avatarCount] - 1); null when not set.
+  final int? avatar;
+
+  static const maxNameLength = 40;
+  static const avatarCount = 12;
+}
+
 /// The optional personal learning profile (architecture §10). Only the
 /// student reads or changes it; the security rules allow nobody else,
 /// instructors included.
@@ -77,6 +92,13 @@ abstract interface class ProfileRepository {
 
   /// Deletes every saved session, then the profile itself.
   Future<void> delete(String uid);
+
+  /// The student's name and picture for their own profile.
+  Future<ProfileInfo> info(String uid);
+
+  /// Sets them; an empty name or a null avatar clears that one. The consent
+  /// record stays as it was.
+  Future<void> updateInfo(String uid, ProfileInfo info);
 }
 
 /// Development and tests: in this tab only.
@@ -88,7 +110,8 @@ class InMemoryProfileRepository implements ProfileRepository {
   Future<int?> consentVersion(String uid) async => _consent[uid];
 
   @override
-  Future<void> create(String uid, {int consentVersion = profileConsentVersion}) async {
+  Future<void> create(String uid,
+      {int consentVersion = profileConsentVersion}) async {
     _consent[uid] = consentVersion;
   }
 
@@ -113,8 +136,8 @@ class InMemoryProfileRepository implements ProfileRepository {
     if (handoverId != null && handovers[handoverId] != session.id) {
       throw StateError('no handover for this session');
     }
-    (_sessions[uid] ??= {})[session.id] = savedSessionFrom(session, feedback,
-        addedAt: DateTime.now());
+    (_sessions[uid] ??= {})[session.id] =
+        savedSessionFrom(session, feedback, addedAt: DateTime.now());
   }
 
   @override
@@ -135,7 +158,34 @@ class InMemoryProfileRepository implements ProfileRepository {
   Future<void> delete(String uid) async {
     _sessions.remove(uid);
     _consent.remove(uid);
+    _info.remove(uid);
   }
+
+  final _info = <String, ProfileInfo>{};
+
+  @override
+  Future<ProfileInfo> info(String uid) async =>
+      _info[uid] ?? const ProfileInfo();
+
+  @override
+  Future<void> updateInfo(String uid, ProfileInfo info) async {
+    if (!_consent.containsKey(uid)) throw StateError('no profile');
+    _info[uid] = cleanProfileInfo(info);
+  }
+}
+
+/// [info] as stored: the name trimmed and cut to its maximum length (empty
+/// becomes null), an avatar outside the presets dropped.
+ProfileInfo cleanProfileInfo(ProfileInfo info) {
+  var name = info.displayName?.trim() ?? '';
+  if (name.length > ProfileInfo.maxNameLength) {
+    name = name.substring(0, ProfileInfo.maxNameLength).trim();
+  }
+  final a = info.avatar;
+  return ProfileInfo(
+    displayName: name.isEmpty ? null : name,
+    avatar: a != null && a >= 0 && a < ProfileInfo.avatarCount ? a : null,
+  );
 }
 
 SavedSession savedSessionFrom(

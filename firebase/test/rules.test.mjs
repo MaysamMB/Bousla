@@ -414,6 +414,19 @@ describe('personal profiles', () => {
       { ...consent(), consented_at: new Date(2020, 1, 1) }));
   });
 
+  test('a name and a preset picture, without touching the consent', async () => {
+    await setDoc(doc(linked(), 'profiles', 'student1'), consent());
+    const ref = doc(linked(), 'profiles', 'student1');
+    await assertSucceeds(updateDoc(ref, { display_name: 'سارة', avatar: 3 }));
+    await assertFails(updateDoc(ref, { display_name: 'x'.repeat(41) }));
+    await assertFails(updateDoc(ref, { avatar: 12 }));
+    await assertFails(updateDoc(ref, { avatar: 'https://example.com/me.png' }));
+    // The consent time cannot be changed along with the name.
+    await assertFails(updateDoc(ref, { display_name: 'Sara', consented_at: new Date(2020, 1, 1) }));
+    await assertFails(updateDoc(doc(linked('student2'), 'profiles', 'student1'), { display_name: 'x' }));
+    await assertFails(getDoc(doc(instructor(), 'profiles', 'student1')));
+  });
+
   test('instructors cannot read profiles, and nobody can list them', async () => {
     await env.withSecurityRulesDisabled((ctx) =>
       setDoc(doc(ctx.firestore(), 'profiles', 'student1'), { consent_version: 1 }));

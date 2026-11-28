@@ -8,6 +8,7 @@ import '../repositories/profile_repository.dart';
 /// [ProfileRepository] on Firestore:
 ///
 ///   profiles/{uid}                  consent_version, consented_at, created_at
+///                                   (+ display_name, avatar: optional)
 ///   profiles/{uid}/sessions/{code}  course_id, title, concepts, added_at
 ///                                   (+ handover_id, from another browser)
 ///   profile_handovers/{random}      session_id, from_uid, created_at
@@ -33,12 +34,14 @@ class FirestoreProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> create(String uid, {int consentVersion = profileConsentVersion}) =>
+  Future<void> create(String uid,
+          {int consentVersion = profileConsentVersion}) =>
+      // Merged: agreeing again keeps the student's name and picture.
       _profile(uid).set({
         'consent_version': consentVersion,
         'consented_at': FieldValue.serverTimestamp(),
         'created_at': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
 
   @override
   Future<void> saveSession(
@@ -73,7 +76,9 @@ class FirestoreProfileRepository implements ProfileRepository {
   @override
   Future<List<SavedSession>> sessions(String uid) async {
     final snap = await _sessions(uid).get();
-    final list = [for (final d in snap.docs) savedSessionFromJson(d.id, d.data())];
+    final list = [
+      for (final d in snap.docs) savedSessionFromJson(d.id, d.data())
+    ];
     list.sort((a, b) {
       final at = a.addedAt, bt = b.addedAt;
       if (at == null || bt == null) return at == null ? 1 : -1;
@@ -89,6 +94,25 @@ class FirestoreProfileRepository implements ProfileRepository {
   @override
   Future<void> removeSession(String uid, String code) =>
       _sessions(uid).doc(code).delete();
+
+  @override
+  Future<ProfileInfo> info(String uid) async {
+    final d = (await _profile(uid).get()).data() ?? const {};
+    return cleanProfileInfo(ProfileInfo(
+      displayName: d['display_name'] as String?,
+      avatar: (d['avatar'] as num?)?.toInt(),
+    ));
+  }
+
+  @override
+  Future<void> updateInfo(String uid, ProfileInfo info) {
+    final clean = cleanProfileInfo(info);
+    // Only these two fields: the consent record is not touched.
+    return _profile(uid).update({
+      'display_name': clean.displayName ?? FieldValue.delete(),
+      'avatar': clean.avatar ?? FieldValue.delete(),
+    });
+  }
 
   @override
   Future<void> delete(String uid) async {
@@ -132,7 +156,8 @@ SavedSession savedSessionFromJson(String code, Map<String, dynamic> j) {
         if (c is Map)
           SavedConcept(
             conceptId: '${c['id']}',
-            name: text(c['name']) ?? LocalizedText(ar: '${c['id']}', en: '${c['id']}'),
+            name: text(c['name']) ??
+                LocalizedText(ar: '${c['id']}', en: '${c['id']}'),
             state: MasteryState.values.firstWhere(
               (s) => s.name == c['state'],
               orElse: () => MasteryState.insufficientEvidence,

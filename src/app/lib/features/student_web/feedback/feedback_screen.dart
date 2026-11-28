@@ -12,6 +12,7 @@ import '../../../shared/open_link.dart' as shared;
 import '../../../shared/widgets/language_switcher.dart';
 import '../profile/save_progress_card.dart';
 import '../knowledge_map/knowledge_map_screen.dart';
+import 'review_marks_store.dart';
 
 /// A student's personal feedback for one session (owner: student web
 /// portal). Shows, in this order: concept states with their evidence,
@@ -27,10 +28,15 @@ class FeedbackScreen extends StatefulWidget {
     super.key,
     required this.sessionId,
     required this.participantId,
+    this.reviewStore,
   });
 
   final String sessionId;
   final String participantId;
+
+  /// Where the "I've reviewed this concept" ticks are kept: this browser's
+  /// localStorage unless a test passes another.
+  final ReviewMarksStore? reviewStore;
 
   @override
   State<FeedbackScreen> createState() => _FeedbackScreenState();
@@ -40,6 +46,21 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Stream<StudentFeedback?>? _feedback;
   var _languageApplied = false;
   StudentFeedback? _last;
+  late final ReviewMarksStore _reviewStore =
+      widget.reviewStore ?? ReviewMarksStore.browser();
+
+  /// The student's own ticks for this session (local only, see
+  /// [ReviewMarksStore]).
+  late Set<String> _reviewed =
+      _reviewStore.load(widget.sessionId, widget.participantId);
+
+  void _setReviewed(String conceptId, bool reviewed) {
+    setState(() {
+      _reviewed = {..._reviewed};
+      reviewed ? _reviewed.add(conceptId) : _reviewed.remove(conceptId);
+    });
+    _reviewStore.save(widget.sessionId, widget.participantId, _reviewed);
+  }
 
   @override
   void didChangeDependencies() {
@@ -77,6 +98,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           if (snapshot.hasError && _last != null) {
             return FeedbackView(
               feedback: _last!,
+              reviewed: _reviewed,
+              onReviewChanged: _setReviewed,
               footer: SaveProgressCard(
                 sessionId: widget.sessionId,
                 feedback: _last!,
@@ -107,6 +130,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           _applyLanguage(feedback);
           return FeedbackView(
             feedback: feedback,
+            reviewed: _reviewed,
+            onReviewChanged: _setReviewed,
             // Optional: keep this session in the student's own profile.
             footer: SaveProgressCard(
               sessionId: widget.sessionId,
@@ -126,9 +151,19 @@ class FeedbackView extends StatelessWidget {
     required this.feedback,
     this.openLink = shared.openLink,
     this.footer,
+    this.reviewed = const {},
+    this.onReviewChanged,
   });
 
   final StudentFeedback feedback;
+
+  /// Concepts the student ticked as reviewed (their own note; see
+  /// [ReviewMarksStore]).
+  final Set<String> reviewed;
+
+  /// Called when a tick changes. Null: no ticks and no follow-up button
+  /// (e.g. where the feedback is only shown).
+  final void Function(String conceptId, bool reviewed)? onReviewChanged;
 
   /// Shown last (the "keep your progress" card on the feedback screen).
   final Widget? footer;
@@ -147,6 +182,31 @@ class FeedbackView extends StatelessWidget {
     };
     String name(String? id) => names[id] ?? id ?? '';
     final explanation = feedback.explanation;
+
+    // "I've reviewed this concept": only for concepts the feedback says may
+    // need review or are still forming. The tick is placed under the
+    // concept's first next step (its resources); a concept with no step
+    // gets it on its own card. It changes nothing in the feedback.
+    final onReview = onReviewChanged;
+    final eligible = onReview == null
+        ? const <String>{}
+        : {
+            for (final c in feedback.concepts)
+              if (needsReviewTick(c.state)) c.conceptId,
+          };
+    final tickInStep = <int, String>{};
+    for (var i = 0; i < feedback.recommendations.length; i++) {
+      final id = feedback.recommendations[i].conceptId;
+      if (eligible.contains(id) && !tickInStep.containsValue(id)) {
+        tickInStep[i] = id;
+      }
+    }
+    final anyReviewed = reviewed.any(eligible.contains);
+    Widget tick(String conceptId) => _ReviewedTick(
+          conceptId: conceptId,
+          value: reviewed.contains(conceptId),
+          onChanged: (v) => onReview!(conceptId, v),
+        );
 
     Widget heading(String text) => Padding(
           padding: const EdgeInsets.only(top: 24, bottom: 8),
@@ -182,6 +242,9 @@ class FeedbackView extends StatelessWidget {
                             ? l.studentFeedbackNoEvidence
                             : l.studentFeedbackEvidence(c.correct, c.attempts),
                       ),
+                      if (eligible.contains(c.conceptId) &&
+                          !tickInStep.containsValue(c.conceptId))
+                        tick(c.conceptId),
                     ],
                   ),
                 ),
@@ -213,7 +276,7 @@ class FeedbackView extends StatelessWidget {
             if (feedback.recommendations.isEmpty)
               Text(l.studentFeedbackNoSteps)
             else
-              for (final r in feedback.recommendations)
+              for (final (i, r) in feedback.recommendations.indexed)
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(12),
@@ -230,10 +293,31 @@ class FeedbackView extends StatelessWidget {
                             language: language,
                             openLink: openLink,
                           ),
+                        if (tickInStep[i] case final id?) tick(id),
                       ],
                     ),
                   ),
                 ),
+
+            // C2. Ready for a follow-up test: only says how to join one the
+            // instructor creates. Nothing is started, sent or changed here.
+            if (eligible.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(l.studentFeedbackReviewedNote,
+                  style: theme.textTheme.bodySmall),
+              const SizedBox(height: 8),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: FilledButton.icon(
+                  key: const ValueKey('follow-up-ready'),
+                  onPressed: anyReviewed
+                      ? () => showFollowUpInstructions(context)
+                      : null,
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: Text(l.studentFeedbackReadyForFollowUp),
+                ),
+              ),
+            ],
 
             // D. The explanation, right after the evidence it is based on.
             if (explanation != null) ...[
@@ -293,6 +377,60 @@ class FeedbackView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The states whose concepts get an "I've reviewed this concept" tick:
+/// "may need review" and "still forming".
+bool needsReviewTick(MasteryState state) =>
+    state == MasteryState.possibleDifficulty || state == MasteryState.emerging;
+
+/// How to take a follow-up test: ask the instructor for its code or scan
+/// its QR code. Says nothing about results; nothing is started or sent.
+Future<void> showFollowUpInstructions(BuildContext context) =>
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return AlertDialog(
+          key: const ValueKey('follow-up-instructions'),
+          icon: const Icon(Icons.qr_code_scanner),
+          title: Text(l.studentFeedbackReadyForFollowUp),
+          content: Text(l.studentFeedbackFollowUpInstructions),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l.studentFeedbackFollowUpOk),
+            ),
+          ],
+        );
+      },
+    );
+
+/// One "I've reviewed this concept" tick.
+class _ReviewedTick extends StatelessWidget {
+  const _ReviewedTick({
+    required this.conceptId,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String conceptId;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return CheckboxListTile(
+      key: ValueKey('reviewed-$conceptId'),
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      dense: true,
+      value: value,
+      onChanged: (v) => onChanged(v ?? false),
+      title: Text(l.studentFeedbackReviewedConcept),
     );
   }
 }
