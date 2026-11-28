@@ -435,6 +435,6 @@
   ],
   "labellers": 1,
   "status": "preliminary",
-  "note": "Collected by hand by the Bousla team; each advert counts once per skill. Data: data/careers/local_adverts_2026-06_2026-11.csv."
+  "note": "Found by the Bousla team, partly with AI search tools (column \"collected_with\" in the data); each advert labelled by one person and counted once per skill. Data: data/careers/local_adverts_2026-06_2026-11.csv."
  }
 }
