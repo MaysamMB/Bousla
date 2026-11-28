@@ -4,6 +4,7 @@ import 'package:bousla_app/data/fake/in_memory_content_repository.dart';
 import 'package:bousla_app/data/fake/in_memory_session_repository.dart';
 import 'package:bousla_app/data/models.dart';
 import 'package:bousla_app/data/repositories/auth_service.dart';
+import 'package:bousla_app/data/repositories/profile_repository.dart';
 import 'package:bousla_app/features/student_web/feedback/feedback_screen.dart';
 import 'package:bousla_app/l10n/app_localizations.dart';
 import 'package:bousla_engine/bousla_engine.dart';
@@ -224,6 +225,32 @@ void main() {
     expect(find.text('Primary Key'), findsOneWidget);
     expect(find.textContaining('Still forming'), findsOneWidget);
     expect(find.textContaining('1 of 2'), findsOneWidget);
+    // Inside its own session, not in a list across sessions.
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('session-${session.id}')),
+        matching: find.text('Primary Key'),
+      ),
+      findsOneWidget,
+    );
+
+    // A name and a preset picture, for the student only.
+    expect(find.text('Add your name'), findsOneWidget);
+    await tester.tap(find.byTooltip('Edit name and picture'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('profile-name')), ' Sara ');
+    await tester.tap(find.byKey(const ValueKey('avatar-3')));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await _settle(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Sara'), findsOneWidget);
+    final info = await services.profiles.info(_me);
+    expect(info.displayName, 'Sara');
+    expect(info.avatar, 3);
+    // Agreeing again keeps the consent record separate from the name.
+    expect(await services.profiles.consentVersion(_me), 1);
 
     await tester.tap(find.byTooltip('Remove from my profile'));
     await _settle(tester);
@@ -238,6 +265,7 @@ void main() {
     await _settle(tester);
     await tester.pumpAndSettle();
     expect(await services.profiles.consentVersion(_me), isNull);
+    expect((await services.profiles.info(_me)).displayName, isNull);
     expect(find.text('Your profile was deleted.'), findsOneWidget);
   });
 
@@ -276,5 +304,15 @@ void main() {
         findsOneWidget);
     expect(find.text('Add this session to my profile'), findsOneWidget);
     expect(await services.profiles.hasSession(_me, session.id), isFalse);
+  });
+
+  test('a name is trimmed and cut; an unknown picture is dropped', () {
+    final long = cleanProfileInfo(ProfileInfo(displayName: 'x' * 50));
+    expect(long.displayName!.length, ProfileInfo.maxNameLength);
+    final blank =
+        cleanProfileInfo(const ProfileInfo(displayName: '  ', avatar: 12));
+    expect(blank.displayName, isNull);
+    expect(blank.avatar, isNull);
+    expect(cleanProfileInfo(const ProfileInfo(avatar: 0)).avatar, 0);
   });
 }
