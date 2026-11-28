@@ -714,6 +714,8 @@
   "studentCareerStatusPartial": "Partly shown",
   "studentCareerStatusEvidence": "Shown in your sessions",
   "studentCareerStatusOutside": "Not covered by Bousla courses yet",
+  "studentCareerStatusGroup": "{status} ({count})",
+  "@studentCareerStatusGroup": {"description": "Heading of one group of essential skills: the status words, then how many skills have it.", "placeholders": {"status": {"type": "String"}, "count": {"type": "int"}}},
   "studentCareerOutsideHint": "Nothing in Bousla measures this skill yet.",
   "studentCareerNotAssessed": "not assessed yet",
   "studentCareerStartWith": "Start with: {concepts}",

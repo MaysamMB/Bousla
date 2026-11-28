@@ -416,6 +416,7 @@
   "studentCareerStatusPartial": "دليل جزئي",
   "studentCareerStatusEvidence": "ظاهرة في جلساتك",
   "studentCareerStatusOutside": "خارج مساقات بوصلة حاليًا",
+  "studentCareerStatusGroup": "{status} ({count})",
   "studentCareerOutsideHint": "لا يوجد في بوصلة بعد ما يقيس هذه المهارة.",
   "studentCareerNotAssessed": "لم يُقَس بعد",
   "studentCareerStartWith": "ابدأ من: {concepts}",

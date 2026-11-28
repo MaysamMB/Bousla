@@ -119,6 +119,12 @@ void main() {
             '2026-11-27; Arabic translation by the Bousla team.'),
         findsOneWidget);
 
+    // Both sections are folded by default: open them.
+    await tester.tap(find.text('Essential skills'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Local job market (early sample)'));
+    await tester.pumpAndSettle();
+
     // Database developer (first): ESCO "query languages" has a possible
     // gap through Joins.
     final sql = find.byKey(const ValueKey('skill-query-languages'));
@@ -203,6 +209,8 @@ void main() {
       }),
     ]);
     expect(find.byKey(const ValueKey('career-draft-notice')), findsOneWidget);
+    await tester.tap(find.text('Essential skills'));
+    await tester.pumpAndSettle();
     expect(find.text('Shown in your sessions'), findsOneWidget);
   });
 }

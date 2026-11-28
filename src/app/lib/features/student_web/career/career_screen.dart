@@ -293,8 +293,15 @@ class _ReportView extends StatelessWidget {
               const SizedBox(height: 16),
               _LocalMarketCard(report: report),
             ],
+            if (essential.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              _EssentialSection(
+                skills: essential,
+                names: names,
+                localAdverts: report.role.localAdverts,
+              ),
+            ],
             for (final (title, list, isEssential) in [
-              (l.studentCareerEssential, essential, true),
               (l.studentCareerOptional, optional, false),
             ])
               if (list.isNotEmpty) ...[
@@ -372,24 +379,21 @@ class _LocalMarketCard extends StatelessWidget {
       for (final s in report.skills)
         if (s.status != SkillStatus.outsideBousla) s.skill.id,
     };
+    // Folded by default; the adverts are already in [report] (loaded once
+    // with the datasets), so opening or closing reads nothing again.
     return Card(
       key: const ValueKey('career-local'),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.storefront_outlined, color: theme.colorScheme.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(l.studentCareerLocalTitle,
-                      style: theme.textTheme.titleSmall),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
+      child: ExpansionTile(
+        key: const PageStorageKey('career-local-section'),
+        shape: const Border(),
+        tilePadding: const EdgeInsetsDirectional.symmetric(horizontal: 14),
+        leading:
+            Icon(Icons.storefront_outlined, color: theme.colorScheme.primary),
+        title: Text(l.studentCareerLocalTitle,
+            style: theme.textTheme.titleSmall),
+        childrenPadding: const EdgeInsetsDirectional.fromSTEB(14, 0, 14, 14),
+        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
             if (!local.enough)
               Text(
                 l.studentCareerLocalTooFew(local.total, minLocalAdverts),
@@ -437,8 +441,7 @@ class _LocalMarketCard extends StatelessWidget {
                     style: theme.textTheme.bodySmall),
               ],
             ],
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -487,6 +490,9 @@ class _OutsideList extends StatelessWidget {
     final lang = currentLanguage(context);
     return Card(
       child: ExpansionTile(
+        // Its own saved open/closed state, separate from the section it
+        // sits in.
+        key: PageStorageKey<Key?>(key),
         shape: const Border(),
         leading: Icon(Icons.remove_circle_outline,
             color: theme.colorScheme.outline),
@@ -531,34 +537,7 @@ class _SkillCard extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final lang = currentLanguage(context);
-    final scheme = theme.colorScheme;
-    final (icon, color, label) = switch (result.status) {
-      SkillStatus.possibleGap => (
-          Icons.error_outline,
-          scheme.error,
-          l.studentCareerStatusGap
-        ),
-      SkillStatus.noEvidence => (
-          Icons.help_outline,
-          scheme.onSurfaceVariant,
-          l.studentCareerStatusNoEvidence
-        ),
-      SkillStatus.partial => (
-          Icons.timelapse,
-          scheme.tertiary,
-          l.studentCareerStatusPartial
-        ),
-      SkillStatus.evidence => (
-          Icons.check_circle_outline,
-          scheme.primary,
-          l.studentCareerStatusEvidence
-        ),
-      SkillStatus.outsideBousla => (
-          Icons.remove_circle_outline,
-          scheme.outline,
-          l.studentCareerStatusOutside
-        ),
-    };
+    final (icon, color, label) = _statusLook(context, result.status);
     String name(String id) => names[id]?.of(lang) ?? id;
     final standing = {for (final c in result.concepts) c.conceptId: c};
     return Card(
@@ -629,6 +608,143 @@ class _SkillCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Icon, colour and words for one engine [SkillStatus]: the skill card's
+/// badge and the group headers use the same ones.
+(IconData, Color, String) _statusLook(BuildContext context, SkillStatus status) {
+  final l = AppLocalizations.of(context);
+  final scheme = Theme.of(context).colorScheme;
+  return switch (status) {
+    SkillStatus.possibleGap => (
+        Icons.error_outline,
+        scheme.error,
+        l.studentCareerStatusGap
+      ),
+    SkillStatus.noEvidence => (
+        Icons.help_outline,
+        scheme.onSurfaceVariant,
+        l.studentCareerStatusNoEvidence
+      ),
+    SkillStatus.partial => (
+        Icons.timelapse,
+        scheme.tertiary,
+        l.studentCareerStatusPartial
+      ),
+    SkillStatus.evidence => (
+        Icons.check_circle_outline,
+        scheme.primary,
+        l.studentCareerStatusEvidence
+      ),
+    SkillStatus.outsideBousla => (
+        Icons.remove_circle_outline,
+        scheme.outline,
+        l.studentCareerStatusOutside
+      ),
+  };
+}
+
+/// "Essential skills", folded by default. Inside, the skills are grouped by
+/// the status the engine already gave them (`careerGaps`, unchanged), in the
+/// order of [SkillStatus]; a group with no skill is not shown. Skills no
+/// Bousla concept covers stay in their own folded list, as before.
+class _EssentialSection extends StatelessWidget {
+  const _EssentialSection({
+    required this.skills,
+    required this.names,
+    this.localAdverts,
+  });
+
+  final List<SkillResult> skills;
+  final Map<String, LocalizedText> names;
+  final LocalAdverts? localAdverts;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return ExpansionTile(
+      key: const PageStorageKey('career-essential-section'),
+      shape: const Border(),
+      collapsedShape: const Border(),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: EdgeInsets.zero,
+      expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+      title: Text(l.studentCareerEssential, style: theme.textTheme.titleMedium),
+      // How much of this list Bousla can say anything about.
+      subtitle: Text(
+        l.studentCareerCoverage(
+          skills.where((s) => s.status != SkillStatus.outsideBousla).length,
+          skills.length,
+        ),
+        key: const ValueKey('coverage-essential'),
+        style: theme.textTheme.bodySmall,
+      ),
+      children: [
+        for (final status in SkillStatus.values)
+          if (status != SkillStatus.outsideBousla)
+            if (skills.where((s) => s.status == status).toList()
+                case final group when group.isNotEmpty)
+              _StatusGroup(
+                key: ValueKey('skill-group-${status.name}'),
+                status: status,
+                children: [
+                  for (final s in group)
+                    _SkillCard(
+                        result: s, names: names, localAdverts: localAdverts),
+                ],
+              ),
+        _OutsideList(
+          key: const ValueKey('outside-essential'),
+          skills: [
+            for (final s in skills)
+              if (s.status == SkillStatus.outsideBousla) s.skill,
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// One status heading (icon + words + count, never colour alone) and its
+/// skill cards.
+class _StatusGroup extends StatelessWidget {
+  const _StatusGroup({
+    super.key,
+    required this.status,
+    required this.children,
+  });
+
+  final SkillStatus status;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final (icon, color, label) = _statusLook(context, status);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          child: Row(
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  l.studentCareerStatusGroup(label, children.length),
+                  style: theme.textTheme.titleSmall?.copyWith(color: color),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...children,
+      ],
     );
   }
 }
