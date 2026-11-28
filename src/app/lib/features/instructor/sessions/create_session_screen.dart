@@ -6,9 +6,9 @@ import '../../../data/models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/language_switcher.dart';
 import '../course_picker.dart';
+import 'class_statistics_screen.dart';
 import 'join_qr.dart';
 import '../../../data/session_title.dart';
-import 'live_insights_panel.dart';
 import '../resources/session_resources_card.dart';
 import 'share_feedback.dart';
 import 'past_sessions_screen.dart';
@@ -318,9 +318,18 @@ class _LiveSessionPanel extends StatelessWidget {
             );
           },
         ),
-        // What the class understands, per concept (Yasmeen's panel).
-        const SizedBox(height: 24),
-        LiveInsightsPanel(session: session),
+        // What the class understands, per concept (Yasmeen's panel), on its
+        // own page so this screen stays short.
+        const SizedBox(height: 16),
+        FilledButton.tonalIcon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ClassStatisticsScreen(session: session),
+            ),
+          ),
+          icon: const Icon(Icons.insights),
+          label: Text(l.instructorClassStats),
+        ),
         const SizedBox(height: 24),
         StreamBuilder<Session>(
           stream: sessions.watchSession(session.id),
