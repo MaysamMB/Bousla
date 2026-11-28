@@ -506,5 +506,16 @@
   "studentCareerOtherRoleLabel": "الوظيفة التي تهمّك",
   "studentCareerOtherRoleHint": "مثال: مطوّر تطبيقات موبايل",
   "studentCareerOtherRoleGo": "عرض",
-  "studentCareerOtherRoleNone": "لا توجد بعد قائمة مهارات موثّقة لوظيفة «{job}» في بوصلة، ولن نخمّنها. نبدأ بوظائف مرتبطة بمساقات بوصلة، ونضيف غيرها من مصادر موثّقة. لم يُحفظ ما كتبته."
+  "studentCareerOtherRoleNone": "لا توجد بعد قائمة مهارات موثّقة لوظيفة «{job}» في بوصلة، ولن نخمّنها. نبدأ بوظائف مرتبطة بمساقات بوصلة، ونضيف غيرها من مصادر موثّقة. لم يُحفظ ما كتبته.",
+  "studentDashboardTitle": "أين وصلت في رحلتك التعليمية؟",
+  "studentDashboardSubtitle": "افهم مستواك، اكتشف فجواتك المعرفية، وحدّد خطوتك القادمة.",
+  "studentDashboardMap": "خريطتي المعرفية",
+  "studentDashboardMapHint": "اكتشف المفاهيم التي تحتاج إلى مراجعتها.",
+  "studentDashboardProgress": "تقدّمي التعليمي",
+  "studentDashboardProgressHint": "تابع نتائج جلساتك المحفوظة.",
+  "studentDashboardCareer": "مساري المهني",
+  "studentDashboardCareerHint": "اربط ما تتعلمه بمهارات سوق العمل.",
+  "studentDashboardEmpty": "انضم إلى جلسة واحفظ ملاحظاتك لتظهر خريطتك المعرفية هنا.",
+  "studentDashboardChooseSession": "اختر جلسة محفوظة لعرض خريطتها المعرفية.",
+  "studentDashboardMapUnavailable": "هذه الخريطة غير متاحة لهذا الحساب. افتح الملاحظات الأصلية من المتصفح الذي أجبت منه. يبقى تقدّمك المحفوظ متاحًا."
 }
