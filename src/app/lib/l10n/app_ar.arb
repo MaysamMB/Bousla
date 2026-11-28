@@ -153,6 +153,7 @@
     "studentMapSave":  "حفظ الخريطة على هاتفي",
     "studentMapSaved":  "تم حفظ الخريطة كصورة.",
     "studentMapSaveFailed":  "تعذّر حفظ الصورة. يمكنك أخذ لقطة شاشة بدلاً من ذلك.",
+    "instructorClassStats": "إحصائيات الصف",
     "instructorInsightsTitle":  "ماذا يفهم الصف؟",
     "instructorInsightsEvidence":  "أجاب {respondents} طالب · نسبة الإجابات الصحيحة {percent}%",
     "instructorInsightsHidden":  "أجاب أقل من {min} طلاب: النتيجة مخفية لحماية الخصوصية",

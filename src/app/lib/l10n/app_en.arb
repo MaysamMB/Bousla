@@ -384,6 +384,7 @@
     "studentMapSave":  "Save the map to my phone",
     "studentMapSaved":  "Map saved as an image.",
     "studentMapSaveFailed":  "Could not save the image. Take a screenshot instead.",
+    "instructorClassStats": "Class statistics",
     "instructorInsightsTitle":  "What the class understands",
     "instructorInsightsEvidence":  "{respondents} answered · {percent}% correct",
     "@instructorInsightsEvidence":  {

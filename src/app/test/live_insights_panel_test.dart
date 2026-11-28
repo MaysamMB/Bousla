@@ -1,6 +1,7 @@
 import 'package:bousla_app/app.dart';
 import 'package:bousla_app/app_services.dart';
 import 'package:bousla_app/data/models.dart';
+import 'package:bousla_app/features/instructor/sessions/class_statistics_screen.dart';
 import 'package:bousla_app/features/instructor/sessions/live_insights_panel.dart';
 import 'package:bousla_app/l10n/app_localizations.dart';
 import 'package:bousla_engine/bousla_engine.dart';
@@ -132,7 +133,8 @@ void main() {
     expect(find.textContaining('appears once at least 3'), findsOneWidget);
   });
 
-  testWidgets('the session screen shows the panel under the counter', (
+  testWidgets('the session screen shows a statistics button that opens the '
+      'panel on its own page', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(900, 3000);
@@ -151,6 +153,18 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Create session now'));
     await tester.pumpAndSettle();
+    // The session screen keeps the short counter, not the detailed panel.
+    expect(find.byType(LiveInsightsPanel), findsNothing);
+    expect(find.textContaining('Students who answered'), findsOneWidget);
+    await tester.ensureVisible(find.text('Class statistics'));
+    await tester.tap(find.text('Class statistics'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ClassStatisticsScreen), findsOneWidget);
     expect(find.byType(LiveInsightsPanel), findsOneWidget);
+    // Back returns to the session screen.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(ClassStatisticsScreen), findsNothing);
+    expect(find.text('Class statistics'), findsOneWidget);
   });
 }
