@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/widgets.dart';
 
 import 'data/fake/in_memory_content_repository.dart';
+import 'data/fake/in_memory_follow_up_repository.dart';
 import 'data/ai/feedback_explainer.dart';
 import 'data/ai/question_generator.dart';
 import 'data/ai/resource_suggester.dart';
@@ -9,6 +10,7 @@ import 'data/ai/teaching_draft_generator.dart';
 import 'data/fake/in_memory_session_repository.dart';
 import 'data/repositories/auth_service.dart';
 import 'data/repositories/content_repository.dart';
+import 'data/repositories/follow_up_repository.dart';
 import 'data/repositories/profile_repository.dart';
 import 'data/repositories/session_repository.dart';
 import 'shared/theme_mode_store.dart';
@@ -26,10 +28,25 @@ class AppServices {
     this.teachingDraftGenerator,
     this.resourceSuggester,
     ProfileRepository? profiles,
+    FollowUpRepository? followUps,
     Locale initialLocale = const Locale('ar'),
   })  : auth = auth ?? InMemoryAuthService(),
         profiles = profiles ?? InMemoryProfileRepository(),
-        locale = ValueNotifier(initialLocale);
+        locale = ValueNotifier(initialLocale) {
+    this.followUps = followUps ??
+        switch ((content, sessions)) {
+          (
+            final InMemoryContentRepository c,
+            final InMemorySessionRepository s,
+          ) =>
+            InMemoryFollowUpRepository(
+              content: c,
+              sessions: s,
+              currentUser: this.auth.ensureParticipant,
+            ),
+          _ => null,
+        };
+  }
 
   factory AppServices.inMemory({Locale initialLocale = const Locale('ar')}) =>
       AppServices(
@@ -48,6 +65,10 @@ class AppServices {
   /// The optional personal learning profile of a student who linked an
   /// account (architecture §10).
   final ProfileRepository profiles;
+
+  /// The student's private "test my understanding again" follow-ups. Null
+  /// when not available: the feedback page then hides the button.
+  late final FollowUpRepository? followUps;
 
   /// True in the offline demo mode (built without Firebase settings): data
   /// lives in this browser tab only and is lost on reload. The app shows a

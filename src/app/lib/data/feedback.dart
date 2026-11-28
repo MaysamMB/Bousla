@@ -257,6 +257,40 @@ class FeedbackExplanation {
       );
 }
 
+/// A question reserved for this student's private reassessment ("test my
+/// understanding again"), chosen by the instructor app at publish time: new
+/// (not asked in the session), approved, on a concept that may need review
+/// or is still forming. Only its ID is stored; the student opens it by ID
+/// (never by listing the bank) and never gets its answer.
+class ReassessmentQuestion {
+  const ReassessmentQuestion({
+    required this.questionId,
+    required this.version,
+    required this.conceptId,
+  });
+
+  final String questionId;
+  final int version;
+  final String conceptId;
+
+  /// `{questionId}_v{version}`, the question's (and answer key's)
+  /// document ID.
+  String get key => '${questionId}_v$version';
+
+  Map<String, dynamic> toJson() => {
+        'question_id': questionId,
+        'version': version,
+        'concept_id': conceptId,
+      };
+
+  factory ReassessmentQuestion.fromJson(Map<String, dynamic> json) =>
+      ReassessmentQuestion(
+        questionId: json['question_id'] as String? ?? '',
+        version: (json['version'] as num?)?.toInt() ?? 0,
+        conceptId: json['concept_id'] as String? ?? '',
+      );
+}
+
 /// One student's feedback for one session.
 class StudentFeedback {
   const StudentFeedback({
@@ -265,6 +299,7 @@ class StudentFeedback {
     this.hints = const [],
     this.recommendations = const [],
     this.explanation,
+    this.reassessment = const [],
   });
 
   /// The language the student mostly answered in; shown first.
@@ -274,8 +309,27 @@ class StudentFeedback {
   final List<FeedbackRecommendation> recommendations;
   final FeedbackExplanation? explanation;
 
+  /// New questions reserved for this student's private reassessment (none
+  /// in feedback published before the feature).
+  final List<ReassessmentQuestion> reassessment;
+
+  /// The concepts this feedback says may need review or are still forming:
+  /// the only ones a private follow-up may test. Stored with the feedback
+  /// (`review_concept_ids`) so the security rules can check a follow-up's
+  /// concepts without trusting the browser.
+  List<String> get reviewConceptIds => [
+        for (final c in concepts)
+          if (c.state == MasteryState.possibleDifficulty ||
+              c.state == MasteryState.emerging)
+            c.conceptId,
+      ];
+
   Map<String, dynamic> toJson() => {
         'language': language.name,
+        'review_concept_ids': reviewConceptIds,
+        'reassessment_questions': [for (final q in reassessment) q.toJson()],
+        // For the security rules: a reassessment may use only these.
+        'reassessment_question_keys': [for (final q in reassessment) q.key],
         'concepts': [for (final c in concepts) c.toJson()],
         'prerequisite_hints': [for (final h in hints) h.toJson()],
         'recommendations': [for (final r in recommendations) r.toJson()],
@@ -300,6 +354,12 @@ class StudentFeedback {
       explanation: explanation is Map
           ? FeedbackExplanation.fromJson(Map<String, dynamic>.from(explanation))
           : null,
+      reassessment: [
+        for (final q in _list(json['reassessment_questions']))
+          if (ReassessmentQuestion.fromJson(q) case final r
+              when r.questionId.isNotEmpty && r.version > 0)
+            r,
+      ],
     );
   }
 }
